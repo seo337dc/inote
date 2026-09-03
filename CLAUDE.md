@@ -19,9 +19,9 @@ LLM/AI 부분만 별도 Python 서비스로 새로 만든다.
 ## 아키텍처
 
 ```
-inote-blog            - Next.js (이 레포) — 블로그/노션 UI + LLM 챗 UI
+inote-blog             - Next.js (이 레포) — 블로그/노션 UI + LLM 챗 UI
 inote-server(blog모듈)  - NestJS (기존 레포 확장) — 글 CRUD, 인증(Better Auth 재사용)
-신규 Python 서비스       - Python + FastAPI (신규 레포, 별도 DB) — LLM 채팅·임베딩·RAG
+inote-ai               - Python + FastAPI (https://github.com/seo337dc/inote-ai, 별도 DB) — LLM 채팅·임베딩·RAG
 ```
 
 - `inote-server`는 iNote 시리즈 공통 백엔드(`money/`, `daily/`, `goal/`과 같은 위치에 `blog/` 모듈 추가).
@@ -77,5 +77,4 @@ devlog-llm과 동일한 방식 유지.
 - [ ] 만다라트 9번 축 확정 (8번은 Playwright E2E 테스트로 확정, `docs/mandalart.html` 참고)
 - [ ] Next.js 세팅 (`inote-blog`)
 - [ ] `inote-server`에 `blog` 모듈 자리 만들기 (Prisma `Post` 모델)
-- [ ] 신규 Python AI 서비스 레포 이름 정하고 생성
-- [ ] Python 서비스용 별도 Neon DB 프로비저닝
+- [ ] `inote-ai`용 별도 Neon DB 프로비저닝

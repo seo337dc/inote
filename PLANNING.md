@@ -33,7 +33,7 @@ iNote 시리즈(`inote-money`와 같은 계열)로 편입하기로 함. 가장 �
 |---|---|---|
 | `inote-blog` | 블로그/노션 스타일 UI (Next.js) | 신규 — 이 레포 |
 | `inote-server`의 `blog` 모듈 | 글 CRUD API, 인증 | 기존 레포 확장 (Better Auth·Prisma·Neon DB 그대로 재사용) |
-| 신규 Python/FastAPI 서비스 | LLM 채팅·임베딩·RAG | 신규 레포, **별도 DB** |
+| [`inote-ai`](https://github.com/seo337dc/inote-ai) | LLM 채팅·임베딩·RAG | 신규 레포, **별도 DB** |
 
 - Python 서비스는 자체 로그인 로직이 없음 — FE가 이미 인증된 `user_id`/이메일을 요청에 그대로
   실어 보내고, Python은 그 값을 신뢰해서 데이터에 태그만 함 (devlog-llm의 `session_id` 패턴과 동일).
@@ -81,6 +81,5 @@ iNote 시리즈(`inote-money`와 같은 계열)로 편입하기로 함. 가장 �
 ## 미결정 사항
 
 - [ ] 만다라트 9번 축 (8번은 Playwright E2E 테스트로 확정)
-- [ ] Python AI 서비스의 레포 이름
 - [ ] 임베딩 모델 최종 확정 (Voyage AI `voyage-4-lite` 유력, devlog-llm에서 조사한 내용 재사용 가능)
 - [ ] `inote-server`의 Neon DB를 그대로 확장할지, 별도 브랜치를 팔지

@@ -11,9 +11,9 @@
 ```
 inote-blog (FE, Next.js)
   ├─→ inote-server의 blog 모듈 (NestJS·Prisma·Better Auth 재사용) — 글 CRUD, 인증
-  └─→ 신규 Python/FastAPI 서비스 (별도 DB)          — LLM 채팅, 임베딩, RAG
+  └─→ inote-ai (별도 DB)                                        — LLM 채팅, 임베딩, RAG
 
-신규 Python 서비스가 RAG에 글 내용이 필요하면
+inote-ai가 RAG에 글 내용이 필요하면
   → inote-server의 blog API를 호출해서 가져옴 (DB 직접 조인 안 함)
 ```
 
@@ -24,7 +24,7 @@ inote-blog (FE, Next.js)
 ```
 inote-blog/            ← 이 레포. FE만 (Next.js)
 inote-server/          ← 기존 레포. blog/ 모듈 추가 예정 (기존 auth/money/daily/goal과 같은 위치)
-<신규 Python 레포>/     ← 이름 미정. LLM/AI 전용, 별도 DB, 로그인 없음
+inote-ai/              ← 신규 레포 (https://github.com/seo337dc/inote-ai). LLM/AI 전용, 별도 DB, 로그인 없음
 ```
 
 > devlog-llm처럼 BE+AI를 하나로 합치지 않는 이유: `inote-server`가 이미 존재하는 서비스라서, 나눠도
@@ -38,14 +38,14 @@ inote-server/          ← 기존 레포. blog/ 모듈 추가 예정 (기존 aut
 |---|---|---|
 | `inote-blog` | Next.js + React + TS | 노션 스타일 에디터, 글 목록/상세, LLM 챗 UI |
 | `inote-server`의 `blog` 모듈 | NestJS + Prisma | 글 CRUD API, 인증(Better Auth 재사용) |
-| 신규 Python 서비스 | Python + FastAPI | LLM 채팅, 임베딩 생성, RAG 검색, 분석·평가 |
+| `inote-ai` | Python + FastAPI | LLM 채팅, 임베딩 생성, RAG 검색, 분석·평가 |
 
 ### 의존 방향
 
 ```
 inote-blog → inote-server(blog 모듈)
-inote-blog → 신규 Python 서비스
-신규 Python 서비스 → inote-server(blog 모듈)  (RAG 인덱싱 시 글 내용 조회용)
+inote-blog → inote-ai
+inote-ai → inote-server(blog 모듈)  (RAG 인덱싱 시 글 내용 조회용)
 ```
 
 ---
@@ -56,7 +56,7 @@ inote-blog → 신규 Python 서비스
 
 - `inote-blog` 레포 뼈대 (Next.js 세팅) — 이 레포
 - `inote-server`에 `blog` 모듈 자리 만들기 (Prisma에 `Post` 모델 추가)
-- 신규 Python 서비스 레포 생성 + 별도 DB 프로비저닝
+- `inote-ai` 레포 생성 완료 (https://github.com/seo337dc/inote-ai) — 별도 DB 프로비저닝은 아직
 - 무료 티어 기준으로 배포 계획 확정 (Vercel + Render + Neon, devlog-llm/inote-money와 동일 조합)
 
 ### Phase 1 — 블로그 뼈대
@@ -66,12 +66,12 @@ inote-blog → 신규 Python 서비스
 
 ### Phase 2 — LLM 채팅 연동
 
-- 신규 Python 서비스에 Groq 기반 `/chat` (devlog-llm 패턴 재사용, SSE 스트리밍)
+- `inote-ai`에 Groq 기반 `/chat` (devlog-llm 패턴 재사용, SSE 스트리밍)
 - `inote-blog` 에디터 페이지에 챗 UI 연결
 
 ### Phase 3 — 대화 기록 + RAG
 
-- Python 서비스 DB에 `conversations`, `embeddings` 테이블 (devlog-llm의 스키마/설계안 A·B 재사용)
+- `inote-ai` DB에 `conversations`, `embeddings` 테이블 (devlog-llm의 스키마/설계안 A·B 재사용)
 - 임베딩 모델 최종 확정 (Voyage AI `voyage-4-lite` 등 devlog-llm에서 조사한 후보 중)
 
 ### Phase 4 — 분석·평가·리서치 기능
@@ -90,8 +90,8 @@ inote-blog → 신규 Python 서비스
 | 소스 | 저장 위치 | 수집 방식 |
 |---|---|---|
 | 블로그 포스팅 | `inote-server` DB (`blog` 모듈) | `inote-blog` 에디터에서 작성 |
-| LLM과 나눈 대화 | 신규 Python 서비스 DB | 채팅 중 자동 저장 |
-| 임베딩(RAG용) | 신규 Python 서비스 DB | 포스팅(API로 가져옴) + 대화를 배치/실시간으로 임베딩 |
+| LLM과 나눈 대화 | `inote-ai` DB | 채팅 중 자동 저장 |
+| 임베딩(RAG용) | `inote-ai` DB | 포스팅(API로 가져옴) + 대화를 배치/실시간으로 임베딩 |
 
 ---
 
@@ -125,7 +125,6 @@ inote-blog → 신규 Python 서비스
 ## 미정 사항 (진행하면서 결정)
 
 - [ ] 만다라트 9번 축 (8번은 Playwright E2E 테스트로 확정)
-- [ ] 신규 Python 서비스의 레포 이름
 - [ ] 임베딩 모델 최종 확정
 - [ ] `inote-server`의 Neon DB를 그대로 확장할지, 별도 브랜치를 팔지
-- [ ] Python 서비스 ↔ `inote-server` 간 API 인증(내부 호출용 토큰 등) 방식
+- [ ] `inote-ai` ↔ `inote-server` 간 API 인증(내부 호출용 토큰 등) 방식
