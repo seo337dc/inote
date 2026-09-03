@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { CATEGORIES } from "@/entities/category";
+import { PostEditor } from "@/shared/ui/editor";
+
+const EMPTY_CONTENT = ["", "<p></p>"];
 
 export default function WritePostForm() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [content, setContent] = useState("");
+  const isContentEmpty = EMPTY_CONTENT.includes(content);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,13 +41,7 @@ export default function WritePostForm() {
         ))}
       </select>
 
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="내용을 입력하세요..."
-        rows={16}
-        className="rounded border border-zinc-200 px-4 py-3 text-sm outline-none focus:border-zinc-400"
-      />
+      <PostEditor content={content} onChange={setContent} />
 
       <div className="flex items-center justify-between">
         <p className="text-xs text-zinc-400">
@@ -52,7 +50,7 @@ export default function WritePostForm() {
         <button
           type="submit"
           className="rounded bg-zinc-900 px-5 py-2 text-white disabled:opacity-50"
-          disabled={!title.trim() || !content.trim()}
+          disabled={!title.trim() || isContentEmpty}
         >
           발행
         </button>

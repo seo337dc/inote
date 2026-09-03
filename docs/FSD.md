@@ -19,7 +19,7 @@ app -> pages -> widgets -> features -> entities -> shared
 | `widgets` | `src/widgets/` | 여러 곳에서 재사용되는 큰 UI 블록. `nav`, `post-list`, `mandalart-grid` |
 | `features` | `src/features/` | 사용자 상호작용 단위. `filter-posts-by-category`, `write-post`, `manage-categories`, `edit-profile` |
 | `entities` | `src/entities/` | 비즈니스 엔티티(타입+데이터). `post`, `category` |
-| `shared` | `src/shared/` | 비즈니스 로직 없는 재사용 코드. `ui`(shadcn 컴포넌트), `lib`(utils) |
+| `shared` | `src/shared/` | 비즈니스 로직 없는 재사용 코드. `ui`(shadcn 컴포넌트, Tiptap 에디터), `lib`(utils) |
 
 ## 왜 `pages` 폴더 이름을 `src/views`로 바꿨는가
 
@@ -45,6 +45,13 @@ Next.js는 프로젝트 루트에 `src/pages/`가 있으면 **레거시 Pages Ro
 `default: "disallow"`이므로 규칙에 없는 조합(예: `entities`가 `features`를 import)은 전부
 에러. 실제로 `entities/post`에 `features/write-post`를 import하는 코드를 넣어서
 `pnpm lint`가 `boundaries/dependencies` 에러로 잡아내는 것까지 확인함 (2026-09-03).
+
+## 왜 노션 스타일 에디터(Tiptap)가 `shared/ui`에 있는가
+
+에디터는 `content`/`onChange`만 받고 `Post`를 전혀 모른다 — shadcn `Button`/`Sheet`와 같은 성격의
+"비즈니스 로직 없는 재사용 UI"라서 `shared/ui/editor`에 둠. `features/write-post`가 이걸 가져다
+쓰는 구조(`features -> shared`)라서 레이어 방향도 문제없음. 만약 에디터에 "이 글의 카테고리를 안다"
+같은 Post 관련 로직이 들어가기 시작하면 그때는 `widgets`나 `features` 쪽으로 옮기는 게 맞다.
 
 ## 한계 / 다음에 볼 것
 

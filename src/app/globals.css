@@ -128,3 +128,12 @@
     @apply font-sans;
   }
 }
+
+/* Tiptap Placeholder 확장은 data-placeholder 속성만 달아주고 CSS는 직접 넣어야 함 */
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--color-zinc-400, #a1a1aa);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

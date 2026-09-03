@@ -177,6 +177,58 @@ Phase 1 작업 때 진행.
 alert만 뜨는 상태 — 실제 연동은 inote-server Better Auth 비밀번호 변경 API가 필요 (이메일 계정
 전용, Phase 1 이후 논의).
 
+---
+
+## 2026-09-03 (이어서 5) — 노션 스타일 에디터 (슬래시 커맨드 포함)
+
+devlog-llm에 이미 만들어둔 Tiptap 에디터(툴바 방식)를 그대로 재사용할지, `/` 슬래시 명령으로 블록을
+삽입하는 진짜 노션 스타일까지 갈지 먼저 확인 — 후자로 진행.
+
+### 작업 내용
+
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/core`, `@tiptap/suggestion`, `@tiptap/extension-placeholder` 설치 | ✅ |
+| 2 | `shared/ui/editor/PostEditor.tsx` — devlog-llm 툴바(H1/H2/B/I/목록/코드) 재사용 + `SlashCommand` 확장 + 빈 에디터 placeholder | ✅ |
+| 3 | `shared/ui/editor/slash-command.ts` — `/`로 텍스트·제목1~3·글머리기호·번호매기기·인용·코드블록·구분선 9종 블록 삽입, `@tiptap/suggestion`의 `props.mount()`로 위치 계산 | ✅ |
+| 4 | `shared/ui/editor/SlashCommandMenu.tsx` — 키보드(↑↓/Enter)·마우스 둘 다 지원하는 드롭다운, `forwardRef` + `useImperativeHandle`로 `onKeyDown` 노출 | ✅ |
+| 5 | `features/write-post/ui/WritePostForm.tsx`에서 `<textarea>` → `<PostEditor>`로 교체, 빈 콘텐츠 판정을 `"<p></p>"` 포함하도록 수정 | ✅ |
+| 6 | `pnpm lint`/`pnpm build` 통과, 브라우저에서 슬래시 메뉴 열기·필터링·마우스 클릭 선택·키보드 선택·타이핑까지 전부 실제 확인 | ✅ |
+
+### 트러블슈팅
+
+- **`@tiptap/suggestion` v3 API가 예전 문서/튜토리얼과 다름**: 흔한 예제는 `tippy.js`로 팝업 위치를
+  수동 계산하는데, 설치된 v3.31의 타입 정의를 직접 읽어보니 `render()`의 `onStart`에서
+  `props.mount(element)`를 호출하면 Floating UI 기반 위치 계산·스크롤 추적을 라이브러리가 알아서
+  해줌. `tippy.js`는 아예 필요 없어서 추가했다가 다시 제거함 — 학습 안 하고 예전 기억대로 짰으면
+  안 쓰는 의존성만 늘렸을 것.
+- **`@tiptap/core`를 직접 import했더니 "Module not found"**: `@tiptap/react`가 내부적으로 쓰긴
+  하지만, pnpm의 strict node_modules 구조에서는 간접 의존성을 직접 import할 수 없음(phantom
+  dependency 방지). `@tiptap/core`를 `package.json`에 직접 추가해서 해결.
+- **Placeholder 텍스트가 안 보임**: `@tiptap/extension-placeholder`는 `data-placeholder` 속성만
+  달아주고, 실제로 보여주는 CSS(`::before` + `content: attr(data-placeholder)`)는 직접 넣어야 함
+  (공식 문서에 있는 필수 스텝인데 처음엔 빠뜨림). `globals.css`에 추가해서 해결 — 이때 Tiptap이
+  에디터 DOM에 `tiptap`과 `ProseMirror` 클래스를 둘 다 붙인다는 것도 확인.
+- **브라우저 자동화 도구의 키보드(`computer` 액션 `key`) 이벤트가 슬래시 메뉴의 ↑↓/Enter를
+  못 잡음**: 처음엔 내 `onKeyDown` 구현이 잘못된 줄 알았는데, `KeyboardEvent`를 JS로 직접
+  `dispatchEvent`하니 정확히 동작함(선택 항목이 하이라이트되고 Enter로 블록이 실제로 바뀜) —
+  이 세션의 자동화 도구가 이 페이지에서 synthetic keydown을 ProseMirror까지 못 전달하는
+  도구 쪽 한계였음. 실제 버그 아님.
+- **마우스 클릭 직후 곧바로 typing하면 텍스트가 새 블록으로 새는 것처럼 보였음**: 클릭→타이핑을
+  텀 없이 이어붙인 테스트 스크립트의 타이밍 문제로 판명 (React 상태 반영 전에 다음 입력이 들어감).
+  대기 후 타이핑하면 정확히 새로 만들어진 헤딩/블록 안에 들어감 — 실사용자는 클릭과 타이핑 사이에
+  자연스러운 지연이 있어서 문제 없음.
+- **헤딩·구분선 뒤에 빈 문단이 자동으로 남음**: ProseMirror/StarterKit의 표준 동작 — 마지막 블록이
+  헤딩이나 `<hr>`처럼 "막다른 블록"이면 계속 쓸 수 있도록 빈 문단을 붙여줌. 버그 아니고 노션도 같은
+  동작을 함.
+
+### 결과
+
+`/write` 페이지 에디터가 툴바 + 슬래시 커맨드 둘 다 갖춘 노션 스타일로 업그레이드됨. 9종 블록
+(텍스트/제목1~3/글머리기호/번호매기기/인용/코드블록/구분선) 전부 마우스·키보드 양쪽으로 정상 동작
+확인. 에디터 자체는 `Post`를 모르는 순수 재사용 컴포넌트라 `shared/ui`에 배치 (`docs/FSD.md`에
+근거 기록).
+
 ### 다음 할 일 (BE·인프라 — 이번 세션 범위 밖)
 
 - [ ] `inote-server`에 `blog` 모듈 + Prisma `Post`/`Category` 모델 추가
