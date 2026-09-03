@@ -50,9 +50,8 @@ inote-server(blog모듈)  - NestJS (기존 레포 확장) — 글 CRUD, 인증(B
 - `user.name`/`user.email`을 `seo337dc` 명의로 로컬 설정
 - push 인증도 `seo337dc` 토큰만 쓰도록 `credential.helper` 로컬 오버라이드
 
-> ⚠️ 확인해보니 `inote-server`는 이 오버라이드가 없어서 회사 이메일로 커밋되고 있음. `inote-blog`
-> 작업 중 `inote-server`에 `blog` 모듈을 추가할 때는 먼저 `inote-server`에도 같은 오버라이드를
-> 해줄지 사용자에게 확인할 것.
+> `inote-server`도 원래 이 오버라이드가 없어서 회사 이메일로 커밋되고 있었음 (2026-09-01 발견,
+> 같은 방식으로 로컬 오버라이드 추가해서 해결 — 이전 커밋 이력은 그대로 둠).
 
 ## AI 협업 규칙 (Claude Code ↔ Cursor)
 
@@ -75,9 +74,8 @@ devlog-llm과 동일한 방식 유지.
 
 ## 다음 할 일
 
-- [ ] 만다라트 8·9번 축 확정
+- [ ] 만다라트 9번 축 확정 (8번은 Playwright E2E 테스트로 확정, `docs/mandalart.html` 참고)
 - [ ] Next.js 세팅 (`inote-blog`)
 - [ ] `inote-server`에 `blog` 모듈 자리 만들기 (Prisma `Post` 모델)
 - [ ] 신규 Python AI 서비스 레포 이름 정하고 생성
 - [ ] Python 서비스용 별도 Neon DB 프로비저닝
-- [ ] `inote-server` git 계정 오버라이드 여부 확인

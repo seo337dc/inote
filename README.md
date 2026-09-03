@@ -8,6 +8,7 @@
 
 왜 만드는지/목표/성공 기준은 [`PLANNING.md`](./PLANNING.md), 전체 구조·단계별 전략은
 [`STRATEGY.md`](./STRATEGY.md), 세션 간 맥락 유지 규칙은 [`CLAUDE.md`](./CLAUDE.md) 참고.
+핵심 목표+8대 축을 정리한 만다라트는 [`docs/mandalart.html`](./docs/mandalart.html) (브라우저로 열기).
 
 devlog-llm(개인 실험용 선행 프로젝트)에서 검증된 패턴(Groq 연동, RAG 설계, 대화 저장)을 최대한
 재사용하며 진행 중.
