@@ -12,8 +12,11 @@ export default function HomePage({ category }: Props) {
     : MOCK_POSTS;
 
   return (
-    <div className="mx-auto flex max-w-5xl gap-10 px-6 py-10">
-      <CategoryFilter posts={MOCK_POSTS} activeCategory={category} />
+    <div className="mx-auto flex max-w-5xl gap-10 px-4 py-6 lg:px-6 lg:py-10">
+      {/* lg 미만에서는 카테고리 필터가 NavMobile의 햄버거 드로어 안에 들어가 있음 */}
+      <div className="hidden lg:block">
+        <CategoryFilter posts={MOCK_POSTS} activeCategory={category} />
+      </div>
 
       <div className="flex-1">
         <h1 className="mb-1 text-2xl font-bold">모든 글</h1>

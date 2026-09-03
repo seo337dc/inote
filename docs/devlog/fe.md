@@ -90,6 +90,51 @@ FSD 전환 둘 다 실행 전에 계획을 먼저 제시하고 확인받은 뒤 
 FSD 레이어 구조 + shadcn/ui 테마 적용까지 완료, 기존 7개 화면은 동일하게 동작함(회귀 없음).
 `docs/FSD.md`에 설계 근거와 한계를 남겨둠.
 
+---
+
+## 2026-09-03 (이어서 2) — 홈 화면 모바일 대응 (햄버거 + 왼쪽 슬라이드 드로어)
+
+실행 전에 "inote-money에서 이미 검증된 모바일/데스크톱 분리 전략(lg 브레이크포인트, CSS로 숨기기)을
+그대로 가져갈지"와 "홈 화면의 카테고리 필터를 드로어 안에 어떻게 넣을지" 두 가지를 먼저 의논하고
+확인받은 뒤 진행.
+
+### 작업 내용
+
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | shadcn `Sheet` 컴포넌트 설치 (`npx shadcn add sheet`) — 왼쪽 슬라이드 드로어용 | ✅ |
+| 2 | `widgets/nav`를 `NavDesktop`/`NavMobile`로 분리, `Nav`는 `hidden lg:block`/`block lg:hidden`으로 CSS 분기 (inote-money 전략 그대로) | ✅ |
+| 3 | `NavMobile` — 햄버거 아이콘(lucide `Menu`) + `Sheet(side="left")` 드로어, 네비 링크 목록 | ✅ |
+| 4 | 홈(`/`)일 때만 드로어 안에 `features/filter-posts-by-category`의 `CategoryFilter`를 그대로 재사용해서 추가 (widgets→features import는 FSD 규칙상 허용) | ✅ |
+| 5 | `CategoryFilter`에 `className`/`onNavigate` prop 추가 — 데스크톱 사이드바와 드로어 양쪽에서 재사용, 드로어에서는 클릭 시 드로어 자동 닫힘 | ✅ |
+| 6 | `HomePage`에서 데스크톱 사이드바는 `hidden lg:block`으로 감싸서 모바일에서 숨김 | ✅ |
+| 7 | `layout.tsx`에서 `<Nav>`를 `<Suspense>`로 감쌈 (`NavMobile`이 `useSearchParams` 사용 — devlog-llm에서 겪었던 것과 같은 이유) | ✅ |
+
+### 트러블슈팅
+
+- **`SheetClose` + `Link`(render prop) 조합이 드로어를 안 닫음**: Base UI의 `SheetClose`에
+  `render={<Link .../>}`로 합성하면 네비게이션은 되는데 드로어가 안 닫히는 버그 발견. 이미
+  `Sheet`의 `open`/`onOpenChange`를 직접 들고 있었으므로, `SheetClose` 합성에 의존하지 않고
+  각 `Link`에 `onClick={() => setOpen(false)}`를 직접 붙이는 방식으로 교체해서 해결.
+- **Base UI Dialog는 닫혀도 DOM에서 완전히 안 사라짐**: `document.querySelector('[role="dialog"]')`
+  존재 여부로 "열려있다"를 판단하려다 오판할 뻔함 — 종료 트랜지션 때문에 노드는 유지되고
+  `data-open` 속성만 사라짐. 검증은 `data-open`/`aria-expanded`로 해야 정확함.
+- **브라우저 자동화 도구의 클릭이 이 세션에서 계속 "pane hidden" 타임아웃남**: 실제 앱 문제가
+  아니라 도구 쪽 문제로 판단 — `javascript_tool`로 DOM을 직접 클릭·검증하는 방식으로 우회해서
+  실제 동작(열림/닫힘/네비게이션)을 전부 확인함.
+- **stale HMR 상태로 `ReferenceError: SheetClose is not defined`가 뜬 적 있음**: 코드에서
+  이미 제거한 import인데도 브라우저 콘솔에 남아있어서 진짜 버그인지 헷갈림 → 개발 서버(부모+자식
+  프로세스 전부) 완전 종료 + `.next` 캐시 삭제 + 새 브라우저 탭으로 재확인하니 사라짐. 실제
+  버그가 아니라 Turbopack HMR 잔여 상태였음.
+
+### 결과
+
+홈 화면 모바일 버전 완성 — 375px 너비에서 햄버거 아이콘 → 왼쪽 드로어(네비 링크 + 카테고리 필터)
+정상 동작, 링크·카테고리 클릭 시 드로어 닫히고 정상 이동까지 확인. 데스크톱 화면은 기존과 동일.
+
+`/write` 페이지의 모바일 레이아웃(발행 버튼과 안내 문구가 겹쳐 보임)은 이번 스코프 밖이라 발견만
+해두고 다음에 처리.
+
 ### 다음 할 일 (BE·인프라 — 이번 세션 범위 밖)
 
 - [ ] `inote-server`에 `blog` 모듈 + Prisma `Post`/`Category` 모델 추가
