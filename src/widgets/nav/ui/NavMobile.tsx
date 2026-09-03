@@ -35,7 +35,7 @@ export default function NavMobile() {
           <Menu className="size-5" />
         </SheetTrigger>
 
-        <SheetContent side="left" className="flex w-3/4 flex-col overflow-y-auto">
+        <SheetContent side="right" className="flex w-3/4 flex-col overflow-y-auto">
           <SheetHeader>
             <SheetTitle>메뉴</SheetTitle>
           </SheetHeader>
