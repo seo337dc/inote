@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { useEffect } from "react";
 import { SlashCommand } from "./slash-command";
+import { MarkdownPaste } from "./markdown-paste";
 
 type Props = {
   content?: string;
@@ -38,6 +39,7 @@ export default function PostEditor({ content = "", onChange }: Props) {
     extensions: [
       StarterKit,
       SlashCommand,
+      MarkdownPaste,
       Placeholder.configure({
         placeholder: "내용을 입력하거나 '/'를 입력해 블록을 삽입하세요...",
       }),

@@ -237,3 +237,41 @@ devlog-llm에 이미 만들어둔 Tiptap 에디터(툴바 방식)를 그대로 �
 - [ ] 로그인 페이지 → 실제 Better Auth OAuth 플로우 연동
 - [ ] 내 정보 화면 → `inote-server`의 유저 정보 API 연동 여부 확인
 - [ ] 글쓰기 페이지 저장 → 실제 API 연동
+
+---
+
+## 2026-09-03 (이어서 6) — 마크다운 원문 붙여넣기 지원
+
+"AI가 md로 답변한 걸 그대로 복사-붙여넣기 하면 노션처럼 되나?"라는 질문에서 시작. 실제로 브라우저에서
+두 경우를 나눠 테스트해봄.
+
+- ② 이미 **렌더링된** 화면(예: AI 챗 UI)에서 복사 → 클립보드에 `text/html`이 같이 담겨서 옴 →
+  Tiptap 기본 붙여넣기 처리가 이미 정확히 변환함 (별도 작업 불필요, 확인만 함)
+- ① md **원문 텍스트**(`# 제목`, `**굵게**` 등 문자 그대로)를 복사 → 클립보드엔 `text/plain`만 있음
+  → StarterKit의 Bold/Italic 같은 마크(inline)만 붙여넣기 규칙이 있어서 자동 변환되고, 헤딩/리스트
+  같은 블록 노드는 변환 안 되고 문자 그대로 들어감 → 이 갭을 메우는 게 이번 작업
+
+사용자가 "①까지 지원 추가해줘"로 명시적으로 요청해서 진행.
+
+### 작업 내용
+
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | `marked@18` 설치 | ✅ |
+| 2 | `shared/ui/editor/markdown-paste.ts` — `MarkdownPaste` Tiptap Extension. ProseMirror `handlePaste`에서 클립보드에 `text/html`이 있으면 그냥 통과(`return false`, 기본 처리에 맡김), `text/plain`만 있으면 `marked.parse(text, {async:false, breaks:true})`로 HTML 변환 후 `editor.chain().insertContent(html)`로 삽입 | ✅ |
+| 3 | `PostEditor.tsx` extensions 배열에 `MarkdownPaste` 추가 (`slash-command.ts`와 동일한 `Extension.create` + `addProseMirrorPlugins` 패턴) | ✅ |
+| 4 | `pnpm lint`/`pnpm build` 통과 | ✅ |
+| 5 | 브라우저에서 `ClipboardEvent` 직접 만들어 검증 — `text/plain`만 담은 `# 제목입니다\n\n**굵은 글씨**...\n\n- 목록 1\n- 목록 2` 붙여넣기 → `<h1>`/`<strong>`/`<ul><li>`로 정상 변환 확인. `text/html`이 있는 경우(②)도 다시 붙여넣어 기존 동작 그대로인지(직접 만든 확장이 끼어들지 않는지) 확인 | ✅ |
+
+### 왜 마크다운 감지 없이 항상 `marked.parse`를 돌리는가
+
+`text/html`이 없는 순수 텍스트 붙여넣기라면, 마크다운 문법이 없는 일반 문장을 `marked`에 통과시켜도
+`<p>` 문단으로 감싸질 뿐이라 결과가 같음. 정규식으로 "이게 마크다운인지" 미리 판별하는 로직을 넣는 게
+오히려 놓치는 패턴을 만들 수 있어서, 그냥 항상 파싱하는 쪽으로 결정.
+
+### 결과
+
+devlog-llm 때 겪었던 "낡은 기억으로 라이브러리 API를 짜면 안 쓰는 의존성만 늘어난다" 교훈을 이번에도
+적용 — `marked` 코드를 쓰기 전에 실제 설치된 `node_modules/marked@18.0.11`의 `marked.d.ts`를 직접
+읽어서 `parse(text, {async:false, ...})` 오버로드가 동기 `string`을 반환하는 걸 확인하고 작성함.
+개인 블로그(본인만 씀) 신뢰 경계라 별도 sanitize 단계는 넣지 않음.
