@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# build outputs
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+!.env.example
+
+# misc
+.DS_Store
+*.log
