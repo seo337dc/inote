@@ -11,7 +11,7 @@ export default function PostDetailPage({ id }: Props) {
   if (!post) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl px-6 py-16">
+    <article className="mx-auto max-w-4xl px-6 py-16">
       <p className="mb-3 text-xs text-zinc-400">
         <span className="rounded bg-zinc-100 px-2 py-0.5">{post.category}</span>
       </p>
