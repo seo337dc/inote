@@ -16,8 +16,7 @@ export default function WritePostForm() {
     e.preventDefault();
     // TODO: inote-server의 blog 모듈(POST /blog/posts)이 준비되면 연동.
     // 지금은 BE가 없어서 UI만 확인 — docs/devlog/fe.md에 기록.
-    alert("아직 저장 API가 없습니다 (UI만 우선 구현). 콘솔에 입력값을 출력합니다.");
-    console.log({ title, category, content });
+    console.log("[발행]", { title, category, content });
   }
 
   return (
