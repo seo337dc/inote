@@ -47,6 +47,49 @@
 (`inote-server`의 `blog` 모듈, Prisma 모델, Better Auth 연동)는 이 세션에서 다루지 않고 아래
 "다음 할 일"에 남겨둠.
 
+---
+
+## 2026-09-03 (이어서) — FSD(Feature-Sliced Design) 구조로 전환 + shadcn/ui 초기화
+
+사용자가 "화면을 먼저 만들지 말고 하나씩 의논 후 작업"으로 협업 방식을 정정 — 이후 shadcn 적용,
+FSD 전환 둘 다 실행 전에 계획을 먼저 제시하고 확인받은 뒤 진행.
+
+### 작업 내용
+
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | shadcn/ui 초기화 (`style: base-nova`, `baseColor: neutral`) — inote-money와 동일한 초록 테마로 CSS 변수 맞춤 | ✅ |
+| 2 | `eslint-plugin-boundaries` 설치, FSD 레이어 의존성 방향(`app→pages→widgets→features→entities→shared`)을 실제로 강제하는 lint 규칙 작성 | ✅ |
+| 3 | `src/lib/mock-posts.ts` → `entities/post`, `entities/category`로 분리 | ✅ |
+| 4 | `src/components/Nav.tsx` → `widgets/nav`, 홈/나의글 공용 목록 UI → `widgets/post-list`, 만다라트 → `widgets/mandalart-grid` | ✅ |
+| 5 | 각 화면의 상호작용 로직을 `features`로 분리 (`filter-posts-by-category`, `write-post`, `manage-categories`, `edit-profile`) | ✅ |
+| 6 | 화면 조합은 `pages` 레이어(폴더명은 `src/views`), `app/*/page.tsx`는 라우팅 껍데기만 남김 | ✅ |
+| 7 | `pnpm lint`/`pnpm build` 통과 확인, 일부러 레이어 위반 import를 넣어 lint가 실제로 잡는지 검증 후 원복 | ✅ |
+| 8 | 브라우저로 8개 라우트 전부 재확인 (기존과 동일하게 동작) | ✅ |
+| 9 | 설계 근거 문서화: `docs/FSD.md` | ✅ |
+
+### 트러블슈팅
+
+- **`src/pages`와 Next.js Pages Router 충돌**: FSD의 `pages` 레이어를 문자 그대로 `src/pages/`에
+  두니 `next build`가 "App Router and Pages Router both match path" 에러로 실패함. Next.js는
+  `src/pages/` 존재 자체를 레거시 Pages Router로 인식하기 때문. 폴더명을 `src/views`로 바꾸고
+  ESLint 설정에서만 FSD 개념상 타입을 `"pages"`로 유지하는 방식으로 해결.
+- **`eslint-plugin-boundaries` v7 설정 문법 변경**: 온라인에서 흔히 보이는 `element-types` +
+  `rules` 문법이 v7에서 deprecated. `dependencies` 규칙 + `policies`(`from`/`to` 안에
+  `element: { type }` 래핑) 문법으로 다시 작성. 설치된 버전의 README를 직접 읽고 확인.
+- **의존성 강제가 "진짜" 작동하는지 검증**: `entities/post`에 일부러 `features/write-post`를
+  import하는 코드를 넣어서 `pnpm lint`가 `boundaries/dependencies` 에러로 잡는 것을 확인한 뒤
+  원복. 폴더 구조만 맞추고 실제로는 강제되지 않는 실수를 반복하지 않기 위함.
+- **로컬 dev 서버를 완전히 못 끈 채로 "종료했다"고 잘못 보고한 적 있음**: `pnpm dev`를 `kill`할 때
+  부모 프로세스(`node`/`pnpm`)만 죽이고 실제 `next-server` 자식 프로세스가 계속 떠 있었던 적이
+  있음. 이후로는 `lsof -iTCP:PORT -sTCP:LISTEN`과 `ps -ef`로 실제 리스닝 프로세스를 확인하고,
+  부모+자식 PID를 전부 `kill -9`한 뒤 재확인하는 방식으로 변경.
+
+### 결과
+
+FSD 레이어 구조 + shadcn/ui 테마 적용까지 완료, 기존 7개 화면은 동일하게 동작함(회귀 없음).
+`docs/FSD.md`에 설계 근거와 한계를 남겨둠.
+
 ### 다음 할 일 (BE·인프라 — 이번 세션 범위 밖)
 
 - [ ] `inote-server`에 `blog` 모듈 + Prisma `Post`/`Category` 모델 추가

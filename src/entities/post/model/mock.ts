@@ -1,20 +1,4 @@
-export type Post = {
-  id: string;
-  title: string;
-  excerpt: string;
-  category: "학습" | "이직" | "일기" | "블로그" | "기록";
-  author: string;
-  createdAt: string;
-  mine?: boolean;
-};
-
-export const CATEGORIES: Post["category"][] = [
-  "학습",
-  "이직",
-  "일기",
-  "블로그",
-  "기록",
-];
+import type { Post } from "./types";
 
 export const MOCK_POSTS: Post[] = [
   {

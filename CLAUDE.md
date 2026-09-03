@@ -34,9 +34,24 @@ inote-ai               - Python + FastAPI (https://github.com/seo337dc/inote-ai,
 
 상세 근거는 `PLANNING.md`의 "아키텍처 결정" 항목 참고.
 
+## 코드 구조 (FSD)
+
+`src/`는 Feature-Sliced Design으로 구성 (`app → pages → widgets → features → entities → shared`,
+상위가 하위만 import 가능, `eslint-plugin-boundaries`로 실제 강제됨). FSD의 `pages` 레이어는
+Next.js Pages Router와 이름이 겹쳐서 폴더명은 `src/views`를 씀. 설계 근거·레이어별 내용은
+[`docs/FSD.md`](./docs/FSD.md) 참고.
+
 ## 로컬 개발
 
-아직 세팅 전 (Phase 0 진행 중). 각 컴포넌트 세팅되면 이 섹션에 채울 것.
+```bash
+pnpm install
+pnpm dev     # http://localhost:3011
+pnpm lint    # FSD 레이어 위반도 여기서 잡힘
+pnpm build
+```
+
+shadcn/ui 적용됨 (`components.json`, inote-money와 동일한 초록 테마). 새 컴포넌트는
+`npx shadcn@latest add <name>`.
 
 ## 배포
 
@@ -78,11 +93,17 @@ devlog-llm과 동일한 방식 유지.
 
 ## 알아둘 것 (겪었던 문제들)
 
-- (아직 없음 — 진행하면서 채울 것)
+- **`src/pages`는 쓰지 않는다**: Next.js가 레거시 Pages Router로 인식해서 App Router와 라우팅
+  충돌남. FSD의 `pages` 레이어는 폴더명 `src/views`로 대신 씀 (`docs/FSD.md` 참고).
+- **`eslint-plugin-boundaries`는 v7 문법 사용**: `element-types`+`rules`가 아니라
+  `dependencies`+`policies`(`from`/`to`를 `{ element: { type } }`로 감쌈). 온라인 예시 상당수가
+  구버전 문법이라 그대로 베끼면 deprecated 경고가 뜸.
+- **로컬 dev 서버 종료 시 자식 프로세스까지 확인**: `next dev`를 `kill`할 때 부모만 죽이면 실제
+  `next-server`/turbopack worker 자식 프로세스가 포트를 계속 점유한 채 남을 수 있음.
+  `lsof -iTCP:PORT -sTCP:LISTEN`과 `ps -ef`로 실제 리스닝 PID를 확인하고 전부 종료할 것.
 
 ## 다음 할 일
 
 - [ ] 만다라트 9번 축 확정 (8번은 Playwright E2E 테스트로 확정, `docs/mandalart.html` 참고)
-- [ ] Next.js 세팅 (`inote-blog`)
 - [ ] `inote-server`에 `blog` 모듈 자리 만들기 (Prisma `Post` 모델)
 - [ ] `inote-ai`용 별도 Neon DB 프로비저닝
