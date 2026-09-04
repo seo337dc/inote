@@ -24,7 +24,7 @@ export default function NavMobile() {
 
   return (
     <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-      <Link href="/" className="text-lg font-bold">
+      <Link href="/" className="text-lg font-bold hover:text-zinc-700">
         inote-blog
       </Link>
 
@@ -50,7 +50,9 @@ export default function NavMobile() {
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className={`rounded px-3 py-2 ${
-                    active ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-100"
+                    active
+                      ? "bg-zinc-900 text-white hover:bg-zinc-800"
+                      : "text-zinc-600 hover:bg-zinc-100"
                   }`}
                 >
                   {link.label}

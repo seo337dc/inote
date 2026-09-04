@@ -27,7 +27,9 @@ export default function CategoryFilter({
             href="/"
             onClick={onNavigate}
             className={`block rounded px-2 py-1 ${
-              !activeCategory ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-100"
+              !activeCategory
+                ? "bg-zinc-900 text-white hover:bg-zinc-800"
+                : "text-zinc-600 hover:bg-zinc-100"
             }`}
           >
             전체 ({posts.length})
@@ -40,7 +42,7 @@ export default function CategoryFilter({
               onClick={onNavigate}
               className={`block rounded px-2 py-1 ${
                 activeCategory === c
-                  ? "bg-zinc-900 text-white"
+                  ? "bg-zinc-900 text-white hover:bg-zinc-800"
                   : "text-zinc-600 hover:bg-zinc-100"
               }`}
             >

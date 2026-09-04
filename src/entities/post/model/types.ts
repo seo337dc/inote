@@ -3,9 +3,9 @@ import type { Category } from "@/entities/category";
 export type Post = {
   id: string;
   title: string;
-  excerpt: string;
+  content: string;
+  excerpt: string | null;
   category: Category;
-  author: string;
   createdAt: string;
-  mine?: boolean;
+  updatedAt: string;
 };

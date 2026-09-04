@@ -1,28 +1,43 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MOCK_POSTS } from "@/entities/post";
+import type { Post } from "@/entities/post";
+import { api, ApiError } from "@/shared/lib/api";
 
 type Props = {
   id: string;
 };
 
-export default function PostDetailPage({ id }: Props) {
-  const post = MOCK_POSTS.find((p) => p.id === id);
-
-  if (!post) notFound();
+export default async function PostDetailPage({ id }: Props) {
+  let post: Post;
+  try {
+    post = await api.get<Post>(`/blog/posts/${id}`, { cache: "no-store" });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) notFound();
+    throw e;
+  }
 
   return (
     <article className="mx-auto max-w-4xl px-6 py-16">
-      <p className="mb-3 text-xs text-zinc-400">
-        <span className="rounded bg-zinc-100 px-2 py-0.5">{post.category}</span>
-      </p>
+      <div className="mb-3 flex items-center justify-between">
+        <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
+          {post.category}
+        </span>
+        <Link
+          href={`/write?id=${post.id}`}
+          className="text-xs text-zinc-400 underline hover:text-zinc-600"
+        >
+          수정
+        </Link>
+      </div>
       <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
       <p className="mb-10 text-sm text-zinc-400">
-        {post.author} · {post.createdAt}
+        {new Date(post.createdAt).toLocaleDateString("ko-KR")}
       </p>
-      <p className="whitespace-pre-wrap text-base leading-relaxed text-zinc-700">
-        {post.excerpt}
-        {"\n\n(목업 데이터 — 실제 본문은 inote-server의 blog 모듈 연동 후 표시됩니다.)"}
-      </p>
+      {/* 본인만 쓰는 개인 블로그라 별도 sanitize 없이 그대로 렌더 (docs/FSD.md 신뢰 경계와 동일 맥락) */}
+      <div
+        className="prose prose-zinc max-w-none"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
     </article>
   );
 }
