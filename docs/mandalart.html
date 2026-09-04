@@ -137,6 +137,19 @@
 
   .cell--item { color: var(--ink); background: var(--surface); }
 
+  .cell--done {
+    flex-direction: column;
+    gap: 0.2rem;
+    background: #1D4ED8 !important;
+    color: #fff !important;
+  }
+
+  .done-badge {
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
   .cell--theme {
     color: var(--theme-ink);
     background: var(--theme-bg);
@@ -219,7 +232,7 @@
       <!-- Row 1 -->
       <div class="cell cell--item blk-t2">노션 스타일 에디터 만들기</div>
       <div class="cell cell--item blk-t2">글 목록·상세·카테고리 필터</div>
-      <div class="cell cell--item blk-t2">inote-server에 blog 모듈 추가</div>
+      <div class="cell cell--item cell--done blk-t2"><span class="done-badge">(완료)</span>inote-server에 blog 모듈 추가</div>
       <div class="cell cell--item blk-t3">NestJS 모듈 구조 복습</div>
       <div class="cell cell--item blk-t3">Prisma 마이그레이션 연습</div>
       <div class="cell cell--item blk-t3">Better Auth 동작 이해</div>
@@ -228,7 +241,7 @@
       <div class="cell cell--item blk-t4">블로그 데이터 MCP로 노출</div>
 
       <!-- Row 2 -->
-      <div class="cell cell--item blk-t2">Prisma Post 모델 설계</div>
+      <div class="cell cell--item cell--done blk-t2"><span class="done-badge">(완료)</span>Prisma Post 모델 설계</div>
       <div class="cell cell--theme blk-t2">UI·BE 개발</div>
       <div class="cell cell--item blk-t2">Better Auth 로그인 재사용</div>
       <div class="cell cell--item blk-t3">기존 코드 컨벤션 파악</div>
@@ -239,7 +252,7 @@
       <div class="cell cell--item blk-t4">LLM 함수 호출(tool use) 실습</div>
 
       <!-- Row 3 -->
-      <div class="cell cell--item blk-t2">글 CRUD API 만들기</div>
+      <div class="cell cell--item cell--done blk-t2"><span class="done-badge">(완료)</span>글 CRUD API 만들기</div>
       <div class="cell cell--item blk-t2">LLM 챗 UI 에디터 옆에 붙이기</div>
       <div class="cell cell--item blk-t2">여러 계정으로 실제 테스트</div>
       <div class="cell cell--item blk-t3">인증 토큰·세션 흐름 이해</div>

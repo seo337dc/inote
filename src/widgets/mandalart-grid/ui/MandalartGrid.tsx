@@ -6,9 +6,15 @@ type Cell = {
   text?: string;
   variant: CellVariant;
   blk?: string;
+  done?: boolean;
 };
 
-const item = (text: string, blk: string): Cell => ({ text, variant: "item", blk });
+const item = (text: string, blk: string, done = false): Cell => ({
+  text,
+  variant: "item",
+  blk,
+  done,
+});
 const theme = (text: string, blk: string): Cell => ({ text, variant: "theme", blk });
 const emptyTheme = (text: string, blk: string): Cell => ({
   text,
@@ -23,7 +29,7 @@ const CELLS: Cell[] = [
   // Row 1
   item("노션 스타일 에디터 만들기", "t2"),
   item("글 목록·상세·카테고리 필터", "t2"),
-  item("inote-server에 blog 모듈 추가", "t2"),
+  item("inote-server에 blog 모듈 추가", "t2", true),
   item("NestJS 모듈 구조 복습", "t3"),
   item("Prisma 마이그레이션 연습", "t3"),
   item("Better Auth 동작 이해", "t3"),
@@ -31,7 +37,7 @@ const CELLS: Cell[] = [
   item("MCP 개념 익히기", "t4"),
   item("블로그 데이터 MCP로 노출", "t4"),
   // Row 2
-  item("Prisma Post 모델 설계", "t2"),
+  item("Prisma Post 모델 설계", "t2", true),
   theme("UI·BE 개발", "t2"),
   item("Better Auth 로그인 재사용", "t2"),
   item("기존 코드 컨벤션 파악", "t3"),
@@ -41,7 +47,7 @@ const CELLS: Cell[] = [
   theme("LLM+MCP", "t4"),
   item("LLM 함수 호출(tool use) 실습", "t4"),
   // Row 3
-  item("글 CRUD API 만들기", "t2"),
+  item("글 CRUD API 만들기", "t2", true),
   item("LLM 챗 UI 에디터 옆에 붙이기", "t2"),
   item("여러 계정으로 실제 테스트", "t2"),
   item("인증 토큰·세션 흐름 이해", "t3"),
@@ -115,6 +121,7 @@ const CELLS: Cell[] = [
 function cellClassName(cell: Cell) {
   const classes = ["mandalart-cell", `mandalart-cell--${cell.variant}`];
   if (cell.blk) classes.push(`blk-${cell.blk}`);
+  if (cell.done) classes.push("mandalart-cell--done");
   return classes.join(" ");
 }
 
@@ -140,6 +147,7 @@ export default function MandalartGrid() {
           <div className="mandalart-grid">
             {CELLS.map((cell, i) => (
               <div key={i} className={cellClassName(cell)}>
+                {cell.done && <span className="mandalart-done-badge">(완료)</span>}
                 {cell.text}
               </div>
             ))}

@@ -117,6 +117,19 @@
   background: var(--surface);
 }
 
+.mandalart-cell--done {
+  flex-direction: column;
+  gap: 0.2rem;
+  background: #1D4ED8 !important;
+  color: #fff !important;
+}
+
+.mandalart-done-badge {
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .mandalart-cell--theme {
   color: var(--theme-ink);
   background: var(--theme-bg);
