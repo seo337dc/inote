@@ -58,7 +58,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
             type="button"
             onClick={() => select(index)}
             onMouseEnter={() => setSelected(index)}
-            className={`flex w-full flex-col rounded px-3 py-2 text-left text-sm ${
+            className={`flex w-full flex-col rounded px-3 py-2 text-left text-sm hover:bg-zinc-100 ${
               index === selected ? "bg-zinc-100" : ""
             }`}
           >

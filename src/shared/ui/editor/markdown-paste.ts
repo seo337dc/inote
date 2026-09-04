@@ -2,9 +2,12 @@ import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 import { marked } from "marked";
 
-// 순수 텍스트(text/plain)로만 붙여넣기 될 때(예: AI 챗 답변을 md 원문 그대로 복사)
-// 마크다운 문법을 실제 블록으로 변환한다. text/html이 이미 있으면(렌더링된 곳에서 복사)
-// Tiptap 기본 붙여넣기 처리가 이미 잘 동작하므로 건드리지 않는다.
+// text/html에 진짜 의미있는 블록 구조(제목/목록/표/코드블록 태그)가 없으면
+// (예: 코드 뷰어가 줄마다 <div style="color:...">로 문법 강조만 흉내 낸 경우 — <pre>/<code> 없음)
+// 그 html은 신뢰하지 않고, text/plain을 marked로 직접 마크다운 변환한다.
+// 이미 잘 만들어진 마크업(진짜 마크다운 렌더러에서 복사한 경우)은 그대로 Tiptap 기본 처리에 맡긴다.
+const STRUCTURAL_HTML_TAG = /<(h[1-6]|ul|ol|li|table|pre|code|blockquote)[\s>]/i;
+
 export const MarkdownPaste = Extension.create({
   name: "markdownPaste",
 
@@ -17,13 +20,15 @@ export const MarkdownPaste = Extension.create({
           handlePaste(_view, event) {
             const clipboardData = event.clipboardData;
             if (!clipboardData) return false;
-            if (clipboardData.getData("text/html")) return false;
+
+            const html = clipboardData.getData("text/html");
+            if (html && STRUCTURAL_HTML_TAG.test(html)) return false;
 
             const text = clipboardData.getData("text/plain");
             if (!text) return false;
 
-            const html = marked.parse(text, { async: false, breaks: true });
-            editor.chain().focus().insertContent(html).run();
+            const parsedHtml = marked.parse(text, { async: false, breaks: true });
+            editor.chain().focus().insertContent(parsedHtml).run();
             return true;
           },
         },

@@ -68,6 +68,17 @@ const COMMAND_ITEMS: SlashCommandItem[] = [
     command: ({ editor, range }) =>
       editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
   },
+  {
+    title: "표",
+    description: "3x3 표 삽입",
+    command: ({ editor, range }) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run(),
+  },
 ];
 
 function filterItems(query: string): SlashCommandItem[] {

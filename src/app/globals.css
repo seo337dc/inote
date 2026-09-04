@@ -137,3 +137,57 @@
   height: 0;
   pointer-events: none;
 }
+
+/* 코드블록도 표와 마찬가지로 기본 스타일이 없어서 직접 넣어야 함 — 노션 스타일 회색 박스 */
+.tiptap pre,
+.prose pre {
+  background-color: var(--color-zinc-100, #f4f4f5);
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.tiptap pre code,
+.prose pre code {
+  background: none;
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  padding: 0;
+}
+
+/* @tailwindcss/typography 미설치라 표 스타일도 직접 넣어야 함 (Tiptap 테이블은 기본 스타일 없음)
+   .tiptap(에디터 안)과 .prose(글 상세 페이지 렌더링) 둘 다에 적용 */
+.tiptap table,
+.prose table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.tiptap table td,
+.tiptap table th,
+.prose table td,
+.prose table th {
+  border: 1px solid var(--color-zinc-200, #e4e4e7);
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+  position: relative;
+}
+
+.tiptap table th,
+.prose table th {
+  background-color: var(--color-zinc-50, #fafafa);
+  font-weight: 600;
+  text-align: left;
+}
+
+.tiptap table .selectedCell::after {
+  background: rgba(24, 24, 27, 0.06);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}

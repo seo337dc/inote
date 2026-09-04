@@ -3,6 +3,10 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableCell } from "@tiptap/extension-table-cell";
 import { useEffect } from "react";
 import { SlashCommand } from "./slash-command";
 import { MarkdownPaste } from "./markdown-paste";
@@ -26,7 +30,7 @@ function ToolbarButton({
       type="button"
       onClick={onClick}
       className={`rounded px-2 py-1 text-sm ${
-        active ? "bg-zinc-200 font-medium" : "hover:bg-zinc-100"
+        active ? "bg-zinc-200 font-medium hover:bg-zinc-300" : "hover:bg-zinc-100"
       }`}
     >
       {children}
@@ -40,6 +44,10 @@ export default function PostEditor({ content = "", onChange }: Props) {
       StarterKit,
       SlashCommand,
       MarkdownPaste,
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Placeholder.configure({
         placeholder: "내용을 입력하거나 '/'를 입력해 블록을 삽입하세요...",
       }),
