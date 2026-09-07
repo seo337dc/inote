@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/shared/ui/loading-spinner";
+import { PageLoading } from "@/shared/ui/page-loading";
 
 export default function Loading() {
-  return <LoadingSpinner />;
+  return <PageLoading />;
 }
