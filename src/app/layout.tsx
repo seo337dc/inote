@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { Nav } from "@/widgets/nav";
+import { ChatDock } from "@/widgets/chat-dock";
 import { ReactQueryProvider } from "@/shared/lib/query-client";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Nav />
           </Suspense>
           <main className="flex-1">{children}</main>
+          <ChatDock />
         </ReactQueryProvider>
       </body>
     </html>
