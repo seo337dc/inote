@@ -4,8 +4,13 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import ChatPanel from "./ChatPanel";
+import type { useChatMessages } from "../model/useChatMessages";
 
-export default function ChatDock() {
+type Props = {
+  chat: ReturnType<typeof useChatMessages>;
+};
+
+export default function ChatDock({ chat }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -17,14 +22,14 @@ export default function ChatDock() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="AI 어시스턴트 열기"
-        className={`fixed bottom-4 right-4 z-20 flex size-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-opacity hover:bg-zinc-800 ${
+        className={`fixed bottom-4 right-4 z-20 flex size-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg transition-opacity hover:bg-zinc-800 lg:hidden ${
           open ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
       >
         <MessageCircle className="size-5" />
       </button>
 
-      <ChatPanel open={open} onClose={() => setOpen(false)} />
+      <ChatPanel open={open} onClose={() => setOpen(false)} chat={chat} />
     </>
   );
 }

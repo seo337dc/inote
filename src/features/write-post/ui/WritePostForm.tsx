@@ -66,7 +66,7 @@ export default function WritePostForm({ post }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-24">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -91,8 +91,10 @@ export default function WritePostForm({ post }: Props) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       {/* 에디터가 길어져도 저장/삭제 버튼이 항상 화면 하단에 보이도록 고정.
-          모바일에선 버튼이 위, 안내 문구가 아래로 (좁은 폭에서 겹치는 것 방지) */}
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-zinc-200 bg-white">
+          모바일에선 버튼이 위, 안내 문구가 아래로 (좁은 폭에서 겹치는 것 방지).
+          sticky를 씀 — main이 스크롤 컨테이너라 데스크톱 AI 패널 폭만큼 자동으로 좁아짐
+          (fixed였다면 뷰포트 전체 폭이라 옆 패널을 덮어버림) */}
+      <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
         <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center justify-end gap-2 sm:order-2">
             {isEditing && (

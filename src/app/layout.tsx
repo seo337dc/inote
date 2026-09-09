@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { Nav } from "@/widgets/nav";
-import { ChatDock } from "@/widgets/chat-dock";
+import { ChatWorkspace } from "@/widgets/chat-dock";
 import { ReactQueryProvider } from "@/shared/lib/query-client";
 import "./globals.css";
 
@@ -27,13 +27,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-zinc-900">
+      <body className="flex h-full flex-col bg-white text-zinc-900">
         <ReactQueryProvider>
           <Suspense>
             <Nav />
           </Suspense>
-          <main className="flex-1">{children}</main>
-          <ChatDock />
+          <ChatWorkspace>{children}</ChatWorkspace>
         </ReactQueryProvider>
       </body>
     </html>

@@ -1,1 +1,1 @@
-export { default as ChatDock } from "./ui/ChatDock";
+export { default as ChatWorkspace } from "./ui/ChatWorkspace";
