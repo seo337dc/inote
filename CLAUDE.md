@@ -1,26 +1,48 @@
-# CLAUDE.md — inote-blog
+# CLAUDE.md — inote
 
 새 세션(다른 PC, 다른 AI 포함)에서 이 프로젝트를 이어받을 때 먼저 읽는 파일. 자세한 배경은
 `PLANNING.md`(왜 만들고 뭘 성공으로 볼지), `STRATEGY.md`(무엇을 만들지)를 참고.
+
+> **2026-09-10: 레포명 `inote-blog` → `inote`로 변경 + 모노레포 구조로 전환.**
+> 최종 목표가 "블로그"가 아니라 **할일 리스트 + 독서 + 글쓰기를 아우르는 개인 기록 앱**이라
+> 이름을 바꿨고, 모바일(웹뷰) 앱 개발도 예정돼 있어 `inote-money`와 동일하게
+> `apps/web`(기존 Next.js 앱) / `apps/app`(RN 앱, 미착수)으로 분리함. 아래 문서 내용 중
+> "블로그" 표현은 이 전환 이전에 쓰인 것들이라 점진적으로 정리 예정 — 지금은 글쓰기 기능이
+> 처음 구현된 모듈이라는 의미로 남겨둠.
 
 ---
 
 ## 프로젝트 한 줄 요약
 
-노션처럼 쓰는 블로그 + 그 기록을 LLM이 분석·평가·검색해주는 iNote 시리즈의 블로그 서비스.
-devlog-llm(개인 실험용 선행 프로젝트)의 후속으로, 인증·DB는 기존 `inote-server`를 재사용하고
-LLM/AI 부분만 별도 Python 서비스로 새로 만든다.
+할일 리스트·독서·글쓰기(노션처럼 쓰는 기록)를 하나로 모으고, 그 기록을 LLM이 분석·평가·검색해주는
+iNote 시리즈의 개인 기록 앱. devlog-llm(개인 실험용 선행 프로젝트)의 후속으로, 인증·DB는 기존
+`inote-server`를 재사용하고 LLM/AI 부분만 별도 Python 서비스(`inote-ai`)로 새로 만든다.
 
-## 현재 상태 (2026-09-01 기준)
+## 현재 상태 (2026-09-10 기준)
 
-- **기획 단계**: 큰 틀·목표·아키텍처만 확정, 코드는 아직 없음
-- 다음 단계는 인프라 정리(Phase 0) — `STRATEGY.md` 참고
+- 글쓰기(블로그) 기능부터 먼저 구현 완료: 글 CRUD, 카테고리, LLM 챗 UI, 이메일/Google
+  로그인·회원가입·로그아웃까지 실서비스 배포됨
+- 할일 리스트·독서 기능은 아직 미착수
+- 모바일 앱(`apps/app`)은 계획만 있고 미착수
+
+## 레포 구조
+
+```
+inote/
+├── apps/
+│   ├── web/   ← Next.js 웹 서비스 (기존 inote-blog 코드 전체 이동)
+│   └── app/   ← React Native 앱 (예정, 미착수 — inote-money/apps/app과 동일 패턴)
+├── docs/
+├── CLAUDE.md  ← 이 파일 (전체 레포 공통 컨텍스트)
+├── PLANNING.md / STRATEGY.md / TODO.md
+```
 
 ## 아키텍처
 
 ```
-inote-blog             - Next.js (이 레포) — 블로그/노션 UI + LLM 챗 UI
-inote-server(blog모듈)  - NestJS (기존 레포 확장) — 글 CRUD, 인증(Better Auth 재사용)
+inote (apps/web)        - Next.js — 글쓰기/노션 UI + LLM 챗 UI (할일·독서는 추후 추가)
+inote (apps/app)        - React Native + WebView (예정, 미착수)
+inote-server(blog모듈)  - NestJS (별도 레포, 공통 백엔드) — 글 CRUD, 인증(Better Auth 재사용)
 inote-ai               - Python + FastAPI (https://github.com/seo337dc/inote-ai, 별도 DB) — LLM 채팅·임베딩·RAG
 ```
 
@@ -36,14 +58,15 @@ inote-ai               - Python + FastAPI (https://github.com/seo337dc/inote-ai,
 
 ## 코드 구조 (FSD)
 
-`src/`는 Feature-Sliced Design으로 구성 (`app → pages → widgets → features → entities → shared`,
+`apps/web/src/`는 Feature-Sliced Design으로 구성 (`app → pages → widgets → features → entities → shared`,
 상위가 하위만 import 가능, `eslint-plugin-boundaries`로 실제 강제됨). FSD의 `pages` 레이어는
-Next.js Pages Router와 이름이 겹쳐서 폴더명은 `src/views`를 씀. 설계 근거·레이어별 내용은
+Next.js Pages Router와 이름이 겹쳐서 폴더명은 `views`를 씀. 설계 근거·레이어별 내용은
 [`docs/FSD.md`](./docs/FSD.md) 참고.
 
 ## 로컬 개발
 
 ```bash
+cd apps/web
 pnpm install
 pnpm dev     # http://localhost:3011
 pnpm lint    # FSD 레이어 위반도 여기서 잡힘
@@ -109,6 +132,8 @@ devlog-llm과 동일한 방식 유지.
 
 ## 다음 할 일
 
+- [ ] `docs/`(FSD.md, UI_SCREENS.md, NEXTJS_ERROR_HANDLING.md 등) 안에 남아있는 `src/...` 경로
+      표기를 `apps/web/src/...`로 정리 (2026-09-10 모노레포 전환 후 남은 자잘한 정리, 급하지 않음)
 - [ ] **카테고리 기능 (회원가입 연계, 스펙만 확정 — 2026-09-07)**: 가입 시 원하는 카테고리를
       선택하도록 함. 기본 제공 4개(운동/공부/기록/여행) + 이후 유저가 자유롭게 카테고리 추가
       가능. **유저별 개인 카테고리**(다른 사람 카테고리와 독립, 공용 풀 아님)로 결정. **하위
