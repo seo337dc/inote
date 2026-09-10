@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { MessageCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import ChatPanel from "./ChatPanel";
 import type { useChatMessages } from "../model/useChatMessages";
 
@@ -26,7 +26,7 @@ export default function ChatDock({ chat }: Props) {
           open ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
       >
-        <MessageCircle className="size-5" />
+        <Sparkles className="size-5" />
       </button>
 
       <ChatPanel open={open} onClose={() => setOpen(false)} chat={chat} />

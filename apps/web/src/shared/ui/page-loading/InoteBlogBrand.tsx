@@ -1,4 +1,5 @@
 import { PenLine } from "lucide-react";
+import { InoteWordmark } from "../inote-wordmark";
 
 export default function InoteBlogBrand() {
   return (
@@ -19,9 +20,8 @@ export default function InoteBlogBrand() {
         </div>
       </div>
 
-      <h1 className="flex items-center gap-1 font-serif text-2xl font-extrabold italic tracking-tight text-zinc-900">
-        <span className="font-sans text-lg font-light not-italic text-zinc-400">i</span>
-        <span>Note Blog</span>
+      <h1>
+        <InoteWordmark className="text-2xl" />
       </h1>
     </div>
   );

@@ -14,6 +14,7 @@ import {
 } from "@/shared/ui/sheet";
 import { CategoryFilter } from "@/features/filter-posts-by-category";
 import { MOCK_POSTS } from "@/entities/post";
+import { InoteWordmark } from "@/shared/ui/inote-wordmark";
 import { NAV_LINKS } from "../model/links";
 import AuthNavAction from "./AuthNavAction";
 
@@ -25,8 +26,8 @@ export default function NavMobile() {
 
   return (
     <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-      <Link href="/" className="text-lg font-bold hover:text-zinc-700">
-        inote-blog
+      <Link href="/" className="hover:opacity-80">
+        <InoteWordmark />
       </Link>
 
       <Sheet open={open} onOpenChange={setOpen}>
