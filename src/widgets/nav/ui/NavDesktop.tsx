@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS } from "../model/links";
+import AuthNavAction from "./AuthNavAction";
 
 export default function NavDesktop() {
   const pathname = usePathname();
@@ -31,12 +32,7 @@ export default function NavDesktop() {
               </Link>
             );
           })}
-          <Link
-            href="/login"
-            className="ml-2 rounded border border-zinc-300 px-3 py-1.5 text-zinc-700 hover:bg-zinc-50"
-          >
-            로그인
-          </Link>
+          <AuthNavAction className="ml-2 rounded border border-zinc-300 px-3 py-1.5 text-zinc-700 hover:bg-zinc-50" />
         </nav>
       </div>
     </header>

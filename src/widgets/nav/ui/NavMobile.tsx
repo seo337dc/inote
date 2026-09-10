@@ -15,6 +15,7 @@ import {
 import { CategoryFilter } from "@/features/filter-posts-by-category";
 import { MOCK_POSTS } from "@/entities/post";
 import { NAV_LINKS } from "../model/links";
+import AuthNavAction from "./AuthNavAction";
 
 export default function NavMobile() {
   const pathname = usePathname();
@@ -59,13 +60,10 @@ export default function NavMobile() {
                 </Link>
               );
             })}
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded border border-zinc-300 px-3 py-2 text-zinc-700 hover:bg-zinc-50"
-            >
-              로그인
-            </Link>
+            <AuthNavAction
+              onNavigate={() => setOpen(false)}
+              className="mt-2 rounded border border-zinc-300 px-3 py-2 text-left text-zinc-700 hover:bg-zinc-50"
+            />
           </nav>
 
           {pathname === "/" && (
