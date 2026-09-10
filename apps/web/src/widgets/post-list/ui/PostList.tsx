@@ -12,9 +12,16 @@ export default function PostList({ posts, emptyMessage = "글이 없습니다." 
       {posts.map((post) => (
         <li key={post.id} className="py-5">
           <Link href={`/posts/${post.id}`} className="group block">
-            <div className="mb-1 flex items-center gap-2 text-xs text-zinc-400">
-              <span className="rounded bg-zinc-100 px-2 py-0.5">{post.category}</span>
-              <span>{new Date(post.createdAt).toLocaleDateString("ko-KR")}</span>
+            <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-400">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">{post.category}</span>
+                <span className="truncate">
+                  {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"}
+                </span>
+              </div>
+              <span className="shrink-0">
+                {new Date(post.createdAt).toLocaleDateString("ko-KR")}
+              </span>
             </div>
             <h2 className="text-lg font-semibold group-hover:underline">{post.title}</h2>
             {post.excerpt && <p className="mt-1 text-sm text-zinc-500">{post.excerpt}</p>}

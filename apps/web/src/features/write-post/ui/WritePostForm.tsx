@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { CATEGORIES } from "@/entities/category";
 import { PostEditor } from "@/shared/ui/editor";
 import { api } from "@/shared/lib/api";
+import { useSession } from "@/shared/lib/auth-client";
 import type { Post } from "@/entities/post";
 
 const EMPTY_CONTENT = ["", "<p></p>"];
@@ -22,7 +23,20 @@ type PostBody = {
 
 export default function WritePostForm({ post }: Props) {
   const router = useRouter();
+  const { data: session, isPending: isSessionPending } = useSession();
   const isEditing = Boolean(post);
+  const isOwnPost = !post || session?.user.id === post.userId;
+
+  useEffect(() => {
+    if (isSessionPending) return;
+    if (!session) {
+      router.replace("/login");
+      return;
+    }
+    if (!isOwnPost) {
+      router.replace(`/posts/${post!.id}`);
+    }
+  }, [isSessionPending, session, isOwnPost, post, router]);
   const [title, setTitle] = useState(post?.title ?? "");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>(
     post?.category ?? CATEGORIES[0],
@@ -63,6 +77,10 @@ export default function WritePostForm({ post }: Props) {
     if (!window.confirm("정말 삭제하시겠어요? 되돌릴 수 없습니다.")) return;
     setError(null);
     deleteMutation.mutate();
+  }
+
+  if (isSessionPending || !session || !isOwnPost) {
+    return null;
   }
 
   return (
