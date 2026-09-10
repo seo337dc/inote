@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
+import { Toaster } from "sonner";
 import { Nav } from "@/widgets/nav";
 import { ChatWorkspace } from "@/widgets/chat-dock";
 import { ReactQueryProvider } from "@/shared/lib/query-client";
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Nav />
           </Suspense>
           <ChatWorkspace>{children}</ChatWorkspace>
+          <Toaster position="top-center" richColors />
         </ReactQueryProvider>
       </body>
     </html>
