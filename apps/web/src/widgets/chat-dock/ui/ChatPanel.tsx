@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import ChatMessages from "./ChatMessages";
+import ChatBody from "./ChatBody";
 import ChatComposer from "./ChatComposer";
 import type { useChatMessages } from "../model/useChatMessages";
 
@@ -40,7 +40,7 @@ export default function ChatPanel({ open, onClose, chat }: Props) {
           </button>
         </div>
 
-        <ChatMessages messages={chat.messages} />
+        <ChatBody chat={chat} />
         <ChatComposer input={chat.input} onInputChange={chat.setInput} onSubmit={chat.handleSend} />
       </div>
     </div>

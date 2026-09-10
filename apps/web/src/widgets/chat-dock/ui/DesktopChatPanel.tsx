@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { PanelRightOpen } from "lucide-react";
-import ChatMessages from "./ChatMessages";
+import ChatBody from "./ChatBody";
 import ChatComposer from "./ChatComposer";
 import type { useChatMessages } from "../model/useChatMessages";
 
@@ -114,7 +114,7 @@ export default function DesktopChatPanel({ chat }: Props) {
           </button>
         </div>
 
-        <ChatMessages messages={chat.messages} />
+        <ChatBody chat={chat} />
         <ChatComposer input={chat.input} onInputChange={chat.setInput} onSubmit={chat.handleSend} />
       </div>
     </div>
