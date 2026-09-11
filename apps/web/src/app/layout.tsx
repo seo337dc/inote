@@ -28,12 +28,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex h-full flex-col bg-white text-zinc-900">
+      <body className="flex h-full bg-white text-zinc-900">
         <ReactQueryProvider>
-          <Suspense>
-            <Nav />
-          </Suspense>
-          <ChatWorkspace>{children}</ChatWorkspace>
+          <ChatWorkspace
+            nav={
+              <Suspense>
+                <Nav />
+              </Suspense>
+            }
+          >
+            {children}
+          </ChatWorkspace>
           <Toaster position="top-center" richColors />
         </ReactQueryProvider>
       </body>

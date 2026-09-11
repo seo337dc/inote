@@ -102,7 +102,7 @@ export default function DesktopChatPanel({ chat }: Props) {
       </div>
 
       <div className="flex w-full flex-col border-l border-zinc-200 bg-white">
-        <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+        <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4">
           <p className="text-sm font-semibold">AI 어시스턴트</p>
           <button
             type="button"

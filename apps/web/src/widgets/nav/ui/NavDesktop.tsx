@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { InoteWordmark } from "@/shared/ui/inote-wordmark";
 import { NAV_LINKS } from "../model/links";
 import AuthNavAction from "./AuthNavAction";
+import DraftNotificationBell from "./DraftNotificationBell";
 
 export default function NavDesktop() {
   const pathname = usePathname();
 
   return (
     <header className="border-b border-zinc-200">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         <Link href="/" className="hover:opacity-80">
           <InoteWordmark />
         </Link>
@@ -33,6 +34,7 @@ export default function NavDesktop() {
               </Link>
             );
           })}
+          <DraftNotificationBell />
           <AuthNavAction className="ml-2 rounded border border-zinc-300 px-3 py-1.5 text-zinc-700 hover:bg-zinc-50" />
         </nav>
       </div>
