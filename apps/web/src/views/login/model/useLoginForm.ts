@@ -15,6 +15,8 @@ export type Mode = "idle" | "login" | "signup";
 
 type FocusSignal = { field: AuthFormField; token: number };
 
+export const DEMO_ACCOUNT = { email: "test@test.com", password: "test123!@" };
+
 export function useLoginForm() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
@@ -55,6 +57,12 @@ export function useLoginForm() {
 
   function handleGoogle() {
     authClient.signIn.social({ provider: "google", callbackURL: "/" });
+  }
+
+  function fillDemoAccount() {
+    setMode("login");
+    setEmail(DEMO_ACCOUNT.email);
+    setPassword(DEMO_ACCOUNT.password);
   }
 
   function validate(): { field: AuthFormField; message: string } | null {
@@ -126,6 +134,7 @@ export function useLoginForm() {
     handleSubmit,
     goToIdle,
     toggleMode,
+    fillDemoAccount,
   };
 }
 

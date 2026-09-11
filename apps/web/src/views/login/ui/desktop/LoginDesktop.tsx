@@ -1,7 +1,7 @@
 import { Mail } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { InoteWordmark } from "@/shared/ui/inote-wordmark";
-import type { LoginFormState } from "../../model/useLoginForm";
+import { DEMO_ACCOUNT, type LoginFormState } from "../../model/useLoginForm";
 import { useFieldRefs } from "../../model/useFieldRefs";
 import GoogleIcon from "../GoogleIcon";
 
@@ -28,6 +28,7 @@ export default function LoginDesktop({ form }: Props) {
     handleSubmit,
     goToIdle,
     toggleMode,
+    fillDemoAccount,
   } = form;
   const { nameRef, emailRef, passwordRef, passwordConfirmRef } = useFieldRefs(focusSignal);
 
@@ -167,6 +168,20 @@ export default function LoginDesktop({ form }: Props) {
             </div>
           </form>
         )}
+      </div>
+
+      <div className="mt-4 rounded-xl border border-dashed border-zinc-200 p-4 text-center text-xs text-zinc-500">
+        <p className="mb-1.5">둘러보고 싶으신가요? 테스트 계정으로 로그인해보세요.</p>
+        <p className="mb-2 font-mono text-zinc-700">
+          {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}
+        </p>
+        <button
+          type="button"
+          onClick={fillDemoAccount}
+          className="font-medium text-primary hover:underline"
+        >
+          테스트 계정 자동 입력
+        </button>
       </div>
     </div>
   );
