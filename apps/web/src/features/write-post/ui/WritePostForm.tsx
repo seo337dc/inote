@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CATEGORIES } from "@/entities/category";
@@ -180,17 +181,22 @@ export default function WritePostForm({ id }: Props) {
         className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
       />
 
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value as (typeof CATEGORIES)[number])}
-        className="w-32 rounded border border-zinc-300 px-2 py-1 text-sm"
-      >
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
+      <div className="flex items-center gap-3">
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as (typeof CATEGORIES)[number])}
+          className="w-32 rounded border border-zinc-300 px-2 py-1 text-sm"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <Link href="/categories" className="text-sm text-zinc-500 hover:text-zinc-700">
+          카테고리 관리
+        </Link>
+      </div>
 
       <PostEditor content={content} onChange={setContent} />
 

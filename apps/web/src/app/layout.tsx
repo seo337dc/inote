@@ -30,15 +30,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex h-full bg-white text-zinc-900">
         <ReactQueryProvider>
-          <ChatWorkspace
-            nav={
-              <Suspense>
-                <Nav />
-              </Suspense>
-            }
-          >
-            {children}
-          </ChatWorkspace>
+          <Suspense>
+            <ChatWorkspace
+              nav={
+                <Suspense>
+                  <Nav />
+                </Suspense>
+              }
+            >
+              {children}
+            </ChatWorkspace>
+          </Suspense>
           <Toaster position="top-center" richColors />
         </ReactQueryProvider>
       </body>
