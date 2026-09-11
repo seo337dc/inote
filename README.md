@@ -20,7 +20,12 @@ inote/
 
 ## 현재 구현된 것
 
-- 글쓰기(노션처럼 쓰는 에디터) + 카테고리, LLM 챗 UI
+- 글쓰기(노션처럼 쓰는 에디터) + 카테고리, draft(임시저장)/발행 구분, 자동저장
+- 저장(발행) 시 AI가 자동으로 요약해서 글 상세 페이지에 노출
+- LLM 챗 어시스턴트 — 지금 쓰고 있는 글을 인지하는 "글쓰기 세션"과 자유 대화용 "일반 세션"을
+  구분해서 저장, 세션 목록/검색, 채팅 위에 슬라이드로 겹쳐지는 오버레이 패널(데스크탑 80%+딤,
+  모바일 전체)
+- 카테고리 관리 페이지(`/categories`) — 나의 글 페이지 사이드바에서 진입
 - 이메일/Google 로그인·회원가입·로그아웃 (Better Auth)
 
 ## 로컬 실행
@@ -29,6 +34,14 @@ inote/
 cd apps/web
 pnpm install
 pnpm dev   # http://localhost:3011
+```
+
+LLM 챗을 쓰려면 `inote-server`(BE, `:3200`)와 `inote-ai`(AI, `:8000`)도 같이 띄워야 하고,
+`apps/web/.env.local`에 아래 값이 필요하다:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3200/api/v1
+NEXT_PUBLIC_AI_API_URL=http://localhost:8000
 ```
 
 ## 기술 스택
@@ -45,6 +58,7 @@ pnpm dev   # http://localhost:3011
 ## 문서
 
 - [`CLAUDE.md`](./CLAUDE.md) — 세션 간 맥락 유지 규칙, 현재 상태, 다음 할 일
+- [`DEV_LOG.md`](./DEV_LOG.md) — 세션별 작업 기록
 - [`PLANNING.md`](./PLANNING.md) — 왜 만드는지, 성공 기준
 - [`STRATEGY.md`](./STRATEGY.md) — 전체 구조·단계별 전략
 - [`docs/mandalart.html`](./docs/mandalart.html) — 핵심 목표 + 8대 축 (브라우저로 열기)
