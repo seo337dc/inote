@@ -17,6 +17,7 @@ import { MOCK_POSTS } from "@/entities/post";
 import { InoteWordmark } from "@/shared/ui/inote-wordmark";
 import { NAV_LINKS } from "../model/links";
 import AuthNavAction from "./AuthNavAction";
+import DraftNotificationBell from "./DraftNotificationBell";
 
 export default function NavMobile() {
   const pathname = usePathname();
@@ -30,12 +31,15 @@ export default function NavMobile() {
         <InoteWordmark />
       </Link>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger
-          render={<Button variant="outline" size="icon" aria-label="메뉴 열기" />}
-        >
-          <Menu className="size-5" />
-        </SheetTrigger>
+      <div className="flex items-center gap-2">
+        <DraftNotificationBell />
+
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger
+            render={<Button variant="outline" size="icon" aria-label="메뉴 열기" />}
+          >
+            <Menu className="size-5" />
+          </SheetTrigger>
 
         <SheetContent side="right" className="flex w-3/4 flex-col overflow-y-auto">
           <SheetHeader>
@@ -62,6 +66,7 @@ export default function NavMobile() {
               );
             })}
             <AuthNavAction
+              variant="inline"
               onNavigate={() => setOpen(false)}
               className="mt-2 rounded border border-zinc-300 px-3 py-2 text-left text-zinc-700 hover:bg-zinc-50"
             />
@@ -78,7 +83,8 @@ export default function NavMobile() {
             </div>
           )}
         </SheetContent>
-      </Sheet>
+        </Sheet>
+      </div>
     </header>
   );
 }
