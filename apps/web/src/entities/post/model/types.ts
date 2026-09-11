@@ -10,4 +10,6 @@ export type Post = {
   user: { name: string; email: string } | null;
   createdAt: string;
   updatedAt: string;
+  publishedAt: string | null;
+  aiSummary: { summary: string[] } | null;
 };

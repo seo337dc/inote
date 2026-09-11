@@ -1,7 +1,7 @@
 import type { Post } from "./types";
 
 // NavMobile/CategoryManager의 카테고리 개수 표시용으로만 남아있는 목업 (Category CRUD API 붙을 때 정리 예정)
-const MOCK_POSTS_BASE: Omit<Post, "userId" | "user">[] = [
+const MOCK_POSTS_BASE: Omit<Post, "userId" | "user" | "aiSummary">[] = [
   {
     id: "1",
     title: "RAG 파이프라인 설계할 때 헷갈렸던 것들",
@@ -10,6 +10,7 @@ const MOCK_POSTS_BASE: Omit<Post, "userId" | "user">[] = [
     category: "학습",
     createdAt: "2026-09-01T00:00:00.000Z",
     updatedAt: "2026-09-01T00:00:00.000Z",
+    publishedAt: "2026-09-01T00:00:00.000Z",
   },
   {
     id: "2",
@@ -19,6 +20,7 @@ const MOCK_POSTS_BASE: Omit<Post, "userId" | "user">[] = [
     category: "이직",
     createdAt: "2026-08-30T00:00:00.000Z",
     updatedAt: "2026-08-30T00:00:00.000Z",
+    publishedAt: "2026-08-30T00:00:00.000Z",
   },
   {
     id: "3",
@@ -28,6 +30,7 @@ const MOCK_POSTS_BASE: Omit<Post, "userId" | "user">[] = [
     category: "블로그",
     createdAt: "2026-08-29T00:00:00.000Z",
     updatedAt: "2026-08-29T00:00:00.000Z",
+    publishedAt: "2026-08-29T00:00:00.000Z",
   },
   {
     id: "4",
@@ -37,6 +40,7 @@ const MOCK_POSTS_BASE: Omit<Post, "userId" | "user">[] = [
     category: "일기",
     createdAt: "2026-08-28T00:00:00.000Z",
     updatedAt: "2026-08-28T00:00:00.000Z",
+    publishedAt: "2026-08-28T00:00:00.000Z",
   },
   {
     id: "5",
@@ -46,6 +50,7 @@ const MOCK_POSTS_BASE: Omit<Post, "userId" | "user">[] = [
     category: "기록",
     createdAt: "2026-08-27T00:00:00.000Z",
     updatedAt: "2026-08-27T00:00:00.000Z",
+    publishedAt: "2026-08-27T00:00:00.000Z",
   },
 ];
 
@@ -53,4 +58,5 @@ export const MOCK_POSTS: Post[] = MOCK_POSTS_BASE.map((post) => ({
   ...post,
   userId: null,
   user: null,
+  aiSummary: null,
 }));

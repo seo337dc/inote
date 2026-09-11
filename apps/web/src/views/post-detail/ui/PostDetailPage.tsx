@@ -30,7 +30,7 @@ export default async function PostDetailPage({ id }: Props) {
         {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"} ·{" "}
         {new Date(post.createdAt).toLocaleDateString("ko-KR")}
       </p>
-      <PostAiSummary />
+      {post.aiSummary && <PostAiSummary summary={post.aiSummary.summary} />}
       {/* 본인만 쓰는 개인 블로그라 별도 sanitize 없이 그대로 렌더 (docs/FSD.md 신뢰 경계와 동일 맥락) */}
       <div
         className="prose prose-zinc min-h-[90vh] max-w-none rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm"
