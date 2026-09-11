@@ -1,5 +1,6 @@
 import { Mail } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { InoteWordmark } from "@/shared/ui/inote-wordmark";
 import type { LoginFormState } from "../../model/useLoginForm";
 import { useFieldRefs } from "../../model/useFieldRefs";
 import GoogleIcon from "../GoogleIcon";
@@ -34,7 +35,9 @@ export default function LoginDesktop({ form }: Props) {
     <div className="mx-auto flex min-h-[80vh] max-w-xl flex-col justify-center px-6 py-16">
       <div className="rounded-2xl border border-zinc-200 bg-white p-12 shadow-sm">
         <div className="mb-8 text-center">
-          <p className="mb-1 text-2xl font-bold tracking-tight">inote-blog</p>
+          <p className="mb-1 flex justify-center">
+            <InoteWordmark className="text-2xl" />
+          </p>
           <p className="text-sm text-zinc-500">
             노션처럼 쓰고, LLM과 함께 정리하는 나만의 기록 공간
           </p>

@@ -2,6 +2,7 @@
 
 import { Mail } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { InoteWordmark } from "@/shared/ui/inote-wordmark";
 import type { LoginFormState } from "../../model/useLoginForm";
 import { useFieldRefs } from "../../model/useFieldRefs";
 import GoogleIcon from "../GoogleIcon";
@@ -38,7 +39,9 @@ export default function LoginMobile({ form }: Props) {
         {mode === "idle" ? (
           <>
             <div className="mb-10 text-center">
-              <p className="mb-1 text-2xl font-bold tracking-tight">inote-blog</p>
+              <p className="mb-1 flex justify-center">
+                <InoteWordmark className="text-2xl" />
+              </p>
               <p className="text-sm text-zinc-500">
                 노션처럼 쓰고, LLM과 함께 정리하는
                 <br />
