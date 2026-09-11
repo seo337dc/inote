@@ -142,6 +142,13 @@
   pointer-events: none;
 }
 
+/* @tailwindcss/typography 미설치라 긴 토큰(영단어/URL 등) 줄바꿈 규칙도 기본 제공되지 않음 —
+   모바일에서 본문 폭 밖으로 밀려나가는 걸 막기 위해 직접 추가 */
+.tiptap,
+.prose {
+  overflow-wrap: break-word;
+}
+
 /* 코드블록도 표와 마찬가지로 기본 스타일이 없어서 직접 넣어야 함 — 노션 스타일 회색 박스 */
 .tiptap pre,
 .prose pre {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { PanelRightOpen } from "lucide-react";
 import ChatBody from "./ChatBody";
 import ChatComposer from "./ChatComposer";
+import ChatSessionPanel from "./ChatSessionPanel";
 import type { useChatMessages } from "../model/useChatMessages";
 
 const WIDTH_KEY = "inote-blog:llm-panel-width";
@@ -114,8 +115,27 @@ export default function DesktopChatPanel({ chat }: Props) {
           </button>
         </div>
 
-        <ChatBody chat={chat} />
-        <ChatComposer input={chat.input} onInputChange={chat.setInput} onSubmit={chat.handleSend} />
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col">
+            <ChatBody chat={chat} />
+            <ChatComposer chat={chat} />
+          </div>
+          <div
+            aria-hidden="true"
+            onClick={() => chat.isSessionPanelOpen && chat.toggleSessionPanel()}
+            className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${
+              chat.isSessionPanelOpen ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          />
+          <div
+            aria-hidden={!chat.isSessionPanelOpen}
+            className={`absolute inset-y-0 left-0 flex w-4/5 flex-col border-r border-zinc-200 bg-white shadow-lg transition-transform duration-300 ease-out ${
+              chat.isSessionPanelOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <ChatSessionPanel chat={chat} />
+          </div>
+        </div>
       </div>
     </div>
   );
