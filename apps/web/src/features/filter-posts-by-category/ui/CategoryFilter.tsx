@@ -8,6 +8,7 @@ type Props = {
   activeCategory: string | null;
   className?: string;
   onNavigate?: () => void;
+  basePath?: string;
 };
 
 export default function CategoryFilter({
@@ -15,16 +16,24 @@ export default function CategoryFilter({
   activeCategory,
   className,
   onNavigate,
+  basePath = "/",
 }: Props) {
   return (
     <aside className={cn("w-40 shrink-0", className)}>
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-400">
-        카테고리
-      </p>
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">카테고리</p>
+        <Link
+          href="/categories"
+          onClick={onNavigate}
+          className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+        >
+          관리
+        </Link>
+      </div>
       <ul className="space-y-1 text-sm">
         <li>
           <Link
-            href="/"
+            href={basePath}
             onClick={onNavigate}
             className={`block rounded px-2 py-1 ${
               !activeCategory
@@ -38,7 +47,7 @@ export default function CategoryFilter({
         {CATEGORIES.map((c) => (
           <li key={c}>
             <Link
-              href={`/?category=${encodeURIComponent(c)}`}
+              href={`${basePath}?category=${encodeURIComponent(c)}`}
               onClick={onNavigate}
               className={`block rounded px-2 py-1 ${
                 activeCategory === c

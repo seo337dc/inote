@@ -230,13 +230,13 @@ export default function WritePostForm({ id }: Props) {
               {saveMutation.isPending ? "저장 중..." : "저장"}
             </button>
           </div>
-          <p className="text-xs text-zinc-400 sm:order-1">
-            {autosaveMutation.isPending
-              ? "임시 저장 중..."
-              : autosavedAt
-                ? `임시 저장됨 · ${autosavedAt.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`
-                : "LLM 챗으로 초안 작성 기능은 Phase 2(inote-ai 연동)에서 추가 예정"}
-          </p>
+          {(autosaveMutation.isPending || autosavedAt) && (
+            <p className="text-xs text-zinc-400 sm:order-1">
+              {autosaveMutation.isPending
+                ? "임시 저장 중..."
+                : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}
+            </p>
+          )}
         </div>
       </div>
     </form>

@@ -72,13 +72,14 @@ export default function NavMobile() {
             />
           </nav>
 
-          {pathname === "/" && (
+          {(pathname === "/" || pathname === "/my-posts") && (
             <div className="mt-2 border-t border-zinc-200 px-4 pt-4">
               <CategoryFilter
                 posts={MOCK_POSTS}
                 activeCategory={activeCategory}
                 className="w-full"
                 onNavigate={() => setOpen(false)}
+                basePath={pathname}
               />
             </div>
           )}
