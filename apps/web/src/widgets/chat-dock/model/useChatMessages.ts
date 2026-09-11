@@ -239,5 +239,6 @@ export function useChatMessages() {
     toggleSessionPanel,
     sessionSearch,
     setSessionSearch,
+    isLoggedIn: !!userId,
   };
 }
