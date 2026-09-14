@@ -149,6 +149,14 @@
   overflow-wrap: break-word;
 }
 
+/* Tailwind preflight가 hr의 기본 margin을 0으로 리셋해버려서, 위아래 내용에 딱 붙어 보임 */
+.tiptap hr,
+.prose hr {
+  margin: 1.5rem 0;
+  border: none;
+  border-top: 1px solid var(--color-zinc-200, #e4e4e7);
+}
+
 /* 코드블록도 표와 마찬가지로 기본 스타일이 없어서 직접 넣어야 함 — 노션 스타일 회색 박스 */
 .tiptap pre,
 .prose pre {
