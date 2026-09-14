@@ -16,6 +16,8 @@ export function useChatMessages() {
   const searchParams = useSearchParams();
   // 글쓰기/수정 페이지에 있을 때만 그 글의 postId로 대화 세션을 강제 전환.
   const routePostId = pathname === "/write" ? searchParams.get("id") : null;
+  // 글 상세 페이지에서는, 그 글에 이미 나눈 대화가 있을 때만 그 세션으로 전환 (없으면 그대로 둠).
+  const detailPostId = pathname.match(/^\/posts\/([^/]+)$/)?.[1] ?? null;
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPostId, setSessionPostId] = useState<string | null>(null);
@@ -27,17 +29,31 @@ export function useChatMessages() {
 
   // 글쓰기 페이지 진입/이동 시 그 글의 세션으로 강제 전환. 글쓰기 페이지를 벗어나면
   // 다음에 (같은 글이든 다른 글이든) 다시 들어왔을 때 항상 재동기화되도록 리셋.
+  // 글 상세 페이지는 그 글에 이미 나눈 대화가 있을 때만(sessions 목록에서 찾아서) 전환한다 —
+  // 없으면 그냥 글만 읽으러 온 것일 수 있으니 활성 세션을 건드리지 않음.
   const lastRoutePostId = useRef<string | null>(null);
   useEffect(() => {
-    if (!routePostId) {
-      lastRoutePostId.current = null;
+    if (routePostId) {
+      if (lastRoutePostId.current === routePostId) return;
+      lastRoutePostId.current = routePostId;
+      setSessionId(routePostId);
+      setSessionPostId(routePostId);
       return;
     }
-    if (lastRoutePostId.current === routePostId) return;
-    lastRoutePostId.current = routePostId;
-    setSessionId(routePostId);
-    setSessionPostId(routePostId);
-  }, [routePostId]);
+
+    if (detailPostId) {
+      if (lastRoutePostId.current === detailPostId) return;
+      const existing = sessions.find((s) => s.post_id === detailPostId);
+      if (!existing) return;
+      lastRoutePostId.current = detailPostId;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 상세 페이지 진입에 대한 동기화
+      setSessionId(existing.id);
+      setSessionPostId(existing.post_id);
+      return;
+    }
+
+    lastRoutePostId.current = null;
+  }, [routePostId, detailPostId, sessions]);
 
   // 로그인 상태에서 아직 활성 세션이 없으면(글쓰기 페이지 강제 전환도 없을 때) 새 일반 세션으로 시작.
   const hasDefaultedSession = useRef(false);

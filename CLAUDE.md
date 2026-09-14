@@ -135,34 +135,10 @@ devlog-llm과 동일한 방식 유지.
 
 ## 다음 할 일
 
-- [ ] **(진행 중, 2026-09-11) 글 상세 페이지 진입 시 기존 대화 세션 자동 전환** — 로그인 상태로
-      `/posts/[id]` 글 상세 페이지에 들어갔을 때, 그 글에 이미 나눈 LLM 대화가 있으면 자동으로
-      그 세션으로 전환. **없으면 그대로 둠**(현재 활성 세션을 강제로 새로 만들지 않음 — 그냥
-      글 읽으러 들어갔을 뿐인데 채팅 중이던 세션이 날아가면 안 되니까).
-      지금 `/write?id=X`(글쓰기 페이지)는 이미 이 강제 전환이 있음 —
-      `apps/web/src/widgets/chat-dock/model/useChatMessages.ts`의 `routePostId` +
-      `lastRoutePostId` ref 로직. 이번 건 그 옆에 같은 패턴으로 `detailPostId`를 추가하되,
-      **조건부**(세션이 실제로 존재할 때만)라는 게 다름. 세션 존재 여부는 이미 로드해둔
-      `sessions` 배열에서 `sessions.find(s => s.post_id === detailPostId)`로 확인 가능
-      (글쓰기 세션 id === post_id라서 별도 API 호출 불필요). 구현 착수했다가 중간에 멈춰서
-      되돌려놓음(빌드 깨는 미완성 코드 커밋 안 하려고) — 아래가 세션에서 잡았던 계획:
-      ```ts
-      const detailPostId = pathname.match(/^\/posts\/([^/]+)$/)?.[1] ?? null;
-
-      // 기존 routePostId 처리 useEffect 안에, else 브랜치로 추가:
-      if (detailPostId) {
-        if (lastRoutePostId.current === detailPostId) return;
-        const existing = sessions.find((s) => s.post_id === detailPostId);
-        if (!existing) return;
-        lastRoutePostId.current = detailPostId;
-        setSessionId(existing.id);
-        setSessionPostId(existing.post_id);
-        return;
-      }
-      ```
-      주의할 점: `sessions`는 비동기로 로드되니 useEffect의 deps에 `sessions` 추가 필요 — 처음
-      마운트 시엔 빈 배열이라 못 찾고, 로드 끝나면 재실행돼서 그때 전환됨(짧은 순간 일반 세션이
-      먼저 뜨는 flash가 있을 수 있는데 사소해서 감수하기로 함).
+- [x] **글 상세 페이지 진입 시 기존 대화 세션 자동 전환** — 2026-09-14 완료.
+      `/posts/[id]`에 그 글에 묶인 세션이 있으면 자동 전환, 없으면 활성 세션 그대로 둠.
+      `useChatMessages.ts`의 `routePostId` 강제 전환 로직 옆에 `detailPostId`(조건부 전환)
+      추가. 브라우저로 두 케이스(세션 있음/없음) 다 확인.
 - [ ] `docs/`(FSD.md, UI_SCREENS.md, NEXTJS_ERROR_HANDLING.md 등) 안에 남아있는 `src/...` 경로
       표기를 `apps/web/src/...`로 정리 (2026-09-10 모노레포 전환 후 남은 자잘한 정리, 급하지 않음)
 - [ ] **카테고리 기능 (회원가입 연계, 스펙만 확정 — 2026-09-07)**: 가입 시 원하는 카테고리를
