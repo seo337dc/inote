@@ -1,4 +1,5 @@
-import { Search, SquarePen, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Search, SquarePen, X } from "lucide-react";
 import type { useChatMessages } from "../model/useChatMessages";
 import type { ChatSession } from "../model/types";
 
@@ -61,17 +62,26 @@ export default function ChatSessionPanel({ chat }: Props) {
           const { kicker, title } = sessionLabel(session);
           const active = session.id === chat.activeSessionId;
           return (
-            <li key={session.id}>
+            <li key={session.id} className="relative">
               <button
                 type="button"
                 onClick={() => chat.selectSession(session)}
                 className={`block w-full border-b border-zinc-100 px-3 py-2.5 text-left ${
-                  active ? "bg-zinc-100" : "hover:bg-zinc-50"
-                }`}
+                  session.post_id ? "pr-9" : ""
+                } ${active ? "bg-zinc-100" : "hover:bg-zinc-50"}`}
               >
                 <p className="truncate text-[11px] text-zinc-400">{kicker}</p>
                 <p className="truncate text-sm text-zinc-700">{title}</p>
               </button>
+              {session.post_id && (
+                <Link
+                  href={`/posts/${session.post_id}`}
+                  aria-label="그 글로 이동"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1.5 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
+                >
+                  <ArrowUpRight className="size-4" />
+                </Link>
+              )}
             </li>
           );
         })}

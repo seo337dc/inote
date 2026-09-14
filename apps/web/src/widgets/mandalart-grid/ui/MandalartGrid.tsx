@@ -27,13 +27,13 @@ const goal = (text: string): Cell => ({ text, variant: "goal" });
 // 9x9 grid, row-major. Mirrors docs/mandalart.html exactly.
 const CELLS: Cell[] = [
   // Row 1
-  item("노션 스타일 에디터 만들기", "t2"),
-  item("글 목록·상세·카테고리 필터", "t2"),
+  item("노션 스타일 에디터 만들기", "t2", true),
+  item("글 목록·상세·카테고리 필터", "t2", true),
   item("inote-server에 blog 모듈 추가", "t2", true),
   item("NestJS 모듈 구조 복습", "t3"),
   item("Prisma 마이그레이션 연습", "t3"),
   item("Better Auth 동작 이해", "t3"),
-  item("Groq 채팅 연동 (devlog 재사용)", "t4"),
+  item("Groq 채팅 연동 (devlog 재사용)", "t4", true),
   item("MCP 개념 익히기", "t4"),
   item("블로그 데이터 MCP로 노출", "t4"),
   // Row 2
@@ -48,8 +48,8 @@ const CELLS: Cell[] = [
   item("LLM 함수 호출(tool use) 실습", "t4"),
   // Row 3
   item("글 CRUD API 만들기", "t2", true),
-  item("LLM 챗 UI 에디터 옆에 붙이기", "t2"),
-  item("여러 계정으로 실제 테스트", "t2"),
+  item("LLM 챗 UI 에디터 옆에 붙이기", "t2", true),
+  item("여러 계정으로 실제 테스트", "t2", true),
   item("인증 토큰·세션 흐름 이해", "t3"),
   item("money·daily 모듈 구조 참고", "t3"),
   item("새 모듈 영향범위 파악", "t3"),
@@ -87,7 +87,7 @@ const CELLS: Cell[] = [
   item("멀티유저 확장 로드맵 그리기", "t6"),
   item("devlog-llm 교훈 반영하기", "t6"),
   // Row 7
-  item("Vercel+Render+Neon 무료 조합", "t7"),
+  item("Vercel+Render+Neon 무료 조합", "t7", true),
   item("Python 서비스 별도 DB 준비", "t7"),
   item("CI(lint·빌드) 파이프라인 구축", "t7"),
   item("Playwright 기본 세팅", "t8"),
