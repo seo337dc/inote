@@ -35,7 +35,7 @@ export default function NavDesktop() {
             );
           })}
           <DraftNotificationBell />
-          <AuthNavAction className="ml-2 rounded border border-zinc-300 px-3 py-1.5 text-zinc-700 hover:bg-zinc-50" />
+          <AuthNavAction className="ml-2 rounded px-2 py-1.5 text-zinc-700 hover:bg-zinc-100" />
         </nav>
       </div>
     </header>

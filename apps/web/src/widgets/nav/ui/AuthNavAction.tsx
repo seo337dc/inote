@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CircleUserRound } from "lucide-react";
 import { authClient, useSession } from "@/shared/lib/auth-client";
 import { PageLoading } from "@/shared/ui/page-loading";
 import {
@@ -95,9 +95,10 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
         </div>
       )}
       <DropdownMenu>
-        <DropdownMenuTrigger className={`flex items-center gap-1 ${className ?? ""}`}>
-          <span className="max-w-32 truncate">{displayName}</span>
-          <ChevronDown className="size-3.5 shrink-0" />
+        <DropdownMenuTrigger className={`flex items-center gap-1.5 ${className ?? ""}`}>
+          <CircleUserRound className="size-4 shrink-0 text-zinc-400" />
+          <span className="max-w-32 truncate">{displayName} 님</span>
+          <ChevronDown className="size-3.5 shrink-0 text-zinc-400" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem render={<Link href="/profile" onClick={onNavigate} />}>

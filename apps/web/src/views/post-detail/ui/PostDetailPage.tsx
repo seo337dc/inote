@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Post } from "@/entities/post";
 import { api, ApiError } from "@/shared/lib/api";
+import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
 import PostAiSummary from "./PostAiSummary";
 
@@ -23,7 +24,10 @@ export default async function PostDetailPage({ id }: Props) {
         <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
           {post.category}
         </span>
-        <EditPostLink postId={post.id} authorId={post.userId} />
+        <div className="flex items-center gap-3">
+          <EditPostLink postId={post.id} authorId={post.userId} />
+          <DeletePostButton postId={post.id} authorId={post.userId} />
+        </div>
       </div>
       <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
       <p className="mb-6 text-sm text-zinc-400">
