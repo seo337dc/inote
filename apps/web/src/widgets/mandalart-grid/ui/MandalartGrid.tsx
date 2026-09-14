@@ -16,11 +16,6 @@ const item = (text: string, blk: string, done = false): Cell => ({
   done,
 });
 const theme = (text: string, blk: string): Cell => ({ text, variant: "theme", blk });
-const emptyTheme = (text: string, blk: string): Cell => ({
-  text,
-  variant: "empty-theme",
-  blk,
-});
 const empty = (blk: string): Cell => ({ variant: "empty", blk });
 const goal = (text: string): Cell => ({ text, variant: "goal" });
 
@@ -82,7 +77,7 @@ const CELLS: Cell[] = [
   item("배운 개념은 docs/study에", "t5"),
   theme("Infra·DevOps", "t7"),
   theme("테스트(E2E)", "t8"),
-  emptyTheme("미정", "t9"),
+  theme("기능 고도화", "t9"),
   item("학습·이직·일기 우선순위 정하기", "t6"),
   item("멀티유저 확장 로드맵 그리기", "t6"),
   item("devlog-llm 교훈 반영하기", "t6"),
@@ -93,7 +88,7 @@ const CELLS: Cell[] = [
   item("Playwright 기본 세팅", "t8"),
   item("로그인 플로우 E2E 테스트", "t8"),
   item("글 작성→발행 흐름 테스트", "t8"),
-  empty("t9"),
+  item("Cloudflare R2로 이미지 업로드 붙이기", "t9"),
   empty("t9"),
   empty("t9"),
   // Row 8
@@ -104,7 +99,7 @@ const CELLS: Cell[] = [
   theme("테스트(E2E)", "t8"),
   item("CI에 E2E 테스트 통합", "t8"),
   empty("t9"),
-  emptyTheme("미정", "t9"),
+  theme("기능 고도화", "t9"),
   empty("t9"),
   // Row 9
   item("비용 모니터링 습관", "t7"),
@@ -138,8 +133,8 @@ export default function MandalartGrid() {
           <p className="mandalart-eyebrow">inote-blog · dev-guide</p>
           <h1 className="mandalart-title">만다라트</h1>
           <p className="mandalart-dek">
-            노션 + 블로그 + LLM. 8대 축 중 7개 확정, 9번은 아직 비워둠 — 점선 칸은 나중에
-            채울 자리.
+            노션 + 블로그 + LLM. 8대 축 모두 확정 — 9번(기능 고도화)은 세부 항목을 채우는
+            중, 점선 칸은 나중에 채울 자리.
           </p>
         </header>
 
@@ -161,7 +156,7 @@ export default function MandalartGrid() {
           </span>
           <span className="mandalart-legend-item">
             <span className="mandalart-legend-swatch theme" />
-            8대 축 (7개 확정)
+            8대 축 (모두 확정)
           </span>
           <span className="mandalart-legend-item">
             <span className="mandalart-legend-swatch item" />
@@ -169,13 +164,13 @@ export default function MandalartGrid() {
           </span>
           <span className="mandalart-legend-item">
             <span className="mandalart-legend-swatch empty" />
-            9번 — 아직 미정
+            9번 세부 항목 — 채우는 중
           </span>
         </div>
 
         <p className="mandalart-footnote">
-          2026-09-01 확정 — PLANNING.md·STRATEGY.md 기반. 9번 축 정해지면 이 페이지도 마저
-          채울 것. (원본: <code>docs/mandalart.html</code>)
+          2026-09-01 확정 — PLANNING.md·STRATEGY.md 기반. 9번(기능 고도화) 세부 항목
+          정해지면 이 페이지도 마저 채울 것. (원본: <code>docs/mandalart.html</code>)
         </p>
       </div>
     </div>
