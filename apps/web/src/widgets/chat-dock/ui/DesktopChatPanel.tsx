@@ -103,13 +103,15 @@ export default function DesktopChatPanel({ chat }: Props) {
       </div>
 
       <div className="flex w-full flex-col border-l border-zinc-200 bg-white">
-        <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4">
-          <p className="text-sm font-semibold">AI 어시스턴트</p>
+        <div className="flex h-16 items-center justify-between gap-2 border-b border-zinc-200 px-4">
+          <p className="truncate text-sm font-semibold">
+            {chat.activeSessionTitle || "AI 어시스턴트"}
+          </p>
           <button
             type="button"
             onClick={() => setCollapsed(true)}
             aria-label="AI 어시스턴트 접기"
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+            className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
           >
             <PanelRightOpen className="size-4 rotate-180" />
           </button>

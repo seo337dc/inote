@@ -29,13 +29,15 @@ export default function ChatPanel({ open, onClose, chat }: Props) {
           border-zinc-200 bg-white shadow-lg transition-transform duration-300 ease-out
           ${open ? "translate-y-0" : "translate-y-full"}`}
       >
-        <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-          <p className="text-sm font-semibold">AI 어시스턴트</p>
+        <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-4 py-3">
+          <p className="truncate text-sm font-semibold">
+            {chat.activeSessionTitle || "AI 어시스턴트"}
+          </p>
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+            className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
           >
             <X className="size-4" />
           </button>

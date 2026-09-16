@@ -241,6 +241,17 @@ export function useChatMessages() {
     void sendMessage(text);
   }
 
+  // 상단 헤더에 보여줄 현재 세션 제목. 세션 목록에 아직 없는(방금 시작한) 대화는
+  // 첫 사용자 메시지로 대신 보여준다 — 응답을 기다리지 않고 바로 제목이 잡히도록.
+  const currentSession = sessions.find((s) => s.id === sessionId) ?? null;
+  const firstUserMessage = messages.find((m) => m.role === "user")?.text.trim();
+  const activeSessionTitle =
+    (currentSession?.post_id
+      ? currentSession.post_title?.trim()
+      : currentSession?.last_message?.trim()) ||
+    firstUserMessage ||
+    null;
+
   return {
     messages,
     input,
@@ -249,6 +260,7 @@ export function useChatMessages() {
     sendPreset,
     sessions,
     activeSessionId: sessionId,
+    activeSessionTitle,
     startNewSession,
     selectSession,
     isSessionPanelOpen,
