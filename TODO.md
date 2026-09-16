@@ -11,7 +11,7 @@
 
 ## 1. dev-guide 페이지 (만다라트) — BE 의존 없음, 최우선
 
-- [ ] `docs/mandalart.html`을 Next.js 페이지로 이식
+- [x] `docs/mandalart.html`을 Next.js 페이지로 이식 — 이후 DB(MandalartItem) 기반으로 재구현, 항목별 상세 페이지까지 완료 (2026-09-16)
 
 ## 2. 로그인 페이지
 

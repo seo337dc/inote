@@ -58,8 +58,7 @@ iNote 시리즈(`inote-money`와 같은 계열)로 편입하기로 함. 가장 �
 | 8 | Playwright 브라우저 자동화 및 E2E 테스트 | 확정 |
 | 9 | 미정 | 보류 |
 
-7개 축의 실천 항목(56칸)까지 채운 전체 만다라트는 [`docs/mandalart.html`](./docs/mandalart.html)
-(브라우저로 열어서 확인) 참고. 9번이 정해지면 마저 채울 것.
+전체 만다라트(축·실천 항목)는 DB(MandalartItem) 기반 `/dev-guide` 페이지에서 확인.
 
 ## 성공 기준 (devlog-llm과 동일한 관점 유지)
 

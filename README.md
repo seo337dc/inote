@@ -61,7 +61,7 @@ NEXT_PUBLIC_AI_API_URL=http://localhost:8000
 - [`DEV_LOG.md`](./DEV_LOG.md) — 세션별 작업 기록
 - [`PLANNING.md`](./PLANNING.md) — 왜 만드는지, 성공 기준
 - [`STRATEGY.md`](./STRATEGY.md) — 전체 구조·단계별 전략
-- [`docs/mandalart.html`](./docs/mandalart.html) — 핵심 목표 + 8대 축 (브라우저로 열기)
+- 만다라트 — 핵심 목표 + 8대 축, `/dev-guide` 페이지에서 확인 (DB 기반, 항목 클릭 시 정리 페이지로 이동)
 
 ## 링크
 

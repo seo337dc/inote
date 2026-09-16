@@ -149,7 +149,7 @@ devlog-llm과 동일한 방식 유지.
       `category` 필드를 유저 소유 `Category` 모델(3단계 트리)로 바꾸는 작업이 필요할 것.
       실제 스키마·가입 화면 구현은 인증(Better Auth, JWT 여부 등) 학습이 끝난 뒤 착수
       (`inote-server/LEARNING.md` Chapter 25 참고) — 오늘은 기록만.
-- [ ] 만다라트 9번 축 확정 (8번은 Playwright E2E 테스트로 확정, `docs/mandalart.html` 참고)
+- [x] 만다라트 9번 축 확정 — "기능 고도화"로 명명, 세부 항목 채우는 중 (`/dev-guide` 페이지, DB 기반으로 참고)
 - [x] `inote-server`에 `blog` 모듈 자리 만들기 (Prisma `Post` 모델) — 2026-09-04 완료, 로그인 없는 CRUD로 FE까지 연동됨
 - [ ] `inote-ai`용 별도 Neon DB 프로비저닝
 - [x] **렌더링된 소스에서 복사해도 코드블록이 안 깨지게 붙여넣기 개선** — 2026-09-04 완료.
