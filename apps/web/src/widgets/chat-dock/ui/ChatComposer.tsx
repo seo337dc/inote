@@ -7,6 +7,10 @@ type Props = {
 
 export default function ChatComposer({ chat }: Props) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // 한글(IME) 조합 중에 확정하려고 누르는 Enter까지 전송으로 잡히면, 아직 조합 중이던
+    // 마지막 글자가 따로 한 번 더 입력되는 것처럼 보이는 버그가 생김 — 조합 중엔 무시.
+    // isComposing이 신뢰 안 되는 구형 브라우저(Safari 등) 대비로 keyCode 229도 같이 체크.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (chat.input.trim()) chat.handleSend(e as unknown as React.FormEvent);
