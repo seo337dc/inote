@@ -59,10 +59,25 @@ export function useLoginForm() {
     authClient.signIn.social({ provider: "google", callbackURL: "/" });
   }
 
-  function fillDemoAccount() {
+  async function loginDemoAccount() {
     setMode("login");
     setEmail(DEMO_ACCOUNT.email);
     setPassword(DEMO_ACCOUNT.password);
+    setSubmitting(true);
+
+    const { error: authError } = await authClient.signIn.email({
+      email: DEMO_ACCOUNT.email,
+      password: DEMO_ACCOUNT.password,
+    });
+
+    setSubmitting(false);
+
+    if (authError) {
+      toast.error(translateAuthError(authError.code));
+      return;
+    }
+
+    router.push("/");
   }
 
   function validate(): { field: AuthFormField; message: string } | null {
@@ -134,7 +149,7 @@ export function useLoginForm() {
     handleSubmit,
     goToIdle,
     toggleMode,
-    fillDemoAccount,
+    loginDemoAccount,
   };
 }
 

@@ -29,7 +29,7 @@ export default function LoginMobile({ form }: Props) {
     handleGoogle,
     handleSubmit,
     toggleMode,
-    fillDemoAccount,
+    loginDemoAccount,
   } = form;
   const { nameRef, emailRef, passwordRef, passwordConfirmRef } = useFieldRefs(focusSignal);
 
@@ -155,13 +155,15 @@ export default function LoginMobile({ form }: Props) {
         <p className="mb-2 font-mono text-zinc-700">
           {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}
         </p>
-        <button
+        <Button
           type="button"
-          onClick={fillDemoAccount}
-          className="font-medium text-primary hover:underline"
+          variant="outline"
+          size="sm"
+          disabled={submitting}
+          onClick={loginDemoAccount}
         >
-          테스트 계정 자동 입력
-        </button>
+          {submitting ? "로그인 중..." : "테스트 계정으로 로그인"}
+        </Button>
       </div>
     </div>
   );
