@@ -8,16 +8,14 @@ import { Button } from "@/shared/ui/button";
 import Markdown from "@/shared/ui/Markdown";
 import type { MandalartItem } from "@/entities/mandalart";
 
-const OWNER_USER_ID = process.env.NEXT_PUBLIC_MANDALART_OWNER_USER_ID;
-
 type Props = {
   item: MandalartItem;
 };
 
-// 소유자 여부는 여기서 UI 노출만 판단 — 실제 권한은 서버(PATCH /mandalart/:id)가 강제함.
+// 관리자 여부는 여기서 UI 노출만 판단 — 실제 권한은 서버(PATCH/POST /mandalart)가 강제함.
 export default function MandalartContent({ item }: Props) {
   const { data: session } = useSession();
-  const isOwner = Boolean(session && session.user.id === OWNER_USER_ID);
+  const isAdmin = session?.user.role === "ADMIN";
 
   const [done, setDone] = useState(item.done);
   const [savedContent, setSavedContent] = useState(item.content);
@@ -62,13 +60,13 @@ export default function MandalartContent({ item }: Props) {
       <div className="mb-6 flex items-center gap-2">
         <label
           className={`flex items-center gap-1.5 text-sm ${
-            isOwner ? "cursor-pointer text-zinc-600" : "text-zinc-400"
+            isAdmin ? "cursor-pointer text-zinc-600" : "text-zinc-400"
           }`}
         >
           <input
             type="checkbox"
             checked={done}
-            disabled={!isOwner || doneMutation.isPending}
+            disabled={!isAdmin || doneMutation.isPending}
             onChange={handleToggleDone}
             className="size-4 accent-blue-600 disabled:cursor-not-allowed"
           />
@@ -99,7 +97,7 @@ export default function MandalartContent({ item }: Props) {
         </div>
       ) : (
         <div>
-          {isOwner && (
+          {isAdmin && (
             <div className="mb-3 flex justify-end">
               <Button variant="outline" size="sm" onClick={handleStartEdit}>
                 수정
