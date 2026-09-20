@@ -56,7 +56,13 @@ export function useLoginForm() {
   }
 
   function handleGoogle() {
-    authClient.signIn.social({ provider: "google", callbackURL: "/" });
+    // callbackURL은 better-auth 서버가 구글 인증 완료 후 최종 리다이렉트할 위치.
+    // 상대 경로("/")를 주면 서버(inote-server) 자신의 origin 기준으로 해석돼서
+    // 프론트가 아니라 백엔드 루트로 리다이렉트되는 문제가 있었음 — 반드시 절대 URL로 지정.
+    authClient.signIn.social({
+      provider: "google",
+      callbackURL: `${window.location.origin}/`,
+    });
   }
 
   async function loginDemoAccount() {
