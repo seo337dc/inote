@@ -8,6 +8,10 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   PASSWORD_TOO_SHORT: "비밀번호는 8자 이상이어야 합니다.",
   PASSWORD_TOO_LONG: "비밀번호가 너무 깁니다.",
   FAILED_TO_CREATE_USER: "회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.",
+  // 구글 로그인 콜백 에러 (better-auth OAuth callback, 소문자 snake_case — 위와 케이스 체계가 다름)
+  // 뒤로가기 후 재로그인 시도 등으로 이미 소비된/만료된 state를 재사용하면 발생
+  state_mismatch: "로그인 시도가 만료되었습니다. 다시 시도해주세요.",
+  state_not_found: "로그인 시도가 만료되었습니다. 다시 시도해주세요.",
 };
 
 const DEFAULT_MESSAGE = "문제가 발생했습니다. 잠시 후 다시 시도해주세요.";

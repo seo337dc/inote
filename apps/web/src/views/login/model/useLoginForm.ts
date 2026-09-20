@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { authClient, useSession } from "@/shared/lib/auth-client";
 import {
@@ -19,6 +19,7 @@ export const DEMO_ACCOUNT = { email: "test@test.com", password: "test123!@" };
 
 export function useLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
   const [mode, setMode] = useState<Mode>("idle");
   const [email, setEmail] = useState("");
@@ -33,6 +34,15 @@ export function useLoginForm() {
       router.replace("/");
     }
   }, [session, isPending, router]);
+
+  // 구글 로그인 실패 시 better-auth가 errorCallbackURL(/login)에 ?error=코드를 붙여
+  // 리다이렉트해줌 — 그 코드를 읽어서 토스트로 보여주고 주소는 깨끗하게 정리.
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+    toast.error(translateAuthError(error));
+    router.replace("/login");
+  }, [searchParams, router]);
 
   function requestFocus(field: AuthFormField) {
     setFocusSignal({ field, token: Date.now() });
@@ -56,12 +66,15 @@ export function useLoginForm() {
   }
 
   function handleGoogle() {
-    // callbackURL은 better-auth 서버가 구글 인증 완료 후 최종 리다이렉트할 위치.
-    // 상대 경로("/")를 주면 서버(inote-server) 자신의 origin 기준으로 해석돼서
-    // 프론트가 아니라 백엔드 루트로 리다이렉트되는 문제가 있었음 — 반드시 절대 URL로 지정.
+    // callbackURL/errorCallbackURL은 better-auth 서버가 구글 인증 완료(또는 실패) 후
+    // 최종 리다이렉트할 위치. 상대 경로("/")를 주면 서버(inote-server) 자신의 origin
+    // 기준으로 해석돼서 프론트가 아니라 백엔드 루트로 리다이렉트되는 문제가 있었음
+    // — 반드시 절대 URL로 지정. errorCallbackURL을 안 주면 실패 시(예: 뒤로가기 후
+    // 재시도로 인한 state_mismatch) 백엔드의 기본 에러 페이지(404)로 떨어짐.
     authClient.signIn.social({
       provider: "google",
       callbackURL: `${window.location.origin}/`,
+      errorCallbackURL: `${window.location.origin}/login`,
     });
   }
 
