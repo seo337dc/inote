@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, CircleUserRound } from "lucide-react";
 import { authClient, useSession } from "@/shared/lib/auth-client";
 import { PageLoading } from "@/shared/ui/page-loading";
+import { Badge } from "@/shared/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,7 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
   }
 
   const displayName = session.user.name || session.user.email;
+  const isAdmin = session.user.role === "ADMIN";
 
   if (variant === "inline") {
     return (
@@ -66,7 +68,10 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
           </div>
         )}
         <div className="mt-2 border-t border-zinc-200 pt-2">
-          <p className="truncate px-3 py-1 text-xs text-zinc-400">{displayName}</p>
+          <p className="flex items-center gap-1.5 truncate px-3 py-1 text-xs text-zinc-400">
+            {displayName}
+            {isAdmin && <Badge variant="secondary">관리자</Badge>}
+          </p>
           <Link
             href="/profile"
             onClick={onNavigate}
@@ -74,6 +79,15 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
           >
             내 정보 보기
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={onNavigate}
+              className="block rounded px-3 py-2 text-left text-zinc-600 hover:bg-zinc-100"
+            >
+              관리자 페이지
+            </Link>
+          )}
           <button
             type="button"
             onClick={handleLogout}
@@ -98,12 +112,18 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
         <DropdownMenuTrigger className={`flex items-center gap-1.5 ${className ?? ""}`}>
           <CircleUserRound className="size-4 shrink-0 text-zinc-400" />
           <span className="max-w-32 truncate">{displayName} 님</span>
+          {isAdmin && <Badge variant="secondary">관리자</Badge>}
           <ChevronDown className="size-3.5 shrink-0 text-zinc-400" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem render={<Link href="/profile" onClick={onNavigate} />}>
             내 정보 보기
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem render={<Link href="/admin" onClick={onNavigate} />}>
+              관리자 페이지
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleLogout} disabled={loggingOut}>
             로그아웃
           </DropdownMenuItem>
