@@ -2,13 +2,75 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { authClient } from "@/shared/lib/auth-client";
 import { api } from "@/shared/lib/api";
+import { useMyProfile, useUpdateProfile, type UserProfile } from "@/entities/user";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 
+// profile을 필수 prop으로 받아서 마운트 시점에 이미 서버 값이 있다는 걸 보장 — nickname
+// state를 useEffect로 동기화할 필요 없이 useState 초기값으로 바로 채움.
+function ProfileIdentity({ profile }: { profile: UserProfile }) {
+  const updateProfileMutation = useUpdateProfile();
+  const [nickname, setNickname] = useState(profile.nickname ?? profile.name);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    updateProfileMutation.mutate(
+      { nickname },
+      {
+        onSuccess: () => toast.success("프로필이 저장되었습니다."),
+        onError: () => toast.error("저장에 실패했습니다. 잠시 후 다시 시도해주세요."),
+      },
+    );
+  }
+
+  return (
+    <>
+      <div className="mb-6 flex items-center gap-4">
+        {profile.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profile.image}
+            alt=""
+            className="h-16 w-16 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-200 text-xl font-bold text-zinc-500">
+            {nickname.slice(0, 1).toUpperCase()}
+          </div>
+        )}
+        <div>
+          <p className="font-semibold">{nickname}</p>
+          <p className="text-sm text-zinc-400">{profile.email}</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <label className="flex flex-col gap-1 text-sm">
+          닉네임
+          <input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            className="rounded border border-zinc-300 px-3 py-2 outline-none"
+          />
+        </label>
+
+        <button
+          type="submit"
+          disabled={updateProfileMutation.isPending || !nickname.trim()}
+          className="self-start rounded bg-zinc-900 px-5 py-2 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900"
+        >
+          {updateProfileMutation.isPending ? "저장 중..." : "저장"}
+        </button>
+      </form>
+    </>
+  );
+}
+
 export default function ProfileForm() {
-  const [nickname, setNickname] = useState("seo337dc");
+  const { data: profile, isPending: isProfilePending } = useMyProfile();
   const [confirmingWithdraw, setConfirmingWithdraw] = useState(false);
 
   const withdrawMutation = useMutation({
@@ -28,12 +90,6 @@ export default function ProfileForm() {
   const passwordMismatch =
     confirmPassword.length > 0 && newPassword !== confirmPassword;
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    // TODO: 기존 inote-server의 유저 정보 API 재사용 여부 확인 후 연동 (docs/devlog/fe.md 참고)
-    alert("아직 저장 API가 없습니다 (UI만 우선 구현).");
-  }
-
   function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
     // TODO: inote-server의 Better Auth 비밀번호 변경 API 연동 (이메일 계정에만 해당)
@@ -43,35 +99,13 @@ export default function ProfileForm() {
     setConfirmPassword("");
   }
 
+  if (isProfilePending || !profile) {
+    return <p className="text-sm text-zinc-400">불러오는 중...</p>;
+  }
+
   return (
     <>
-      <div className="mb-6 flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-200 text-xl font-bold text-zinc-500">
-          {nickname.slice(0, 1).toUpperCase()}
-        </div>
-        <div>
-          <p className="font-semibold">{nickname}</p>
-          <p className="text-sm text-zinc-400">sdc337dc@gmail.com</p>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
-          닉네임
-          <input
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            className="rounded border border-zinc-300 px-3 py-2 outline-none"
-          />
-        </label>
-
-        <button
-          type="submit"
-          className="self-start rounded bg-zinc-900 px-5 py-2 text-white hover:bg-zinc-800"
-        >
-          저장
-        </button>
-      </form>
+      <ProfileIdentity profile={profile} />
 
       <div className="mt-8 border-t border-zinc-200 pt-8">
         <h2 className="mb-1 text-sm font-semibold">비밀번호 변경</h2>
