@@ -13,3 +13,8 @@ export type UserProfile = {
 export type UpdateProfileInput = {
   nickname?: string;
 };
+
+export type LinkedAccount = {
+  id: string;
+  providerId: string;
+};

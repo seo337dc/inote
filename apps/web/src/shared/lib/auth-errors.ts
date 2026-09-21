@@ -17,6 +17,9 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // 자동으로 계정을 합치지 않음. AUTH_POLICY.md 2번)
   account_not_linked:
     "이미 일반 회원가입으로 가입된 이메일입니다. 이메일/비밀번호로 로그인해주세요.",
+  // 비밀번호 생성(setPassword) 버튼은 credential 계정이 없을 때만 노출되지만,
+  // 다른 탭에서 이미 만든 경우 등 race condition 대비용
+  PASSWORD_ALREADY_SET: "이미 비밀번호가 설정되어 있습니다.",
 };
 
 const DEFAULT_MESSAGE = "문제가 발생했습니다. 잠시 후 다시 시도해주세요.";

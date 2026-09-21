@@ -3,9 +3,9 @@
 import { Mail } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { InoteWordmark } from "@/shared/ui/inote-wordmark";
+import GoogleIcon from "@/shared/ui/GoogleIcon";
 import { DEMO_ACCOUNT, type LoginFormState } from "../../model/useLoginForm";
 import { useFieldRefs } from "../../model/useFieldRefs";
-import GoogleIcon from "../GoogleIcon";
 
 type Props = {
   form: LoginFormState;
