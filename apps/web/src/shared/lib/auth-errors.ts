@@ -12,6 +12,11 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   // 뒤로가기 후 재로그인 시도 등으로 이미 소비된/만료된 state를 재사용하면 발생
   state_mismatch: "로그인 시도가 만료되었습니다. 다시 시도해주세요.",
   state_not_found: "로그인 시도가 만료되었습니다. 다시 시도해주세요.",
+  // 이미 이메일/비밀번호로 가입된 이메일로 구글 로그인을 시도하면 발생 (inote-server
+  // auth.ts의 account.accountLinking.disableImplicitLinking 정책 — 같은 이메일이어도
+  // 자동으로 계정을 합치지 않음. AUTH_POLICY.md 2번)
+  account_not_linked:
+    "이미 일반 회원가입으로 가입된 이메일입니다. 이메일/비밀번호로 로그인해주세요.",
 };
 
 const DEFAULT_MESSAGE = "문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
