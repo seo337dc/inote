@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useAdminUsers } from "../model/useAdminUsers";
 import { Button } from "@/shared/ui/button";
+import { PageLoading } from "@/shared/ui/page-loading";
+import AdminUserDetailModal from "./AdminUserDetailModal";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ko-KR");
@@ -10,22 +12,23 @@ function formatDate(iso: string) {
 
 export default function AdminMembersPage() {
   const [page, setPage] = useState(1);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { data, isPending, isPlaceholderData, isError } = useAdminUsers(page);
+
+  if (isPending && !data) {
+    return <PageLoading />;
+  }
 
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">회원 정보</h1>
-      <p className="mb-6 text-sm text-zinc-500">
-        {data ? `총 ${data.total}명` : "불러오는 중..."}
-      </p>
+      <p className="mb-6 text-sm text-zinc-500">{data && `총 ${data.total}명`}</p>
 
       {isError && (
         <p className="text-sm text-red-500">
           회원 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
         </p>
       )}
-
-      {isPending && !data && <p className="text-sm text-zinc-400">불러오는 중...</p>}
 
       {data && data.items.length === 0 && (
         <p className="text-sm text-zinc-400">회원이 없습니다.</p>
@@ -47,7 +50,11 @@ export default function AdminMembersPage() {
               </thead>
               <tbody>
                 {data.items.map((user) => (
-                  <tr key={user.id} className="border-b border-zinc-100 last:border-0">
+                  <tr
+                    key={user.id}
+                    onClick={() => setSelectedUserId(user.id)}
+                    className="cursor-pointer border-b border-zinc-100 last:border-0 hover:bg-zinc-50"
+                  >
                     <td className="px-4 py-2">
                       <div className="font-medium">{user.nickname ?? user.name}</div>
                       {user.nickname && (
@@ -101,6 +108,13 @@ export default function AdminMembersPage() {
             </Button>
           </div>
         </>
+      )}
+
+      {selectedUserId && (
+        <AdminUserDetailModal
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
       )}
     </div>
   );

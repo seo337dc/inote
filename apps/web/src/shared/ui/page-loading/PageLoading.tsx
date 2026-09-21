@@ -14,7 +14,9 @@ const MESSAGES = [
 // "이 로딩이 이 정도로 오래 떠있다" 자체를 슬립 신호로 보고 문구를 자동 전환한다.
 const WAKING_AFTER_SECONDS = 4;
 
-export default function PageLoading() {
+// compact: 모달 등 작은 영역에 끼워넣을 때 — 전체 페이지 기준 min-h-[70vh] 대신
+// 부모가 정한 높이를 그대로 채움(h-full).
+export default function PageLoading({ compact = false }: { compact?: boolean }) {
   const [msgIdx, setMsgIdx] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const waking = elapsed >= WAKING_AFTER_SECONDS;
@@ -31,7 +33,11 @@ export default function PageLoading() {
   }, [waking]);
 
   return (
-    <div className="relative flex min-h-[70vh] w-full flex-col items-center justify-center bg-white text-zinc-800">
+    <div
+      className={`relative flex w-full flex-col items-center justify-center bg-white text-zinc-800 ${
+        compact ? "h-full" : "min-h-[70vh]"
+      }`}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e4e4e7_1px,transparent_1px)] opacity-70 [background-size:16px_16px]" />
 
       <motion.div
