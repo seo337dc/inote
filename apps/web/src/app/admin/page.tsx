@@ -1,5 +1,5 @@
-import { AdminPage } from "@/views/admin";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <AdminPage />;
+  redirect("/admin/members");
 }
