@@ -28,6 +28,7 @@ export default function LoginMobile({ form }: Props) {
     focusSignal,
     handleGoogle,
     handleSubmit,
+    goToIdle,
     toggleMode,
     loginDemoAccount,
   } = form;
@@ -136,16 +137,25 @@ export default function LoginMobile({ form }: Props) {
               {submitting ? "처리 중..." : mode === "signup" ? "회원가입" : "로그인"}
             </Button>
 
-            <button
-              type="button"
-              onClick={toggleMode}
-              className="mt-2 text-center text-sm text-zinc-500"
-            >
-              {mode === "signup" ? "이미 계정이 있으신가요? " : "계정이 없으신가요? "}
-              <span className="font-semibold text-primary hover:underline">
-                {mode === "signup" ? "로그인" : "회원가입"}
-              </span>
-            </button>
+            <div className="mt-2 flex flex-col items-center gap-1">
+              <button
+                type="button"
+                onClick={toggleMode}
+                className="text-center text-sm text-zinc-500"
+              >
+                {mode === "signup" ? "이미 계정이 있으신가요? " : "계정이 없으신가요? "}
+                <span className="font-semibold text-primary hover:underline">
+                  {mode === "signup" ? "로그인" : "회원가입"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={goToIdle}
+                className="text-xs text-zinc-400 hover:text-zinc-600 hover:underline"
+              >
+                ← 다른 방법으로 로그인
+              </button>
+            </div>
           </form>
         )}
       </div>
