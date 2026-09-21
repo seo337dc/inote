@@ -1,15 +1,32 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CategoryFilter } from "@/features/filter-posts-by-category";
 import { PostList, PostListHeader, PostListEmpty } from "@/widgets/post-list";
-import type { Post } from "@/entities/post";
-import { api } from "@/shared/lib/api";
+import { PageLoading } from "@/shared/ui/page-loading";
+import { useSession } from "@/shared/lib/auth-client";
+import { useMyPosts } from "@/entities/post";
 
 type Props = {
   category: string | null;
 };
 
-export default async function MyPostsPage({ category }: Props) {
-  // 로그인 전이라 "내 글" 필터가 없음 — 전체 글을 임시로 보여줌. 로그인 붙으면 userId로 필터링 예정.
-  const allPosts = await api.get<Post[]>("/blog/posts", { cache: "no-store" });
+export default function MyPostsPage({ category }: Props) {
+  const router = useRouter();
+  const { data: session, isPending: isSessionPending } = useSession();
+  const { data: allPosts, isPending: isPostsPending } = useMyPosts();
+
+  useEffect(() => {
+    if (!isSessionPending && !session) {
+      router.replace("/login");
+    }
+  }, [isSessionPending, session, router]);
+
+  if (isSessionPending || !session || isPostsPending || !allPosts) {
+    return <PageLoading />;
+  }
+
   const posts = category ? allPosts.filter((post) => post.category === category) : allPosts;
 
   return (
@@ -21,9 +38,6 @@ export default async function MyPostsPage({ category }: Props) {
 
       <div className="flex-1">
         <PostListHeader title="나의 글" count={posts.length} />
-        <p className="mb-6 text-sm text-zinc-500">
-          로그인 연동 전까지는 전체 글을 임시로 보여줍니다.
-        </p>
 
         {allPosts.length === 0 ? (
           <PostListEmpty />
