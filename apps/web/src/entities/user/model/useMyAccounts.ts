@@ -1,9 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/shared/lib/api";
 import { useSession } from "@/shared/lib/auth-client";
-import type { LinkedAccount } from "./types";
+import { getMyAccounts } from "../api/getMyAccounts";
 
 export const MY_ACCOUNTS_QUERY_KEY = ["my-accounts"];
 
@@ -13,7 +12,7 @@ export function useMyAccounts() {
   const { data: session, isPending: isSessionPending } = useSession();
   return useQuery({
     queryKey: MY_ACCOUNTS_QUERY_KEY,
-    queryFn: () => api.get<LinkedAccount[]>("/auth/list-accounts"),
+    queryFn: getMyAccounts,
     enabled: !isSessionPending && Boolean(session),
   });
 }
