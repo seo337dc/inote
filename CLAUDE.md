@@ -159,6 +159,24 @@ devlog-llm과 동일한 방식 유지.
 
 ## 다음 할 일
 
+- [ ] **FE 테스트 작성 (2026-09-22 추가, 우선순위 순)** — 전부 한 번에 하지 않고 체크된 만큼만
+      진행. 완료할 때마다 체크만 해도 진행 상황이 보임.
+  - 1순위 (이번 세션에 만든 신규 코드)
+    - [ ] `features/mark-inote-used/MarkInoteUsed` — 세션 감지 → 1회성 api 호출 로직
+    - [ ] `views/admin/ui/UsageBadge` — 사용/미사용 뱃지 분기
+    - [ ] `views/admin/ui/AdminUserDetailModal` — 앱 이용 현황 테이블 + 삭제 확인 팝업(변경분만)
+  - 2순위 (기존 기능, 로직 복잡한데 테스트 0개 — `auth-errors.ts`부터 추천, mock 불필요)
+    - [ ] `shared/lib/auth-errors.ts` — 에러 코드 → 한글 메시지 매핑
+    - [ ] `features/write-post/WritePostForm` — draft 이어쓰기 분기, 저장/발행 분기
+    - [ ] `features/edit-profile/ProfileForm` — 비밀번호 생성/변경 분기, 계정 연결 목록
+    - [ ] `widgets/nav/AuthNavAction` — 로그인/로그아웃 상태 분기
+    - [ ] `views/admin/AdminMembersPage` — 페이지네이션 경계값
+  - 3순위 (여유 있을 때)
+    - [ ] `features/filter-posts-by-category`
+    - [ ] `features/manage-categories/CategoryManager`
+  - E2E: 글쓰기 → 발행 → 목록 노출 흐름 1개 추가 검토 (회원 삭제는 파괴적 액션이라 자동화 제외)
+  - 제외(테스트 가치 낮음): `entities/*/api/*`(순수 fetch 래퍼), 단순 조합만 하는 `views/*`,
+    `shared/ui`의 서드파티 래퍼 컴포넌트
 - [x] **글 상세 페이지 진입 시 기존 대화 세션 자동 전환** — 2026-09-14 완료.
       `/posts/[id]`에 그 글에 묶인 세션이 있으면 자동 전환, 없으면 활성 세션 그대로 둠.
       `useChatMessages.ts`의 `routePostId` 강제 전환 로직 옆에 `detailPostId`(조건부 전환)
