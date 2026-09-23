@@ -186,10 +186,10 @@ devlog-llm과 동일한 방식 유지.
 
 - [ ] **FE 테스트 작성 (2026-09-22 추가, 우선순위 순)** — 전부 한 번에 하지 않고 체크된 만큼만
       진행. 완료할 때마다 체크만 해도 진행 상황이 보임.
-  - 1순위 (이번 세션에 만든 신규 코드)
-    - [ ] `features/mark-inote-used/MarkInoteUsed` — 세션 감지 → 1회성 api 호출 로직
-    - [ ] `views/admin/ui/UsageBadge` — 사용/미사용 뱃지 분기
-    - [ ] `views/admin/ui/AdminUserDetailModal` — 앱 이용 현황 테이블 + 삭제 확인 팝업(변경분만)
+  - 1순위 (이번 세션에 만든 신규 코드) — 2026-09-23 완료, 커밋 `f46190c`/`77ee1ec`
+    - [x] `features/mark-inote-used/MarkInoteUsed` — 세션 감지 → 1회성 api 호출 로직
+    - [x] `views/admin/ui/UsageBadge` — 사용/미사용 뱃지 분기
+    - [x] `views/admin/ui/AdminUserDetailModal` — 앱 이용 현황 테이블 + 삭제 확인 팝업(변경분만)
   - 2순위 (기존 기능, 로직 복잡한데 테스트 0개 — `auth-errors.ts`부터 추천, mock 불필요)
     - [ ] `shared/lib/auth-errors.ts` — 에러 코드 → 한글 메시지 매핑
     - [ ] `features/write-post/WritePostForm` — draft 이어쓰기 분기, 저장/발행 분기
