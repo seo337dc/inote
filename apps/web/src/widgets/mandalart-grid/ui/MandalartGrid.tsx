@@ -26,11 +26,11 @@ const SKELETON: SkeletonCell[] = [
   // Row 5 (center row)
   slot("t5"), theme("AI 기술학습", "t5"), slot("t5"), theme("AI 기술학습", "t5"), goal("노션 + 블로그 + LLM"), theme("프로덕트 기획", "t6"), slot("t6"), theme("프로덕트 기획", "t6"), slot("t6"),
   // Row 6
-  slot("t5"), slot("t5"), slot("t5"), theme("Infra·DevOps", "t7"), theme("테스트(E2E)", "t8"), theme("기능 고도화", "t9"), slot("t6"), slot("t6"), slot("t6"),
+  slot("t5"), slot("t5"), slot("t5"), theme("Infra·DevOps", "t7"), theme("테스트", "t8"), theme("기능 고도화", "t9"), slot("t6"), slot("t6"), slot("t6"),
   // Row 7
   slot("t7"), slot("t7"), slot("t7"), slot("t8"), slot("t8"), slot("t8"), slot("t9"), slot("t9"), slot("t9"),
   // Row 8
-  slot("t7"), theme("Infra·DevOps", "t7"), slot("t7"), slot("t8"), theme("테스트(E2E)", "t8"), slot("t8"), slot("t9"), theme("기능 고도화", "t9"), slot("t9"),
+  slot("t7"), theme("Infra·DevOps", "t7"), slot("t7"), slot("t8"), theme("테스트", "t8"), slot("t8"), slot("t9"), theme("기능 고도화", "t9"), slot("t9"),
   // Row 9
   slot("t7"), slot("t7"), slot("t7"), slot("t8"), slot("t8"), slot("t8"), slot("t9"), slot("t9"), slot("t9"),
 ];
