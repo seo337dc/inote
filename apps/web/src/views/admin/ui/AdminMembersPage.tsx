@@ -5,6 +5,7 @@ import { useAdminUsers } from "../model/useAdminUsers";
 import { Button } from "@/shared/ui/button";
 import { PageLoading } from "@/shared/ui/page-loading";
 import AdminUserDetailModal from "./AdminUserDetailModal";
+import UsageBadge from "./UsageBadge";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("ko-KR");
@@ -71,11 +72,11 @@ export default function AdminMembersPage() {
                         <span className="text-zinc-400">일반</span>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-zinc-600">
-                      {user.usesInote ? "이용" : "-"}
+                    <td className="px-4 py-2">
+                      <UsageBadge used={user.usesInote} />
                     </td>
-                    <td className="px-4 py-2 text-zinc-600">
-                      {user.usesInoteMoney ? "이용" : "-"}
+                    <td className="px-4 py-2">
+                      <UsageBadge used={user.usesInoteMoney} />
                     </td>
                     <td className="px-4 py-2 text-zinc-500">{formatDate(user.createdAt)}</td>
                   </tr>

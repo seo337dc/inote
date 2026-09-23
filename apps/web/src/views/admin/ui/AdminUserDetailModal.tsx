@@ -14,6 +14,7 @@ import { PageLoading } from "@/shared/ui/page-loading";
 import { Button } from "@/shared/ui/button";
 import { useAdminUser } from "../model/useAdminUser";
 import { useDeleteAdminUser } from "../model/useDeleteAdminUser";
+import UsageBadge from "./UsageBadge";
 
 function formatDateTime(iso: string) {
   return new Date(iso).toLocaleString("ko-KR");
@@ -143,19 +144,37 @@ export default function AdminUserDetailModal({
                     )
                   }
                 />
-                <Field
-                  label="inote 이용"
-                  value={user.usesInote ? "이용" : "-"}
-                />
-                <Field
-                  label="inote-money 이용"
-                  value={user.usesInoteMoney ? "이용" : "-"}
-                />
                 <Field label="가입일" value={formatDateTime(user.createdAt)} />
                 <Field
                   label="최근 수정일"
                   value={formatDateTime(user.updatedAt)}
                 />
+              </div>
+
+              <div className="mt-4">
+                <h3 className="mb-2 text-sm font-semibold text-zinc-700">
+                  앱 이용 현황
+                </h3>
+                <div className="overflow-x-auto rounded border border-zinc-200">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+                        <th className="px-4 py-2 font-medium">iNote</th>
+                        <th className="px-4 py-2 font-medium">iNote-Money</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="px-4 py-2">
+                          <UsageBadge used={user.usesInote} />
+                        </td>
+                        <td className="px-4 py-2">
+                          <UsageBadge used={user.usesInoteMoney} />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
