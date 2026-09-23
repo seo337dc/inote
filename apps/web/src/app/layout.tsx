@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { Nav } from "@/widgets/nav";
 import { ChatWorkspace } from "@/widgets/chat-dock";
+import { MarkInoteUsed } from "@/features/mark-inote-used";
 import { ReactQueryProvider } from "@/shared/lib/query-client";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </ChatWorkspace>
           </Suspense>
           <Toaster position="top-center" richColors />
+          <MarkInoteUsed />
         </ReactQueryProvider>
       </body>
     </html>
