@@ -9,6 +9,8 @@ import type { ChatMessage, ChatSession } from "./types";
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
+const WRITE_SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"];
+
 export function useChatMessages() {
   const { data: authSession, isPending: isSessionPending } = useSession();
   const userId = authSession?.user.id;
@@ -268,5 +270,6 @@ export function useChatMessages() {
     sessionSearch,
     setSessionSearch,
     isLoggedIn: !!userId,
+    suggestions: WRITE_SUGGESTIONS,
   };
 }

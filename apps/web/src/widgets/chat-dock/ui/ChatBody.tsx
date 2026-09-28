@@ -8,7 +8,7 @@ type Props = {
 
 export default function ChatBody({ chat }: Props) {
   if (chat.messages.length === 0) {
-    return <ChatEmptyState onSelect={chat.sendPreset} />;
+    return <ChatEmptyState onSelect={chat.sendPreset} suggestions={chat.suggestions} />;
   }
   return <ChatMessages messages={chat.messages} />;
 }

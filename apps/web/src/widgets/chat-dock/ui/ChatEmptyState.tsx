@@ -2,13 +2,12 @@
 
 import { useSession } from "@/shared/lib/auth-client";
 
-const SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"];
-
 type Props = {
   onSelect: (text: string) => void;
+  suggestions: string[];
 };
 
-export default function ChatEmptyState({ onSelect }: Props) {
+export default function ChatEmptyState({ onSelect, suggestions }: Props) {
   const { data: session } = useSession();
   const name = session?.user.name ?? "게스트";
 
@@ -20,7 +19,7 @@ export default function ChatEmptyState({ onSelect }: Props) {
       </div>
 
       <div className="flex w-full max-w-xs flex-col gap-2">
-        {SUGGESTIONS.map((s) => (
+        {suggestions.map((s) => (
           <button
             key={s}
             type="button"

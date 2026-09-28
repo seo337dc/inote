@@ -1,8 +1,10 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import ChatDock from "./ChatDock";
 import DesktopChatPanel from "./DesktopChatPanel";
 import { useChatMessages } from "../model/useChatMessages";
+import { useReadingChatMessages } from "../model/useReadingChatMessages";
 
 type Props = {
   nav: React.ReactNode;
@@ -14,7 +16,30 @@ type Props = {
 //   header | llm
 //   main   | llm
 export default function ChatWorkspace({ nav, children }: Props) {
-  const chat = useChatMessages();
+  const pathname = usePathname();
+  const isReadingRoute = pathname?.startsWith("/reading") ?? false;
+
+  // 독서 관련 페이지(/reading, /reading/write, /reading/[id])에서는 채팅 도크가
+  // "독서 상담" 모드(대화 저장 없음, /reading-chat/stream)로 동작하고, 그 외에는
+  // 기존 글쓰기/일반 모드 그대로 유지. 두 훅을 한 컴포넌트에서 조건부로 호출하면
+  // rules-of-hooks에 걸려서, 아예 컴포넌트를 갈라 각자 자기 훅만 부르게 함.
+  return isReadingRoute ? (
+    <ChatWorkspaceInner nav={nav} useChat={useReadingChatMessages}>
+      {children}
+    </ChatWorkspaceInner>
+  ) : (
+    <ChatWorkspaceInner nav={nav} useChat={useChatMessages}>
+      {children}
+    </ChatWorkspaceInner>
+  );
+}
+
+type InnerProps = Props & {
+  useChat: typeof useChatMessages | typeof useReadingChatMessages;
+};
+
+function ChatWorkspaceInner({ nav, children, useChat }: InnerProps) {
+  const chat = useChat();
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-1">
