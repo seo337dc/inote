@@ -1,3 +1,4 @@
 allowBuilds:
+  msw: false # msw init은 브라우저 Service Worker용 — 여긴 msw/node(setupServer)만 씀
   sharp: false
   unrs-resolver: false
