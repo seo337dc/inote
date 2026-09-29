@@ -12,7 +12,7 @@ import { useSession } from "@/shared/lib/auth-client";
 import { useLeaveGuard } from "@/shared/lib/useLeaveGuard";
 import { LeaveConfirmDialog } from "@/shared/ui/leave-confirm-dialog";
 import type { Post } from "@/entities/post";
-import { useMyDrafts } from "@/entities/post";
+import { PostAiSummary, useMyDrafts } from "@/entities/post";
 import PostAccessDenied from "./PostAccessDenied";
 import DraftListModal from "./DraftListModal";
 
@@ -260,6 +260,14 @@ export default function WritePostForm({ id }: Props) {
           </label>
         </div>
       </div>
+
+      {/* 수정하는 동안에도 저장돼 있는 이전 요약을 계속 보여줌 (저장하면 새 내용 기준으로 다시 생성) */}
+      {post.aiSummary && post.aiSummary.summary.length > 0 && (
+        <PostAiSummary
+          summary={post.aiSummary.summary}
+          hint="현재 저장된 요약이에요. 저장하면 수정한 내용으로 다시 만들어져요."
+        />
+      )}
 
       <PostEditor content={content} onChange={setContent} onUserEdit={() => setIsDirty(true)} />
 

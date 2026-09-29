@@ -1,7 +1,6 @@
-import type { Post } from "@/entities/post";
+import { PostAiSummary, type Post } from "@/entities/post";
 import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
-import PostAiSummary from "./PostAiSummary";
 import TogglePinButton from "./TogglePinButton";
 
 // 서버(공개 글 SSR)와 클라이언트(작성자 본인 확인 후 폴백) 양쪽에서 같은 화면을 그리려고 분리.
