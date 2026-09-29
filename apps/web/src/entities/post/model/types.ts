@@ -11,6 +11,8 @@ export type Post = {
   publishedAt: string | null;
   isPrivate: boolean;
   pinned: boolean;
+  // 출간 화면에서 올린 썸네일 (R2 URL), 없으면 null
+  thumbnailUrl: string | null;
   aiSummary: { summary: string[] } | null;
 };
 

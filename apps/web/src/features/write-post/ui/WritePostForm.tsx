@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Star } from "lucide-react";
 import { useCategories, buildCategoryTree, flattenCategoryTree } from "@/entities/category";
 import { PostEditor } from "@/shared/ui/editor";
 import { api } from "@/shared/lib/api";
@@ -15,7 +13,9 @@ import type { Post } from "@/entities/post";
 import { PostAiSummary, useMyDrafts } from "@/entities/post";
 import PostAccessDenied from "./PostAccessDenied";
 import DraftListModal from "./DraftListModal";
+import PublishScreen from "./PublishScreen";
 
+const FORM_ID = "write-post-form";
 const EMPTY_CONTENT = ["", "<p></p>"];
 
 type Props = {
@@ -28,6 +28,8 @@ type PostBody = {
   content: string;
   isPrivate: boolean;
   pinned: boolean;
+  // 빈 문자열이면 썸네일 없음 → 서버에는 null로 보내 지운다
+  thumbnailUrl: string | null;
 };
 
 export default function WritePostForm({ id }: Props) {
@@ -93,6 +95,9 @@ export default function WritePostForm({ id }: Props) {
   const [category, setCategory] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  // 출간 설정 화면(위에서 내려오는 오버레이)이 열려 있는지
+  const [publishOpen, setPublishOpen] = useState(false);
   const [content, setContent] = useState("");
   // 사용자가 직접 고친 게 있는지 — 로드/정규화로 바뀐 값은 제외하려고 입력 핸들러에서만 켬.
   // 발행·삭제하면 꺼서 그 이동은 확인창 없이 보낸다.
@@ -112,9 +117,19 @@ export default function WritePostForm({ id }: Props) {
     setCategory(post.category || flatCategories[0]?.name || "");
     setIsPrivate(post.isPrivate);
     setPinned(post.pinned);
+    setThumbnailUrl(post.thumbnailUrl ?? "");
     setContent(post.content);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post]);
+
+  const buildBody = (): PostBody => ({
+    title,
+    category,
+    content,
+    isPrivate,
+    pinned,
+    thumbnailUrl: thumbnailUrl || null,
+  });
 
   const [autosavedAt, setAutosavedAt] = useState<Date | null>(null);
   const autosaveMutation = useMutation({
@@ -132,11 +147,11 @@ export default function WritePostForm({ id }: Props) {
       return;
     }
     const timer = setTimeout(() => {
-      autosaveMutation.mutate({ title, category, content, isPrivate, pinned });
+      autosaveMutation.mutate(buildBody());
     }, 1500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content, isPrivate, pinned, post]);
+  }, [title, category, content, isPrivate, pinned, thumbnailUrl, post]);
 
   const saveMutation = useMutation({
     mutationFn: (body: PostBody) => api.patch(`/blog/posts/${id}`, { ...body, publish: true }),
@@ -161,14 +176,17 @@ export default function WritePostForm({ id }: Props) {
   });
 
   // 나갈 때 1.5초 디바운스에 걸려 있던 마지막 수정이 유실되지 않도록 바로 임시저장
-  const leaveGuard = useLeaveGuard(isDirty, () =>
-    autosaveMutation.mutate({ title, category, content, isPrivate, pinned }),
-  );
+  const leaveGuard = useLeaveGuard(isDirty, () => autosaveMutation.mutate(buildBody()));
 
+  // 처음 제출(하단 버튼·제목에서 Enter)은 출간 설정 화면을 열고, 그 화면에서 제출해야 실제로 저장한다
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    saveMutation.mutate({ title, category, content, isPrivate, pinned });
+    if (!publishOpen) {
+      setPublishOpen(true);
+      return;
+    }
+    saveMutation.mutate(buildBody());
   }
 
   function handleDelete() {
@@ -199,7 +217,7 @@ export default function WritePostForm({ id }: Props) {
   if (!post || !isOwnPost) return null;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form id={FORM_ID} onSubmit={handleSubmit} className="flex flex-col gap-4">
       <h1 className="text-2xl font-bold">{post.publishedAt ? "글 수정" : "글쓰기"}</h1>
 
       <input
@@ -212,55 +230,6 @@ export default function WritePostForm({ id }: Props) {
         className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
       />
 
-      <div className="flex items-center gap-3">
-        <select
-          value={category}
-          onChange={(e) => {
-            setCategory(e.target.value);
-            setIsDirty(true);
-          }}
-          className="w-40 rounded border border-zinc-300 px-2 py-1 text-sm"
-        >
-          {flatCategories.map((c) => (
-            <option key={c.id} value={c.name}>
-              {"　".repeat(c.depth - 1)}
-              {c.depth > 1 ? "└ " : ""}
-              {c.name}
-            </option>
-          ))}
-        </select>
-        <Link href="/categories" className="text-sm text-zinc-500 hover:text-zinc-700">
-          카테고리 관리
-        </Link>
-        <div className="ml-auto flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              setPinned((v) => !v);
-              setIsDirty(true);
-            }}
-            aria-pressed={pinned}
-            aria-label={pinned ? "즐겨찾기 해제" : "즐겨찾기 (목록 상단 고정)"}
-            className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700"
-          >
-            <Star className={`size-4 ${pinned ? "fill-amber-400 text-amber-400" : ""}`} />
-            즐겨찾기
-          </button>
-          <label className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-700">
-            <input
-              type="checkbox"
-              checked={isPrivate}
-              onChange={(e) => {
-                setIsPrivate(e.target.checked);
-                setIsDirty(true);
-              }}
-              className="size-4 accent-zinc-900"
-            />
-            비공개
-          </label>
-        </div>
-      </div>
-
       {/* 수정하는 동안에도 저장돼 있는 이전 요약을 계속 보여줌 (저장하면 새 내용 기준으로 다시 생성) */}
       {post.aiSummary && post.aiSummary.summary.length > 0 && (
         <PostAiSummary
@@ -271,7 +240,8 @@ export default function WritePostForm({ id }: Props) {
 
       <PostEditor content={content} onChange={setContent} onUserEdit={() => setIsDirty(true)} />
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {/* 저장 실패 메시지는 출간 설정 화면 안에 보여준다 (화면이 덮고 있으므로) */}
+      {error && !publishOpen && <p className="text-sm text-red-500">{error}</p>}
 
       {/* 에디터가 길어져도 저장/삭제 버튼이 항상 화면 하단에 보이도록 고정.
           모바일에선 버튼이 위, 안내 문구가 아래로 (좁은 폭에서 겹치는 것 방지).
@@ -298,7 +268,7 @@ export default function WritePostForm({ id }: Props) {
                 deleteMutation.isPending
               }
             >
-              {saveMutation.isPending ? "저장 중..." : "저장"}
+              저장
             </button>
           </div>
           {(autosaveMutation.isPending || autosavedAt) && (
@@ -310,6 +280,36 @@ export default function WritePostForm({ id }: Props) {
           )}
         </div>
       </div>
+      <PublishScreen
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        formId={FORM_ID}
+        publishLabel="저장"
+        isPublishing={saveMutation.isPending}
+        error={error}
+        title={title}
+        thumbnailUrl={thumbnailUrl}
+        onThumbnailChange={(url) => {
+          setThumbnailUrl(url);
+          setIsDirty(true);
+        }}
+        category={category}
+        onCategoryChange={(name) => {
+          setCategory(name);
+          setIsDirty(true);
+        }}
+        categories={flatCategories}
+        isPrivate={isPrivate}
+        onPrivateChange={(v) => {
+          setIsPrivate(v);
+          setIsDirty(true);
+        }}
+        pinned={pinned}
+        onPinnedChange={(v) => {
+          setPinned(v);
+          setIsDirty(true);
+        }}
+      />
       <LeaveConfirmDialog
         open={leaveGuard.isConfirming}
         onStay={leaveGuard.cancel}

@@ -34,6 +34,14 @@ export default function PostArticle({ post }: { post: Post }) {
             {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"} ·{" "}
             {new Date(post.createdAt).toLocaleDateString("ko-KR")}
           </p>
+          {post.thumbnailUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- 외부(R2) 이미지, next/image 도메인 설정 없이 바로 표시
+            <img
+              src={post.thumbnailUrl}
+              alt=""
+              className="mb-6 max-h-96 w-full rounded-2xl border border-zinc-200 object-cover"
+            />
+          )}
           <PostSummarySection
             postId={post.id}
             authorId={post.userId}
