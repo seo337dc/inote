@@ -3,12 +3,22 @@ import { CATEGORIES } from "@/entities/category";
 import type { Post } from "@/entities/post";
 import { cn } from "@/shared/lib/utils";
 
+type CategoryOption = { name: string; depth: number };
+
+const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = CATEGORIES.map((name) => ({
+  name,
+  depth: 1,
+}));
+
 type Props = {
   posts: Post[];
   activeCategory: string | null;
   className?: string;
   onNavigate?: () => void;
   basePath?: string;
+  // 실제 로그인한 유저의 카테고리 트리(평탄화됨). 안 넘기면 기본 5개로 대체
+  // (로그인 없이도 렌더링돼야 하는 곳이 있어 fallback을 남겨둠).
+  categories?: CategoryOption[];
 };
 
 export default function CategoryFilter({
@@ -17,6 +27,7 @@ export default function CategoryFilter({
   className,
   onNavigate,
   basePath = "/",
+  categories = DEFAULT_CATEGORY_OPTIONS,
 }: Props) {
   return (
     <aside className={cn("w-40 shrink-0", className)}>
@@ -44,18 +55,19 @@ export default function CategoryFilter({
             전체 ({posts.length})
           </Link>
         </li>
-        {CATEGORIES.map((c) => (
-          <li key={c}>
+        {categories.map((c) => (
+          <li key={c.name}>
             <Link
-              href={`${basePath}?category=${encodeURIComponent(c)}`}
+              href={`${basePath}?category=${encodeURIComponent(c.name)}`}
               onClick={onNavigate}
               className={`block rounded px-2 py-1 ${
-                activeCategory === c
+                activeCategory === c.name
                   ? "bg-zinc-900 text-white hover:bg-zinc-800"
                   : "text-zinc-600 hover:bg-zinc-100"
               }`}
             >
-              {c} ({posts.filter((post) => post.category === c).length})
+              {"　".repeat(c.depth - 1)}
+              {c.name} ({posts.filter((post) => post.category === c.name).length})
             </Link>
           </li>
         ))}

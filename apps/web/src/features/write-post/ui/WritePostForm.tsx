@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CATEGORIES } from "@/entities/category";
+import { useCategories, buildCategoryTree, flattenCategoryTree } from "@/entities/category";
 import { PostEditor } from "@/shared/ui/editor";
 import { api } from "@/shared/lib/api";
 import { useSession } from "@/shared/lib/auth-client";
@@ -21,7 +21,7 @@ type Props = {
 
 type PostBody = {
   title: string;
-  category: (typeof CATEGORIES)[number];
+  category: string;
   content: string;
 };
 
@@ -76,8 +76,11 @@ export default function WritePostForm({ id }: Props) {
     }
   }, [isSessionPending, session, post, isOwnPost, router]);
 
+  const categoriesQuery = useCategories();
+  const flatCategories = flattenCategoryTree(buildCategoryTree(categoriesQuery.data ?? []));
+
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>(CATEGORIES[0]);
+  const [category, setCategory] = useState("");
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const isContentEmpty = EMPTY_CONTENT.includes(content);
@@ -91,8 +94,9 @@ export default function WritePostForm({ id }: Props) {
     loadedPostId.current = post.id;
     skipNextAutosave.current = true;
     setTitle(post.title);
-    setCategory((post.category as (typeof CATEGORIES)[number]) || CATEGORIES[0]);
+    setCategory(post.category || flatCategories[0]?.name || "");
     setContent(post.content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post]);
 
   const [autosavedAt, setAutosavedAt] = useState<Date | null>(null);
@@ -184,12 +188,14 @@ export default function WritePostForm({ id }: Props) {
       <div className="flex items-center gap-3">
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value as (typeof CATEGORIES)[number])}
-          className="w-32 rounded border border-zinc-300 px-2 py-1 text-sm"
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-40 rounded border border-zinc-300 px-2 py-1 text-sm"
         >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
+          {flatCategories.map((c) => (
+            <option key={c.id} value={c.name}>
+              {"　".repeat(c.depth - 1)}
+              {c.depth > 1 ? "└ " : ""}
+              {c.name}
             </option>
           ))}
         </select>

@@ -1,1 +1,11 @@
-export type Category = "학습" | "이직" | "일기" | "블로그" | "기록";
+export type Category = {
+  id: string;
+  userId: string;
+  name: string;
+  parentId: string | null;
+  depth: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CategoryNode = Category & { children: CategoryNode[] };
