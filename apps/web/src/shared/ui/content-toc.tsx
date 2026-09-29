@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { revealInContainer } from "@/shared/lib/scroll";
 import type { TocItem } from "@/shared/lib/toc";
 
 // 제목이 화면 위쪽에서 이만큼(px) 안쪽으로 들어오면 "지금 읽는 제목"으로 본다
@@ -14,6 +15,7 @@ export function ContentToc({ items }: { items: TocItem[] }) {
   const [activeId, setActiveId] = useState<string | null>(items[0]?.id ?? null);
   // 항목을 눌러 이동하는 동안(부드러운 스크롤)에는 스크롤 위치로 강조를 다시 계산하지 않는다.
   // 글 끝쪽 제목은 화면 맨 위까지 못 올라와서(스크롤이 바닥에서 멈춤) 계산하면 앞 제목으로 덮어써지기 때문.
+  const navRef = useRef<HTMLElement>(null);
   const lockRef = useRef(false);
   const releaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -68,6 +70,13 @@ export function ContentToc({ items }: { items: TocItem[] }) {
     [],
   );
 
+  // 목차 자체가 길어 따로 스크롤될 때, 강조된 항목이 목차 영역 안에 계속 보이도록 따라간다
+  useEffect(() => {
+    const nav = navRef.current;
+    const current = nav?.querySelector<HTMLElement>("[aria-current]");
+    if (nav && current) revealInContainer(nav, current);
+  }, [activeId]);
+
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -80,7 +89,11 @@ export function ContentToc({ items }: { items: TocItem[] }) {
   }
 
   return (
-    <nav aria-label="목차" className="sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
+    <nav
+      ref={navRef}
+      aria-label="목차"
+      className="hide-scrollbar sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
+    >
       {/* 세로선은 "목차" 제목부터 목록 끝까지 한 줄로 이어지게 감싸는 div의 왼쪽 테두리로 그린다.
           (스크롤되는 nav 바깥으로 삐져나가면 잘려서, 선은 nav 안쪽 div에 둠) */}
       <div className="border-l-2 border-zinc-200">

@@ -225,3 +225,13 @@
 .prose :is(h1, h2, h3) {
   scroll-margin-top: 1.5rem;
 }
+
+/* 카테고리·목차처럼 따로 스크롤되는 사이드 영역용 — 스크롤바는 숨기고 휠·터치 스크롤은 그대로 동작.
+   overscroll-behavior로 영역 끝에서 본문까지 같이 스크롤되는 것도 막는다 */
+.hide-scrollbar {
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

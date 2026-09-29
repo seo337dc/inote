@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Lock, Minus, Plus } from "lucide-react";
 import { CATEGORIES, useCategories, type Category } from "@/entities/category";
 import { usePostOutline } from "@/entities/post";
+import { revealInContainer } from "@/shared/lib/scroll";
 import { cn } from "@/shared/lib/utils";
 import { buildOutline, findActiveFolderKeys, type OutlineFolder } from "../lib/buildOutline";
 
@@ -37,6 +38,14 @@ export default function PostOutline({ currentPostId }: Props) {
     [folders, currentPostId],
   );
 
+  const navRef = useRef<HTMLElement>(null);
+  // 글이 많아 트리가 길면 따로 스크롤되므로, 처음 열 때(또는 다른 글로 이동했을 때) 현재 글이 보이게 맞춘다
+  useEffect(() => {
+    const nav = navRef.current;
+    const current = nav?.querySelector<HTMLElement>("[aria-current]");
+    if (nav && current) revealInContainer(nav, current);
+  }, [currentPostId, outlineQuery.data]);
+
   if (!outlineQuery.data || outlineQuery.data.length === 0) return null;
 
   const isOpen = (key: string) => overrides[key] ?? activeKeys.has(key);
@@ -44,8 +53,9 @@ export default function PostOutline({ currentPostId }: Props) {
 
   return (
     <nav
+      ref={navRef}
       aria-label="카테고리"
-      className="sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
+      className="hide-scrollbar sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
     >
       <p className="mb-2 text-xs font-semibold tracking-wide text-zinc-500">카테고리</p>
       <FolderList
