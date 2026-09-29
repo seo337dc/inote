@@ -114,3 +114,28 @@ describe("제목 버튼은 누른 줄에만 적용된다 (줄바꿈으로 이어
     expect(html()).toContain("<h2>각 회사 채용 정보</h2>");
   });
 });
+
+describe("인용 버튼", () => {
+  it("문단에서 누르면 인용구가 되고, 다시 누르면 풀린다", async () => {
+    const { cursorIn, click, html } = await setup("<p>본문 글</p>");
+    cursorIn("본문 글");
+
+    await click("인용");
+    expect(html()).toBe("<blockquote><p>본문 글</p></blockquote>");
+    expect(screen.getByRole("button", { name: "인용" })).toHaveAttribute("aria-pressed", "true");
+
+    await click("인용");
+    expect(html()).toBe("<p>본문 글</p>");
+  });
+
+  it("두 겹 인용구에서는 누를 때마다 한 겹씩 풀린다", async () => {
+    const { cursorIn, click, html } = await setup(
+      "<blockquote><blockquote><p>겹친 글</p></blockquote></blockquote>",
+    );
+    cursorIn("겹친 글");
+
+    await click("인용");
+
+    expect(html()).toBe("<blockquote><p>겹친 글</p></blockquote>");
+  });
+});

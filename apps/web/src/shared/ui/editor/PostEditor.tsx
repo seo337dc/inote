@@ -42,6 +42,7 @@ type ActiveFormats = {
   bold: boolean;
   italic: boolean;
   bulletList: boolean;
+  blockquote: boolean;
   link: boolean;
   codeBlock: boolean;
 };
@@ -53,6 +54,7 @@ const NO_ACTIVE: ActiveFormats = {
   bold: false,
   italic: false,
   bulletList: false,
+  blockquote: false,
   link: false,
   codeBlock: false,
 };
@@ -137,6 +139,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         bold: editor.isActive("bold"),
         italic: editor.isActive("italic"),
         bulletList: editor.isActive("bulletList"),
+        blockquote: editor.isActive("blockquote"),
         link: findLinkRange(editor) !== null,
         codeBlock: editor.isActive("codeBlock"),
       };
@@ -195,6 +198,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           active={active.bulletList}
         >
           목록
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          active={active.blockquote}
+        >
+          인용
         </ToolbarButton>
         <ToolbarButton
           onClick={() => {
