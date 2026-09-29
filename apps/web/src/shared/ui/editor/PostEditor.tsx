@@ -11,6 +11,7 @@ import { TableCell } from "@tiptap/extension-table-cell";
 import { useEffect, useRef } from "react";
 import { SlashCommand } from "./slash-command";
 import { MarkdownPaste } from "./markdown-paste";
+import { toggleHeadingOnLine } from "./line-heading";
 
 type Props = {
   content?: string;
@@ -148,23 +149,31 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
 
   const active = activeState ?? NO_ACTIVE;
 
+  // 줄바꿈(<br>)으로 이어진 문단에선 누른 줄만 제목으로, 그 외에는 블록 전체를 토글
+  const toggleHeading = (level: 1 | 2 | 3) => {
+    editor.chain().focus().run();
+    if (!toggleHeadingOnLine(editor, level)) {
+      editor.chain().focus().toggleHeading({ level }).run();
+    }
+  };
+
   return (
     <div className="rounded border border-zinc-200">
       <div className="flex flex-wrap gap-1 border-b border-zinc-200 px-2 py-1.5">
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          onClick={() => toggleHeading(1)}
           active={active.h1}
         >
           H1
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() => toggleHeading(2)}
           active={active.h2}
         >
           H2
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() => toggleHeading(3)}
           active={active.h3}
         >
           H3
