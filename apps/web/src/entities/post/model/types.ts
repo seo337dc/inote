@@ -9,5 +9,7 @@ export type Post = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  isPrivate: boolean;
+  pinned: boolean;
   aiSummary: { summary: string[] } | null;
 };

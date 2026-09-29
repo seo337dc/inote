@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Star } from "lucide-react";
 import { useCategories, buildCategoryTree, flattenCategoryTree } from "@/entities/category";
 import { PostEditor } from "@/shared/ui/editor";
 import { api } from "@/shared/lib/api";
@@ -23,6 +24,8 @@ type PostBody = {
   title: string;
   category: string;
   content: string;
+  isPrivate: boolean;
+  pinned: boolean;
 };
 
 export default function WritePostForm({ id }: Props) {
@@ -81,6 +84,8 @@ export default function WritePostForm({ id }: Props) {
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [pinned, setPinned] = useState(false);
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const isContentEmpty = EMPTY_CONTENT.includes(content);
@@ -95,6 +100,8 @@ export default function WritePostForm({ id }: Props) {
     skipNextAutosave.current = true;
     setTitle(post.title);
     setCategory(post.category || flatCategories[0]?.name || "");
+    setIsPrivate(post.isPrivate);
+    setPinned(post.pinned);
     setContent(post.content);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post]);
@@ -115,11 +122,11 @@ export default function WritePostForm({ id }: Props) {
       return;
     }
     const timer = setTimeout(() => {
-      autosaveMutation.mutate({ title, category, content });
+      autosaveMutation.mutate({ title, category, content, isPrivate, pinned });
     }, 1500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content, post]);
+  }, [title, category, content, isPrivate, pinned, post]);
 
   const saveMutation = useMutation({
     mutationFn: (body: PostBody) => api.patch(`/blog/posts/${id}`, { ...body, publish: true }),
@@ -144,7 +151,7 @@ export default function WritePostForm({ id }: Props) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    saveMutation.mutate({ title, category, content });
+    saveMutation.mutate({ title, category, content, isPrivate, pinned });
   }
 
   function handleDelete() {
@@ -202,6 +209,27 @@ export default function WritePostForm({ id }: Props) {
         <Link href="/categories" className="text-sm text-zinc-500 hover:text-zinc-700">
           카테고리 관리
         </Link>
+        <div className="ml-auto flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setPinned((v) => !v)}
+            aria-pressed={pinned}
+            aria-label={pinned ? "즐겨찾기 해제" : "즐겨찾기 (목록 상단 고정)"}
+            className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700"
+          >
+            <Star className={`size-4 ${pinned ? "fill-amber-400 text-amber-400" : ""}`} />
+            즐겨찾기
+          </button>
+          <label className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-700">
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={(e) => setIsPrivate(e.target.checked)}
+              className="size-4 accent-zinc-900"
+            />
+            비공개
+          </label>
+        </div>
       </div>
 
       <PostEditor content={content} onChange={setContent} />

@@ -1,18 +1,27 @@
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Post } from "@/entities/post";
 import { api, ApiError } from "@/shared/lib/api";
 import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
 import PostAiSummary from "./PostAiSummary";
+import TogglePinButton from "./TogglePinButton";
 
 type Props = {
   id: string;
 };
 
 export default async function PostDetailPage({ id }: Props) {
+  // 서버 컴포넌트의 fetch는 브라우저 쿠키를 자동으로 안 실어줘서, 비공개/draft
+  // 글을 작성자 본인이 볼 때도 BE엔 비로그인 요청으로 보임 — 직접 포워딩해야 함.
+  const cookieHeader = (await cookies()).toString();
+
   let post: Post;
   try {
-    post = await api.get<Post>(`/blog/posts/${id}`, { cache: "no-store" });
+    post = await api.get<Post>(`/blog/posts/${id}`, {
+      cache: "no-store",
+      headers: { Cookie: cookieHeader },
+    });
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
     throw e;
@@ -25,6 +34,7 @@ export default async function PostDetailPage({ id }: Props) {
           {post.category}
         </span>
         <div className="flex items-center gap-3">
+          <TogglePinButton postId={post.id} authorId={post.userId} initialPinned={post.pinned} />
           <EditPostLink postId={post.id} authorId={post.userId} />
           <DeletePostButton postId={post.id} authorId={post.userId} />
         </div>
