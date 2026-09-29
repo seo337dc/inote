@@ -1,6 +1,5 @@
 "use client";
 
-import { getMarkRange, type Editor } from "@tiptap/core";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
@@ -8,9 +7,18 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SlashCommand } from "./slash-command";
 import { MarkdownPaste } from "./markdown-paste";
+import {
+  computeLinkHover,
+  computeLinkPopup,
+  findLinkRange,
+  LinkEditButton,
+  LinkPopover,
+  type LinkHoverState,
+  type LinkPopupState,
+} from "./link-popover";
 import { toggleHeadingOnLine } from "./line-heading";
 
 type Props = {
@@ -19,21 +27,6 @@ type Props = {
   // 사용자가 에디터에서 직접 입력·편집했을 때만 호출 (불러온 내용이 정규화되며 onChange가 나가는 경우는 제외)
   onUserEdit?: () => void;
 };
-
-// 지금 선택(또는 커서) 근처에 링크가 있으면 그 범위를 돌려준다.
-// editor.isActive("link")는 선택 전체가 링크일 때만 true라서, 링크 옆 글자까지 같이 드래그했거나
-// 커서가 링크 끝 경계에 있으면 링크가 아니라고 판단해버린다 — 그래서 "범위 안에 링크가 하나라도 있는지"로 본다.
-function findLinkRange(editor: Editor): { from: number; to: number } | null {
-  const { doc, selection, schema } = editor.state;
-  const linkType = schema.marks.link;
-  if (!linkType) return null;
-
-  const { from, to, empty } = selection;
-  if (!empty) return doc.rangeHasMark(from, to, linkType) ? { from, to } : null;
-
-  // 커서만 있으면 커서가 놓인 링크 전체(경계에 붙어 있는 경우 포함)를 대상으로 한다
-  return getMarkRange(doc.resolve(from), linkType) ?? null;
-}
 
 type ActiveFormats = {
   h1: boolean;
@@ -87,6 +80,28 @@ function ToolbarButton({
 export default function PostEditor({ content = "", onChange, onUserEdit }: Props) {
   // 바깥에서 내려준 content를 에디터에 밀어넣는 동안 나오는 update는 사용자 편집이 아님
   const isSyncingRef = useRef(false);
+  // 링크 주소 팝업 — 링크 글자에 마우스를 올려 나오는 편집 아이콘이나 툴바 '링크' 버튼을 누르면 글자 아래에 뜬다.
+  // (링크 글자를 그냥 클릭하는 건 커서를 옮기려는 동작일 수 있어 팝업을 열지 않는다)
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [linkPopup, setLinkPopup] = useState<{ id: number; state: LinkPopupState } | null>(null);
+  const popupIdRef = useRef(0);
+  const [linkHover, setLinkHover] = useState<LinkHoverState | null>(null);
+  const hoverHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelHoverHide = () => {
+    if (hoverHideTimer.current) clearTimeout(hoverHideTimer.current);
+    hoverHideTimer.current = null;
+  };
+  // 링크에서 아이콘으로 마우스를 옮기는 짧은 사이에는 아이콘이 남아 있게 잠깐 뒤에 지운다
+  const hideHoverSoon = () => {
+    cancelHoverHide();
+    hoverHideTimer.current = setTimeout(() => setLinkHover(null), 200);
+  };
+  useEffect(
+    () => () => {
+      if (hoverHideTimer.current) clearTimeout(hoverHideTimer.current);
+    },
+    [],
+  );
   const editor = useEditor({
     extensions: [
       // 에디터 안에서는 링크를 클릭해도 이동하지 않고 커서만 들어가게 — 그래야 링크 글자를 골라 해제·수정할 수 있음
@@ -108,6 +123,20 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       if (!isSyncingRef.current) onUserEdit?.();
     },
     editorProps: {
+      handleDOMEvents: {
+        mouseover: (view, event) => {
+          const anchor = (event.target as HTMLElement | null)?.closest?.("a");
+          if (!anchor || !wrapperRef.current) return false;
+          cancelHoverHide();
+          const state = computeLinkHover(view, wrapperRef.current, anchor as HTMLElement);
+          if (state) setLinkHover(state);
+          return false;
+        },
+        mouseout: (_view, event) => {
+          if ((event.target as HTMLElement | null)?.closest?.("a")) hideHoverSoon();
+          return false;
+        },
+      },
       attributes: {
         class: "prose prose-zinc max-w-none min-h-[400px] focus:outline-none",
       },
@@ -143,13 +172,21 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         bulletList: editor.isActive("bulletList"),
         blockquote: editor.isActive("blockquote"),
         code: editor.isActive("code"),
-        link: findLinkRange(editor) !== null,
+        link: findLinkRange(editor.state) !== null,
         codeBlock: editor.isActive("codeBlock"),
       };
       const activeCount = Object.values(formats).filter(Boolean).length;
       return activeCount === 1 ? formats : NO_ACTIVE;
     },
   });
+
+  const closeLinkPopup = useCallback(
+    (refocus: boolean) => {
+      setLinkPopup(null);
+      if (refocus) editor?.commands.focus();
+    },
+    [editor],
+  );
 
   if (!editor) return null;
 
@@ -164,7 +201,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
   };
 
   return (
-    <div className="rounded border border-zinc-200">
+    <div ref={wrapperRef} className="relative rounded border border-zinc-200">
       <div className="flex flex-wrap gap-1 border-b border-zinc-200 px-2 py-1.5">
         <ToolbarButton
           onClick={() => toggleHeading(1)}
@@ -210,31 +247,10 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         </ToolbarButton>
         <ToolbarButton
           onClick={() => {
-            // 링크가 걸린 곳(선택 범위 안에 링크가 있거나 커서가 링크에 닿음)에서 누르면 해제,
-            // 링크가 전혀 없으면 주소를 받아 걸기
-            const linkRange = findLinkRange(editor);
-            if (linkRange) {
-              editor
-                .chain()
-                .focus()
-                .command(({ tr, state }) => {
-                  tr.removeMark(linkRange.from, linkRange.to, state.schema.marks.link);
-                  return true;
-                })
-                .run();
-              return;
-            }
-            const href = window.prompt("링크 주소를 입력하세요", "https://")?.trim();
-            if (!href) return;
-            if (editor.state.selection.empty) {
-              editor.chain().focus().insertContent({
-                type: "text",
-                text: href,
-                marks: [{ type: "link", attrs: { href } }],
-              }).run();
-            } else {
-              editor.chain().focus().setLink({ href }).run();
-            }
+            // 링크 글자 위(또는 링크를 포함한 선택)면 그 링크를 고치는 팝업, 아니면 새 링크 팝업
+            if (!wrapperRef.current) return;
+            const state = computeLinkPopup(editor.view, wrapperRef.current);
+            if (state) setLinkPopup({ id: ++popupIdRef.current, state });
           }}
           active={active.link}
         >
@@ -257,6 +273,27 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         </span>
       </div>
       <EditorContent editor={editor} className="px-4 py-3" />
+      {linkHover && !linkPopup && (
+        <LinkEditButton
+          state={linkHover}
+          onEnter={cancelHoverHide}
+          onLeave={hideHoverSoon}
+          onEdit={() => {
+            if (!wrapperRef.current) return;
+            const state = computeLinkPopup(editor.view, wrapperRef.current, linkHover.pos);
+            setLinkHover(null);
+            if (state) setLinkPopup({ id: ++popupIdRef.current, state });
+          }}
+        />
+      )}
+      {linkPopup && (
+        <LinkPopover
+          key={linkPopup.id}
+          editor={editor}
+          state={linkPopup.state}
+          onClose={closeLinkPopup}
+        />
+      )}
     </div>
   );
 }

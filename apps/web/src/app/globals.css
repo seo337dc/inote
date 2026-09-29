@@ -239,6 +239,15 @@
   color: var(--color-blue-600, #2563eb);
   text-decoration: underline;
   text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+/* 마우스를 올리면 링크가 눌러볼 수 있는 요소라는 게 보이도록 색을 진하게 하고 옅은 배경을 깐다 */
+.tiptap a:hover,
+.prose a:hover {
+  color: var(--color-blue-800, #1e40af);
+  background-color: var(--color-blue-50, #eff6ff);
 }
 
 /* 목차에서 제목으로 이동할 때 제목이 화면 맨 위에 딱 붙지 않도록 여백 */
