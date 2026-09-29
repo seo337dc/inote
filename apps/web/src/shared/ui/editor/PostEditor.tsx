@@ -7,13 +7,15 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { SlashCommand } from "./slash-command";
 import { MarkdownPaste } from "./markdown-paste";
 
 type Props = {
   content?: string;
   onChange: (html: string) => void;
+  // 사용자가 에디터에서 직접 입력·편집했을 때만 호출 (불러온 내용이 정규화되며 onChange가 나가는 경우는 제외)
+  onUserEdit?: () => void;
 };
 
 function ToolbarButton({
@@ -38,7 +40,9 @@ function ToolbarButton({
   );
 }
 
-export default function PostEditor({ content = "", onChange }: Props) {
+export default function PostEditor({ content = "", onChange, onUserEdit }: Props) {
+  // 바깥에서 내려준 content를 에디터에 밀어넣는 동안 나오는 update는 사용자 편집이 아님
+  const isSyncingRef = useRef(false);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -54,7 +58,10 @@ export default function PostEditor({ content = "", onChange }: Props) {
     ],
     content,
     immediatelyRender: false,
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+      if (!isSyncingRef.current) onUserEdit?.();
+    },
     editorProps: {
       attributes: {
         class: "prose prose-zinc max-w-none min-h-[400px] focus:outline-none",
@@ -65,7 +72,12 @@ export default function PostEditor({ content = "", onChange }: Props) {
   useEffect(() => {
     if (!editor) return;
     if (content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+      isSyncingRef.current = true;
+      try {
+        editor.commands.setContent(content);
+      } finally {
+        isSyncingRef.current = false;
+      }
     }
   }, [content, editor]);
 

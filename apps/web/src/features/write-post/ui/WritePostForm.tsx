@@ -9,6 +9,8 @@ import { useCategories, buildCategoryTree, flattenCategoryTree } from "@/entitie
 import { PostEditor } from "@/shared/ui/editor";
 import { api } from "@/shared/lib/api";
 import { useSession } from "@/shared/lib/auth-client";
+import { useLeaveGuard } from "@/shared/lib/useLeaveGuard";
+import { LeaveConfirmDialog } from "@/shared/ui/leave-confirm-dialog";
 import type { Post } from "@/entities/post";
 import { useMyDrafts } from "@/entities/post";
 import PostAccessDenied from "./PostAccessDenied";
@@ -87,6 +89,9 @@ export default function WritePostForm({ id }: Props) {
   const [isPrivate, setIsPrivate] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [content, setContent] = useState("");
+  // 사용자가 직접 고친 게 있는지 — 로드/정규화로 바뀐 값은 제외하려고 입력 핸들러에서만 켬.
+  // 발행·삭제하면 꺼서 그 이동은 확인창 없이 보낸다.
+  const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isContentEmpty = EMPTY_CONTENT.includes(content);
 
@@ -131,6 +136,7 @@ export default function WritePostForm({ id }: Props) {
   const saveMutation = useMutation({
     mutationFn: (body: PostBody) => api.patch(`/blog/posts/${id}`, { ...body, publish: true }),
     onSuccess: () => {
+      setIsDirty(false);
       router.push(`/posts/${id}`);
     },
     onError: () => {
@@ -141,12 +147,18 @@ export default function WritePostForm({ id }: Props) {
   const deleteMutation = useMutation({
     mutationFn: () => api.delete(`/blog/posts/${id}`),
     onSuccess: () => {
+      setIsDirty(false);
       router.push("/");
     },
     onError: () => {
       setError("삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
     },
   });
+
+  // 나갈 때 1.5초 디바운스에 걸려 있던 마지막 수정이 유실되지 않도록 바로 임시저장
+  const leaveGuard = useLeaveGuard(isDirty, () =>
+    autosaveMutation.mutate({ title, category, content, isPrivate, pinned }),
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -187,7 +199,10 @@ export default function WritePostForm({ id }: Props) {
 
       <input
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          setIsDirty(true);
+        }}
         placeholder="제목"
         className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
       />
@@ -195,7 +210,10 @@ export default function WritePostForm({ id }: Props) {
       <div className="flex items-center gap-3">
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setIsDirty(true);
+          }}
           className="w-40 rounded border border-zinc-300 px-2 py-1 text-sm"
         >
           {flatCategories.map((c) => (
@@ -212,7 +230,10 @@ export default function WritePostForm({ id }: Props) {
         <div className="ml-auto flex items-center gap-4">
           <button
             type="button"
-            onClick={() => setPinned((v) => !v)}
+            onClick={() => {
+              setPinned((v) => !v);
+              setIsDirty(true);
+            }}
             aria-pressed={pinned}
             aria-label={pinned ? "즐겨찾기 해제" : "즐겨찾기 (목록 상단 고정)"}
             className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700"
@@ -224,7 +245,10 @@ export default function WritePostForm({ id }: Props) {
             <input
               type="checkbox"
               checked={isPrivate}
-              onChange={(e) => setIsPrivate(e.target.checked)}
+              onChange={(e) => {
+                setIsPrivate(e.target.checked);
+                setIsDirty(true);
+              }}
               className="size-4 accent-zinc-900"
             />
             비공개
@@ -232,7 +256,7 @@ export default function WritePostForm({ id }: Props) {
         </div>
       </div>
 
-      <PostEditor content={content} onChange={setContent} />
+      <PostEditor content={content} onChange={setContent} onUserEdit={() => setIsDirty(true)} />
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -273,6 +297,11 @@ export default function WritePostForm({ id }: Props) {
           )}
         </div>
       </div>
+      <LeaveConfirmDialog
+        open={leaveGuard.isConfirming}
+        onStay={leaveGuard.cancel}
+        onLeave={leaveGuard.confirm}
+      />
     </form>
   );
 }
