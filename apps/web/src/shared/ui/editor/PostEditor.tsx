@@ -43,6 +43,7 @@ type ActiveFormats = {
   italic: boolean;
   bulletList: boolean;
   blockquote: boolean;
+  code: boolean;
   link: boolean;
   codeBlock: boolean;
 };
@@ -55,6 +56,7 @@ const NO_ACTIVE: ActiveFormats = {
   italic: false,
   bulletList: false,
   blockquote: false,
+  code: false,
   link: false,
   codeBlock: false,
 };
@@ -140,6 +142,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         italic: editor.isActive("italic"),
         bulletList: editor.isActive("bulletList"),
         blockquote: editor.isActive("blockquote"),
+        code: editor.isActive("code"),
         link: findLinkRange(editor) !== null,
         codeBlock: editor.isActive("codeBlock"),
       };
@@ -238,10 +241,16 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           링크
         </ToolbarButton>
         <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          active={active.code}
+        >
+          인라인 코드
+        </ToolbarButton>
+        <ToolbarButton
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           active={active.codeBlock}
         >
-          코드
+          코드 블록
         </ToolbarButton>
         <span className="ml-auto self-center text-xs text-zinc-400">
           &apos;/&apos;로 블록 삽입

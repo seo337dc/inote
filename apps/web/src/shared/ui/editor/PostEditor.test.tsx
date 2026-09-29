@@ -236,12 +236,12 @@ describe("PostEditor", () => {
       expect(pressed("목록")).toBe(true);
 
       act(() => el.editor.commands.setTextSelection(findPos("코드")));
-      expect(pressed("코드")).toBe(true);
+      expect(pressed("코드 블록")).toBe(true);
       expect(pressed("목록")).toBe(false);
 
       act(() => el.editor.commands.setTextSelection(findPos("링크글자")));
       expect(pressed("링크")).toBe(true);
-      expect(pressed("코드")).toBe(false);
+      expect(pressed("코드 블록")).toBe(false);
     });
 
     it("서식이 여러 개 겹친 자리(굵은 링크, 굵은 목록 항목, 굵은 제목)에서는 아무 버튼도 표시하지 않는다", async () => {
@@ -257,7 +257,7 @@ describe("PostEditor", () => {
       );
       const el = await findEditorEl(container);
       await waitFor(() => expect(el.querySelector("a")).not.toBeNull());
-      const names = ["H1", "H2", "H3", "B", "I", "목록", "링크", "코드"];
+      const names = ["H1", "H2", "H3", "B", "I", "목록", "링크", "코드 블록", "인라인 코드"];
       const pressedNames = () =>
         names.filter((n) => screen.getByRole("button", { name: n }).getAttribute("aria-pressed") === "true");
       const pos = (text: string) => {
@@ -286,7 +286,7 @@ describe("PostEditor", () => {
       expect(pressed("H1")).toBe(true);
 
       act(() => el.editor.commands.setTextSelection(findPos("보통")));
-      for (const name of ["H1", "H2", "H3", "B", "I", "목록", "링크", "코드"]) {
+      for (const name of ["H1", "H2", "H3", "B", "I", "목록", "링크", "코드 블록", "인라인 코드"]) {
         expect(pressed(name)).toBe(false);
       }
     });
