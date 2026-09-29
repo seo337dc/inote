@@ -58,6 +58,11 @@ export default function WriteReadingLogForm({ id }: Props) {
     queryFn: () => api.get<ReadingLog>(`/reading-logs/${id}`),
     enabled: Boolean(id) && Boolean(session),
     retry: false,
+    // 열 때 한 번만 가져와 폼 상태로 쓰고 캐시 재사용은 안 함 — 저장 직후 다시 열었을 때 옛 내용이
+    // 뜨면 자동저장이 새 내용을 덮어쓴다.
+    staleTime: Infinity,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
   });
   const readingLog = readingLogQuery.data;
   const isOwn = !readingLog || session?.user.id === readingLog.userId;

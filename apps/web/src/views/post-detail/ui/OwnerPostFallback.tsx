@@ -13,10 +13,14 @@ import PostArticle from "./PostArticle";
 export default function OwnerPostFallback({ id }: { id: string }) {
   const { data: session, isPending: isSessionPending } = useSession();
   const postQuery = useQuery({
-    queryKey: ["post", id],
+    // 글쓰기 폼의 ["post", id] 캐시와 분리하고 캐시도 남기지 않는다 — 수정·저장 직후에
+    // 들어와도 옛 본문/AI 요약이 아니라 항상 서버의 최신 글을 보여주기 위함.
+    queryKey: ["post-detail", id],
     queryFn: () => api.get<Post>(`/blog/posts/${id}`),
     enabled: !isSessionPending && Boolean(session),
     retry: false,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   if (isSessionPending) return <PageLoading />;

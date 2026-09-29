@@ -66,6 +66,11 @@ export default function WritePostForm({ id }: Props) {
     queryFn: () => api.get<Post>(`/blog/posts/${id}`),
     enabled: Boolean(id) && Boolean(session),
     retry: false,
+    // 수정 화면은 열 때 한 번만 서버 값을 가져와 폼 상태로 쓰고, 캐시로 재사용하지 않는다.
+    // 60초 기본 캐시를 쓰면 저장 직후 다시 열었을 때 옛 내용이 떠서 자동저장이 새 내용을 덮어쓴다.
+    staleTime: Infinity,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
   });
   const post = postQuery.data;
   const isOwnPost = !post || session?.user.id === post.userId;
