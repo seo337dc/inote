@@ -5,10 +5,11 @@ import { api } from "@/shared/lib/api";
 type Props = {
   category: string | null;
   page: number;
+  pinnedPage: number;
 };
 
-export default async function HomePage({ category, page }: Props) {
-  const params = new URLSearchParams({ page: String(page) });
+export default async function HomePage({ category, page, pinnedPage }: Props) {
+  const params = new URLSearchParams({ page: String(page), pinnedPage: String(pinnedPage) });
   if (category) params.set("category", category);
   const data = await api.get<PostListPage>(`/blog/posts?${params}`, { cache: "no-store" });
 

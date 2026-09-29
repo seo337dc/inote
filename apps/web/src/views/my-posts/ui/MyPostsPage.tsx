@@ -12,12 +12,13 @@ import { useCategories, buildCategoryTree, flattenCategoryTree } from "@/entitie
 type Props = {
   category: string | null;
   page: number;
+  pinnedPage: number;
 };
 
-export default function MyPostsPage({ category, page }: Props) {
+export default function MyPostsPage({ category, page, pinnedPage }: Props) {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const { data, isPending: isPostsPending } = useMyPosts(page, category);
+  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, category);
   const categoriesQuery = useCategories();
   const flatCategories = flattenCategoryTree(buildCategoryTree(categoriesQuery.data ?? []));
 

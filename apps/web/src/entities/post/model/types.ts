@@ -16,10 +16,17 @@ export type Post = {
   aiSummary: { summary: string[] } | null;
 };
 
-// GET /blog/posts, /blog/posts/mine 공통 응답 — 고정 글(최대 3, 1페이지에서만) + 페이지네이션 목록
+// GET /blog/posts, /blog/posts/mine 공통 응답.
+// 고정 글은 한 페이지 3개씩 pinnedPage로, 나머지(고정 글 제외) 일반 글은 page로 따로 페이지네이션한다.
 export type PostListPage = {
+  // pinnedPage 페이지의 고정 글 (최대 3개)
   pinned: Post[];
+  pinnedPage: number;
+  pinnedTotal: number;
+  pinnedTotalPages: number;
+  // 고정 글을 모두 뺀 일반 글 (page 기준)
   items: Post[];
+  // 고정 + 일반 전체 개수
   total: number;
   page: number;
   pageSize: number;
