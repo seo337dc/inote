@@ -220,3 +220,8 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* 목차에서 제목으로 이동할 때 제목이 화면 맨 위에 딱 붙지 않도록 여백 */
+.prose :is(h1, h2, h3) {
+  scroll-margin-top: 1.5rem;
+}
