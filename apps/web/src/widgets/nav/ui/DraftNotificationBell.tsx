@@ -51,7 +51,7 @@ export default function DraftNotificationBell() {
           drafts.slice(0, MAX_ITEMS).map((draft) => (
             <DropdownMenuItem
               key={draft.id}
-              render={<Link href={`/write?id=${draft.id}`} />}
+              render={<Link href={`/write/${draft.id}`} />}
               className="flex-col items-start gap-0.5"
             >
               <span className="w-full truncate font-medium text-zinc-900">

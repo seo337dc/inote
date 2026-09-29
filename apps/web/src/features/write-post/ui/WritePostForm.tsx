@@ -50,7 +50,7 @@ export default function WritePostForm({ id }: Props) {
   const createDraftMutation = useMutation({
     mutationFn: () => api.post<Post>("/blog/posts/draft", {}),
     onSuccess: (draft) => {
-      router.replace(`/write?id=${draft.id}`);
+      router.replace(`/write/${draft.id}`);
     },
   });
 
@@ -202,7 +202,7 @@ export default function WritePostForm({ id }: Props) {
       return (
         <DraftListModal
           drafts={myDrafts}
-          onSelect={(draftId) => router.replace(`/write?id=${draftId}`)}
+          onSelect={(draftId) => router.replace(`/write/${draftId}`)}
           onStartNew={() => setStartNewAnyway(true)}
           onClose={() => router.push("/")}
         />

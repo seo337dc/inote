@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useSession } from "@/shared/lib/auth-client";
 import { api } from "@/shared/lib/api";
 import type { Post } from "@/entities/post";
+import { getRoutePostIds } from "./routePost";
 import type { ChatMessage, ChatSession } from "./types";
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
@@ -15,11 +16,9 @@ export function useChatMessages() {
   const { data: authSession, isPending: isSessionPending } = useSession();
   const userId = authSession?.user.id;
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   // 글쓰기/수정 페이지에 있을 때만 그 글의 postId로 대화 세션을 강제 전환.
-  const routePostId = pathname === "/write" ? searchParams.get("id") : null;
+  const { routePostId, detailPostId } = getRoutePostIds(pathname);
   // 글 상세 페이지에서는, 그 글에 이미 나눈 대화가 있을 때만 그 세션으로 전환 (없으면 그대로 둠).
-  const detailPostId = pathname.match(/^\/posts\/([^/]+)$/)?.[1] ?? null;
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPostId, setSessionPostId] = useState<string | null>(null);
