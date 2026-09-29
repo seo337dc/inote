@@ -241,8 +241,8 @@ export default function WritePostForm({ id }: Props) {
           sticky를 씀 — main이 스크롤 컨테이너라 데스크톱 AI 패널 폭만큼 자동으로 좁아짐
           (fixed였다면 뷰포트 전체 폭이라 옆 패널을 덮어버림) */}
       <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center justify-end gap-2 sm:order-2">
+        <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleDelete}
@@ -265,7 +265,7 @@ export default function WritePostForm({ id }: Props) {
             </button>
           </div>
           {(autosaveMutation.isPending || autosavedAt) && (
-            <p className="text-xs text-zinc-400 sm:order-1">
+            <p className="text-xs text-zinc-400">
               {autosaveMutation.isPending
                 ? "임시 저장 중..."
                 : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}
