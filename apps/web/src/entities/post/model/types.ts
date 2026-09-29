@@ -27,3 +27,12 @@ export type PostListPage = {
 export type MyPostListPage = PostListPage & {
   categoryCounts: Record<string, number>;
 };
+
+// GET /blog/posts/outline — 카테고리 트리용 (본문 없이 제목·카테고리만)
+export type PostOutlineItem = {
+  id: string;
+  title: string;
+  category: string;
+  isPrivate: boolean;
+  pinned: boolean;
+};

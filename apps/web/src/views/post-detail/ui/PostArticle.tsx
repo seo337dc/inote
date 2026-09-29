@@ -1,5 +1,6 @@
 import { PostAiSummary, type Post } from "@/entities/post";
 import { buildToc } from "@/shared/lib/toc";
+import { PostOutline } from "@/widgets/post-outline";
 import { ContentToc } from "@/shared/ui/content-toc";
 import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
@@ -7,12 +8,15 @@ import TogglePinButton from "./TogglePinButton";
 
 // 서버(공개 글 SSR)와 클라이언트(작성자 본인 확인 후 폴백) 양쪽에서 같은 화면을 그리려고 분리.
 export default function PostArticle({ post }: { post: Post }) {
-  // h1~h3에 id를 달고 목차 항목을 뽑는다 — 본문 폭이 충분할 때만 글 오른쪽에 목차를 보여줌 (왼쪽은 카테고리 자리로 비워둠)
+  // 3열 배치: 왼쪽 카테고리 트리 / 본문 / 오른쪽 목차(h1~h3). 폭이 부족하면 목차 → 카테고리 순으로 숨긴다.
   const { html, items } = buildToc(post.content);
 
   return (
     <div className="@container">
-      <div className="mx-auto flex max-w-6xl gap-8 px-6 py-16">
+      <div className="mx-auto flex max-w-7xl gap-8 px-6 py-16">
+        <aside className="hidden w-60 shrink-0 @4xl:block">
+          <PostOutline currentPostId={post.id} />
+        </aside>
         <article className="mx-auto min-w-0 max-w-4xl flex-1">
           <div className="mb-3 flex items-center justify-between">
             <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
@@ -37,7 +41,7 @@ export default function PostArticle({ post }: { post: Post }) {
           />
         </article>
         {items.length > 0 && (
-          <aside className="hidden w-56 shrink-0 @5xl:block">
+          <aside className="hidden w-56 shrink-0 @7xl:block">
             <ContentToc items={items} />
           </aside>
         )}
