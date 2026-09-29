@@ -7,6 +7,8 @@ import { ImagePlus, X } from "lucide-react";
 import { PostEditor } from "@/shared/ui/editor";
 import { api } from "@/shared/lib/api";
 import { useSession } from "@/shared/lib/auth-client";
+import { useLeaveGuard } from "@/shared/lib/useLeaveGuard";
+import { LeaveConfirmDialog } from "@/shared/ui/leave-confirm-dialog";
 import type { ReadingLog } from "@/entities/reading-log";
 import { useMyReadingLogDrafts } from "@/entities/reading-log";
 import ReadingLogAccessDenied from "./ReadingLogAccessDenied";
@@ -77,6 +79,8 @@ export default function WriteReadingLogForm({ id }: Props) {
   const [finishedAt, setFinishedAt] = useState("");
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [content, setContent] = useState("");
+  // 사용자가 직접 고친 게 있는지 — 입력 핸들러에서만 켜고, 저장·삭제하면 꺼서 그 이동은 확인창 없이 보낸다.
+  const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadedId = useRef<string | null>(null);
@@ -114,7 +118,10 @@ export default function WriteReadingLogForm({ id }: Props) {
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => api.upload<{ url: string }>("/uploads/image", file),
-    onSuccess: (result) => setCoverImageUrl(result.url),
+    onSuccess: (result) => {
+      setCoverImageUrl(result.url);
+      setIsDirty(true);
+    },
     onError: () => setError("이미지 업로드에 실패했습니다. 잠시 후 다시 시도해주세요."),
   });
 
@@ -127,15 +134,26 @@ export default function WriteReadingLogForm({ id }: Props) {
   const saveMutation = useMutation({
     mutationFn: (body: ReadingLogBody) =>
       api.patch<ReadingLog>(`/reading-logs/${id}`, { ...body, publish: true }),
-    onSuccess: (saved) => router.push(`/reading/${saved.id}`),
+    onSuccess: (saved) => {
+      setIsDirty(false);
+      router.push(`/reading/${saved.id}`);
+    },
     onError: () => setError("저장에 실패했습니다. 잠시 후 다시 시도해주세요."),
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => api.delete(`/reading-logs/${id}`),
-    onSuccess: () => router.push("/reading"),
+    onSuccess: () => {
+      setIsDirty(false);
+      router.push("/reading");
+    },
     onError: () => setError("삭제에 실패했습니다. 잠시 후 다시 시도해주세요."),
   });
+
+  // 나갈 때 1.5초 디바운스에 걸려 있던 마지막 수정이 유실되지 않도록 바로 임시저장
+  const leaveGuard = useLeaveGuard(isDirty, () =>
+    autosaveMutation.mutate({ title, author, startedAt, finishedAt, coverImageUrl, content }),
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -179,7 +197,10 @@ export default function WriteReadingLogForm({ id }: Props) {
               />
               <button
                 type="button"
-                onClick={() => setCoverImageUrl("")}
+                onClick={() => {
+                  setCoverImageUrl("");
+                  setIsDirty(true);
+                }}
                 aria-label="표지 이미지 삭제"
                 className="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-700"
               >
@@ -202,13 +223,19 @@ export default function WriteReadingLogForm({ id }: Props) {
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setIsDirty(true);
+            }}
             placeholder="책 제목"
             className="w-full min-w-0 border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
           />
           <input
             value={author}
-            onChange={(e) => setAuthor(e.target.value)}
+            onChange={(e) => {
+              setAuthor(e.target.value);
+              setIsDirty(true);
+            }}
             placeholder="작가"
             className="w-full min-w-0 rounded border border-zinc-300 px-3 py-1.5 text-sm outline-none"
           />
@@ -216,27 +243,33 @@ export default function WriteReadingLogForm({ id }: Props) {
             <input
               type="date"
               value={startedAt}
-              onChange={(e) => setStartedAt(e.target.value)}
+              onChange={(e) => {
+                setStartedAt(e.target.value);
+                setIsDirty(true);
+              }}
               className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none"
             />
             <span>~</span>
             <input
               type="date"
               value={finishedAt}
-              onChange={(e) => setFinishedAt(e.target.value)}
+              onChange={(e) => {
+                setFinishedAt(e.target.value);
+                setIsDirty(true);
+              }}
               className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none"
             />
           </div>
         </div>
       </div>
 
-      <PostEditor content={content} onChange={setContent} />
+      <PostEditor content={content} onChange={setContent} onUserEdit={() => setIsDirty(true)} />
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center justify-end gap-2 sm:order-2">
+        <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleDelete}
@@ -254,7 +287,7 @@ export default function WriteReadingLogForm({ id }: Props) {
             </button>
           </div>
           {(autosaveMutation.isPending || autosavedAt) && (
-            <p className="text-xs text-zinc-400 sm:order-1">
+            <p className="text-xs text-zinc-400">
               {autosaveMutation.isPending
                 ? "임시 저장 중..."
                 : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}
@@ -262,6 +295,11 @@ export default function WriteReadingLogForm({ id }: Props) {
           )}
         </div>
       </div>
+      <LeaveConfirmDialog
+        open={leaveGuard.isConfirming}
+        onStay={leaveGuard.cancel}
+        onLeave={leaveGuard.confirm}
+      />
     </form>
   );
 }
