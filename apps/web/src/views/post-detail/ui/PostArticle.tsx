@@ -1,9 +1,10 @@
-import { PostAiSummary, type Post } from "@/entities/post";
+import type { Post } from "@/entities/post";
 import { buildToc } from "@/shared/lib/toc";
 import { PostOutline } from "@/widgets/post-outline";
 import { ContentToc } from "@/shared/ui/content-toc";
 import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
+import PostSummarySection from "./PostSummarySection";
 import TogglePinButton from "./TogglePinButton";
 
 // 서버(공개 글 SSR)와 클라이언트(작성자 본인 확인 후 폴백) 양쪽에서 같은 화면을 그리려고 분리.
@@ -33,7 +34,11 @@ export default function PostArticle({ post }: { post: Post }) {
             {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"} ·{" "}
             {new Date(post.createdAt).toLocaleDateString("ko-KR")}
           </p>
-          {post.aiSummary && <PostAiSummary summary={post.aiSummary.summary} />}
+          <PostSummarySection
+            postId={post.id}
+            authorId={post.userId}
+            initialSummary={post.aiSummary?.summary ?? []}
+          />
           {/* 본인만 쓰는 개인 블로그라 별도 sanitize 없이 그대로 렌더 (docs/FSD.md 신뢰 경계와 동일 맥락) */}
           <div
             className="prose prose-zinc min-h-[90vh] max-w-none break-words rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm"
