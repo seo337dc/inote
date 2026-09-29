@@ -19,6 +19,9 @@ type Props = {
   // 실제 로그인한 유저의 카테고리 트리(평탄화됨). 안 넘기면 기본 5개로 대체
   // (로그인 없이도 렌더링돼야 하는 곳이 있어 fallback을 남겨둠).
   categories?: CategoryOption[];
+  // 페이지네이션으로 posts에 전체 글이 없을 때 서버가 준 카테고리별/전체 개수를 쓴다.
+  counts?: Record<string, number>;
+  totalCount?: number;
 };
 
 export default function CategoryFilter({
@@ -28,6 +31,8 @@ export default function CategoryFilter({
   onNavigate,
   basePath = "/",
   categories = DEFAULT_CATEGORY_OPTIONS,
+  counts,
+  totalCount,
 }: Props) {
   return (
     <aside className={cn("w-40 shrink-0", className)}>
@@ -52,7 +57,7 @@ export default function CategoryFilter({
                 : "text-zinc-600 hover:bg-zinc-100"
             }`}
           >
-            전체 ({posts.length})
+            전체 ({totalCount ?? posts.length})
           </Link>
         </li>
         {categories.map((c) => (
@@ -67,7 +72,7 @@ export default function CategoryFilter({
               }`}
             >
               {"　".repeat(c.depth - 1)}
-              {c.name} ({posts.filter((post) => post.category === c.name).length})
+              {c.name} ({counts ? (counts[c.name] ?? 0) : posts.filter((post) => post.category === c.name).length})
             </Link>
           </li>
         ))}

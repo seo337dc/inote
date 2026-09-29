@@ -5,5 +5,7 @@ export default async function Home(props: PageProps<"/">) {
   const category =
     typeof searchParams.category === "string" ? searchParams.category : null;
 
-  return <HomePage category={category} />;
+  const page = Math.max(1, Math.floor(Number(searchParams.page)) || 1);
+
+  return <HomePage category={category} page={page} />;
 }

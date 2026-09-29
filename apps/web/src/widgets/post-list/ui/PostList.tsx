@@ -5,9 +5,15 @@ import type { Post } from "@/entities/post";
 type Props = {
   posts: Post[];
   emptyMessage?: string;
+  // 고정 글 섹션처럼 이미 "고정 글" 제목으로 묶여 있으면 행마다 별을 또 달 필요가 없음
+  showPinIcon?: boolean;
 };
 
-export default function PostList({ posts, emptyMessage = "글이 없습니다." }: Props) {
+export default function PostList({
+  posts,
+  emptyMessage = "글이 없습니다.",
+  showPinIcon = true,
+}: Props) {
   return (
     <ul className="divide-y divide-zinc-100">
       {posts.map((post) => (
@@ -15,7 +21,7 @@ export default function PostList({ posts, emptyMessage = "글이 없습니다." 
           <Link href={`/posts/${post.id}`} className="group block">
             <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-400">
               <div className="flex items-center gap-2 overflow-hidden">
-                {post.pinned && <Star className="size-3 shrink-0 fill-amber-400 text-amber-400" />}
+                {showPinIcon && post.pinned && <Star className="size-3 shrink-0 fill-amber-400 text-amber-400" />}
                 <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">{post.category}</span>
                 {post.isPrivate && (
                   <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">비공개</span>

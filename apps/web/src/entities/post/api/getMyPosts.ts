@@ -1,6 +1,8 @@
 import { api } from "@/shared/lib/api";
-import type { Post } from "../model/types";
+import type { MyPostListPage } from "../model/types";
 
-export function getMyPosts() {
-  return api.get<Post[]>("/blog/posts/mine");
+export function getMyPosts(page: number, category: string | null) {
+  const params = new URLSearchParams({ page: String(page) });
+  if (category) params.set("category", category);
+  return api.get<MyPostListPage>(`/blog/posts/mine?${params}`);
 }

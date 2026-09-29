@@ -13,3 +13,17 @@ export type Post = {
   pinned: boolean;
   aiSummary: { summary: string[] } | null;
 };
+
+// GET /blog/posts, /blog/posts/mine 공통 응답 — 고정 글(최대 3, 1페이지에서만) + 페이지네이션 목록
+export type PostListPage = {
+  pinned: Post[];
+  items: Post[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+export type MyPostListPage = PostListPage & {
+  categoryCounts: Record<string, number>;
+};
