@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import { useMyDrafts } from "@/entities/post";
 import { useSession } from "@/shared/lib/auth-client";
@@ -16,7 +19,15 @@ const MAX_ITEMS = 5;
 export default function DraftNotificationBell() {
   const { data: session } = useSession();
   const draftsQuery = useMyDrafts();
+  const pathname = usePathname();
+  const queryClient = useQueryClient();
   const drafts = draftsQuery.data ?? [];
+
+  // 벨은 네비에 항상 마운트돼 있어서 페이지를 옮겨도 캐시(staleTime 1분)를 그대로 읽음 —
+  // 글쓰기 중 자동저장된 draft가 이동 직후 바로 보이도록 경로가 바뀔 때마다 갱신한다.
+  useEffect(() => {
+    void queryClient.invalidateQueries({ queryKey: ["my-drafts"] });
+  }, [pathname, queryClient]);
 
   if (!session) return null;
 
