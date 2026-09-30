@@ -1,5 +1,8 @@
 # CLAUDE.md — inote
 
+> **새 세션 시작 시 필수:** `docs/handoff/HANDOFF.md`를 먼저 읽는다 (레포 3개에 걸친 현재 상태·내일 할 일).
+> (순서: `git pull` → `HANDOFF.md` → 이 파일)
+
 새 세션(다른 PC, 다른 AI 포함)에서 이 프로젝트를 이어받을 때 먼저 읽는 파일. 자세한 배경은
 `PLANNING.md`(왜 만들고 뭘 성공으로 볼지), `STRATEGY.md`(무엇을 만들지)를 참고.
 
@@ -82,8 +85,10 @@ shadcn/ui 적용됨 (`components.json`, inote-money와 동일한 초록 테마).
 
 ## 배포
 
-아직 배포 전. devlog-llm/inote-money와 동일하게 Vercel(FE)+Render(BE)+Neon(DB) 무료 티어 조합
-예정, 이후 AWS 검토 (만다라트 7번 축).
+- FE: Vercel (`https://inote-main.vercel.app`)
+- AI 서버(`inote-ai`): **Vercel** (`https://inote-ai-cyan.vercel.app`) — Render 무료 한도 초과로 2026-09-30 이전
+- BE(`inote-server`): Render 무료 (서비스 1개만 상시 → 월 750시간 안). 정지 이력과 결정은 `docs/infra/hosting-migration.md`
+- DB: Neon → Supabase 이전 예정 (`inote-server/docs/supabase-migration.md`)
 
 ## Git / GitHub 계정 (중요 — 새 머신에서는 재설정 필요)
 
