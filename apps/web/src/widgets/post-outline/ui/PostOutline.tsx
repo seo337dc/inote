@@ -58,7 +58,15 @@ export default function PostOutline({ currentPostId }: Props) {
       aria-label="카테고리"
       className="hide-scrollbar sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
     >
-      <p className="mb-2 text-xs font-semibold tracking-wide text-zinc-500">카테고리</p>
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs font-semibold tracking-wide text-zinc-500">카테고리</p>
+        <Link
+          href="/categories"
+          className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+        >
+          관리
+        </Link>
+      </div>
       <FolderList
         folders={folders}
         currentPostId={currentPostId}

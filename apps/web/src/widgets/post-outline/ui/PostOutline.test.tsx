@@ -69,4 +69,12 @@ describe("PostOutline", () => {
 
     await vi.waitFor(() => expect(container).toBeEmptyDOMElement());
   });
+
+  it("카테고리 제목 옆에 관리 페이지로 가는 '관리' 링크가 있다", async () => {
+    mockOutline();
+    renderWithQueryClient(<PostOutline currentPostId="p1" />);
+
+    const manage = await screen.findByRole("link", { name: "관리" });
+    expect(manage).toHaveAttribute("href", "/categories");
+  });
 });
