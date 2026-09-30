@@ -6,3 +6,6 @@ export { buildCategoryTree, flattenCategoryTree, MAX_CATEGORY_DEPTH } from "./li
 export { useMoveCategory } from "./model/useMoveCategory";
 export { canMove, evaluateDrop, moveCategory, resolveDrop } from "./lib/move";
 export type { DropZone, MoveTarget } from "./lib/move";
+export { useRenameCategory } from "./model/useRenameCategory";
+export { checkCategoryName, MAX_CATEGORY_NAME_LENGTH } from "./lib/rename";
+export type { NameCheck } from "./lib/rename";
