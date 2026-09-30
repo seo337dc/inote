@@ -10,12 +10,13 @@ import { cn } from "@/shared/lib/utils";
 import { buildOutline, findActiveFolderKeys, type OutlineFolder } from "../lib/buildOutline";
 
 // 로그인 전이거나 카테고리를 아직 못 불러왔을 때 쓰는 기본 카테고리(최상위 5개)
-const DEFAULT_CATEGORIES: Category[] = CATEGORIES.map((name) => ({
+const DEFAULT_CATEGORIES: Category[] = CATEGORIES.map((name, position) => ({
   id: `default:${name}`,
   userId: "",
   name,
   parentId: null,
   depth: 1,
+  position,
   createdAt: "",
   updatedAt: "",
 }));

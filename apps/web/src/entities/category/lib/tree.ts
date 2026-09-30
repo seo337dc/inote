@@ -2,6 +2,11 @@ import type { Category, CategoryNode } from "../model/types";
 
 export const MAX_CATEGORY_DEPTH = 3;
 
+// 같은 부모 안에서는 position 순서, 같으면 만든 순서. (position이 없는 옛 응답은 0으로 보고 만든 순서만 따른다)
+export function compareSiblings(a: Category, b: Category): number {
+  return (a.position ?? 0) - (b.position ?? 0) || a.createdAt.localeCompare(b.createdAt);
+}
+
 // parentId 기반 평평한 목록을 트리로 조립 — DB에서 온 순서가 부모→자식 순서를
 // 보장하지 않으므로, 실제 트리 구조는 여기서 다시 만든다.
 export function buildCategoryTree(categories: Category[]): CategoryNode[] {
@@ -19,6 +24,11 @@ export function buildCategoryTree(categories: Category[]): CategoryNode[] {
       roots.push(node);
     }
   });
+  const sortRecursively = (list: CategoryNode[]) => {
+    list.sort(compareSiblings);
+    list.forEach((n) => sortRecursively(n.children));
+  };
+  sortRecursively(roots);
   return roots;
 }
 

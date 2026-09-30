@@ -9,6 +9,7 @@ const cat = (id: string, name: string, parentId: string | null, depth: number): 
   name,
   parentId,
   depth,
+  position: 0,
   createdAt: "",
   updatedAt: "",
 });
