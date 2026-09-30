@@ -6,3 +6,5 @@ export { default as PostAiSummary } from "./ui/PostAiSummary";
 export { usePostOutline } from "./model/usePostOutline";
 export { useMyPostOutline } from "./model/useMyPostOutline";
 export { MY_POSTS_KEY, POST_OUTLINE_KEY, MY_POST_OUTLINE_KEY } from "./model/queryKeys";
+export { useMovePostCategory } from "./model/useMovePostCategory";
+export { moveCountKey, changePostCategory } from "./lib/moveCategory";
