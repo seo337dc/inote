@@ -45,3 +45,12 @@ export type PostOutlineItem = {
   isPrivate: boolean;
   pinned: boolean;
 };
+
+// GET /blog/posts/mine/outline — 카테고리 관리 화면용 (내 글 전체, 본문 없이)
+export type MyPostOutlineItem = {
+  id: string;
+  title: string;
+  category: string;
+  isPrivate: boolean;
+  publishedAt: string | null;
+};
