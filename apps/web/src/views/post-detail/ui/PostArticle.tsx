@@ -14,11 +14,11 @@ export default function PostArticle({ post }: { post: Post }) {
 
   return (
     <div className="@container">
-      <div className="mx-auto flex max-w-7xl gap-8 px-6 py-16">
-        <aside className="hidden w-60 shrink-0 @4xl:block">
+      <div className="mx-auto flex max-w-[90rem] gap-6 px-6 py-16">
+        <aside className="hidden w-52 shrink-0 @4xl:block">
           <PostOutline currentPostId={post.id} />
         </aside>
-        <article className="mx-auto min-w-0 max-w-4xl flex-1">
+        <article className="mx-auto min-w-0 max-w-5xl flex-1">
           <div className="mb-3 flex items-center justify-between">
             <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
               {post.category}
@@ -54,7 +54,7 @@ export default function PostArticle({ post }: { post: Post }) {
           />
         </article>
         {items.length > 0 && (
-          <aside className="hidden w-56 shrink-0 @7xl:block">
+          <aside className="hidden w-48 shrink-0 @7xl:block">
             <ContentToc items={items} />
           </aside>
         )}
