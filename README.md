@@ -68,4 +68,4 @@ NEXT_PUBLIC_AI_API_URL=http://localhost:8000
 
 - BE: [inote-server](https://github.com/seo337dc/inote-server)
 - AI: [inote-ai](https://github.com/seo337dc/inote-ai)
-- 배포: https://inote-blog.vercel.app/ _(도메인 변경 예정)_
+- 배포: https://inote-main.vercel.app/

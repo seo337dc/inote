@@ -12,7 +12,7 @@
 |------|------|
 | 레포 위치 | https://github.com/seo337dc/inote |
 | 실행 포트 (로컬) | `http://localhost:3011` |
-| 배포 URL | https://inote-blog.vercel.app/ _(도메인 변경 예정)_ |
+| 배포 URL | https://inote-main.vercel.app/ |
 | 현재 진행 단계 | 글쓰기 + LLM 챗 어시스턴트(세션/검색) + AI 자동 요약 + 카테고리 관리까지 완료 (2026-09-11). 할일 리스트·일지·독서·대시보드는 페이지만 있고 "준비 중" |
 
 ---
