@@ -20,6 +20,7 @@ import {
   type LinkPopupState,
 } from "./link-popover";
 import { toggleHeadingOnLine } from "./line-heading";
+import { TableToolbar } from "./TableToolbar";
 
 type Props = {
   content?: string;
@@ -273,6 +274,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         </span>
       </div>
       <EditorContent editor={editor} className="px-4 py-3" />
+      <TableToolbar editor={editor} wrapperRef={wrapperRef} />
       {linkHover && !linkPopup && (
         <LinkEditButton
           state={linkHover}
