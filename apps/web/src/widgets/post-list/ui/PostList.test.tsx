@@ -19,3 +19,26 @@ describe("PostList — 비공개 표시", () => {
     expect(within(publicRow).queryByText("비공개")).not.toBeInTheDocument();
   });
 });
+
+describe("PostList — 작성·수정 시각", () => {
+  it("수정한 글은 작성·수정 시각을 둘 다, 수정 안 한 글은 작성 시각만 한국 시간으로 보여준다", () => {
+    render(
+      <PostList
+        posts={[
+          makePost("a", {
+            publishedAt: "2026-10-01T05:30:00.000Z",
+            lastEditedAt: "2026-10-02T00:12:00.000Z",
+          }),
+          makePost("b", {
+            publishedAt: "2026-10-01T05:30:00.000Z",
+            lastEditedAt: "2026-10-01T05:30:00.000Z",
+          }),
+        ]}
+      />,
+    );
+
+    const [editedRow, plainRow] = screen.getAllByRole("listitem");
+    expect(within(editedRow).getByText("생성일 : 2026.10.01 14:30 / 수정일 : 2026.10.02 09:12")).toBeInTheDocument();
+    expect(within(plainRow).getByText("생성일 : 2026.10.01 14:30")).toBeInTheDocument();
+  });
+});

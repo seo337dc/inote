@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { PrivateBadge, type Post } from "@/entities/post";
+import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 
 type Props = {
   posts: Post[];
@@ -30,7 +30,7 @@ export default function PostList({
                   </span>
                 </div>
                 <span className="shrink-0">
-                  {new Date(post.createdAt).toLocaleDateString("ko-KR")}
+                  <PostDates post={post} />
                 </span>
               </div>
               <h2 className="text-lg font-semibold group-hover:underline">{post.title}</h2>

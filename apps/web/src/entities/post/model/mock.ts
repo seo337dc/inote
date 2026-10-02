@@ -1,7 +1,7 @@
 import type { Post } from "./types";
 
 // NavMobile/CategoryManager의 카테고리 개수 표시용으로만 남아있는 목업 (Category CRUD API 붙을 때 정리 예정)
-const MOCK_POSTS_BASE: Omit<Post, "userId" | "user" | "aiSummary" | "isPrivate" | "pinned" | "thumbnailUrl">[] = [
+const MOCK_POSTS_BASE: Omit<Post, "userId" | "user" | "aiSummary" | "isPrivate" | "pinned" | "thumbnailUrl" | "lastEditedAt">[] = [
   {
     id: "1",
     title: "RAG 파이프라인 설계할 때 헷갈렸던 것들",
@@ -56,6 +56,7 @@ const MOCK_POSTS_BASE: Omit<Post, "userId" | "user" | "aiSummary" | "isPrivate" 
 
 export const MOCK_POSTS: Post[] = MOCK_POSTS_BASE.map((post) => ({
   ...post,
+  lastEditedAt: post.publishedAt,
   userId: null,
   user: null,
   aiSummary: null,

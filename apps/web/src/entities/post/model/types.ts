@@ -9,6 +9,9 @@ export type Post = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  // 마지막으로 "저장(발행)"한 시각 — 첫 발행 땐 publishedAt과 같고, 다시 저장할 때만 바뀐다.
+  // 핀·비공개 전환·자동 임시저장으로는 안 바뀜 (그래서 updatedAt 대신 이 값을 정렬·표시에 쓴다)
+  lastEditedAt: string | null;
   isPrivate: boolean;
   pinned: boolean;
   // 출간 화면에서 올린 썸네일 (R2 URL), 없으면 null

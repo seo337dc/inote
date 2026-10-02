@@ -23,3 +23,33 @@ describe("PostArticle — 비공개 표시", () => {
     expect(screen.queryByText("비공개")).not.toBeInTheDocument();
   });
 });
+
+describe("PostArticle — 생성일·수정일", () => {
+  const PUBLISHED = "2026-10-01T05:30:00.000Z"; // 한국 14:30
+
+  it("수정한 글은 '생성일 : … / 수정일 : …' 한 줄로 보여준다", () => {
+    render(
+      <PostArticle
+        post={makePost("p1", { publishedAt: PUBLISHED, lastEditedAt: "2026-10-02T00:12:00.000Z" })}
+      />,
+    );
+
+    expect(
+      screen.getByText("생성일 : 2026.10.01 14:30 / 수정일 : 2026.10.02 09:12"),
+    ).toBeInTheDocument();
+  });
+
+  it("수정한 적 없는 글은 생성일만 보여준다", () => {
+    render(<PostArticle post={makePost("p1", { publishedAt: PUBLISHED, lastEditedAt: PUBLISHED })} />);
+
+    expect(screen.getByText("생성일 : 2026.10.01 14:30")).toBeInTheDocument();
+    expect(screen.queryByText(/수정일/)).not.toBeInTheDocument();
+  });
+
+  it("BE가 아직 lastEditedAt을 안 보내면 생성일만 보여준다", () => {
+    render(<PostArticle post={makePost("p1", { publishedAt: PUBLISHED, lastEditedAt: null })} />);
+
+    expect(screen.getByText("생성일 : 2026.10.01 14:30")).toBeInTheDocument();
+    expect(screen.queryByText(/수정일/)).not.toBeInTheDocument();
+  });
+});

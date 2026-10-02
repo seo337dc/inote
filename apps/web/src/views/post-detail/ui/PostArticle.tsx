@@ -1,4 +1,4 @@
-import { PrivateBadge, type Post } from "@/entities/post";
+import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { buildToc } from "@/shared/lib/toc";
 import { PostOutline } from "@/widgets/post-outline";
 import { ContentToc } from "@/shared/ui/content-toc";
@@ -33,10 +33,14 @@ export default function PostArticle({ post }: { post: Post }) {
             </div>
           </div>
           <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
-          <p className="mb-6 text-sm text-zinc-400">
-            {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"} ·{" "}
-            {new Date(post.createdAt).toLocaleDateString("ko-KR")}
-          </p>
+          <div className="mb-6 flex items-start justify-between gap-4 text-sm text-zinc-400">
+            <p className="min-w-0 truncate">
+              {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"}
+            </p>
+            <p className="shrink-0 text-right">
+              <PostDates post={post} />
+            </p>
+          </div>
           {post.thumbnailUrl && (
             // eslint-disable-next-line @next/next/no-img-element -- 외부(R2) 이미지, next/image 도메인 설정 없이 바로 표시
             <img
