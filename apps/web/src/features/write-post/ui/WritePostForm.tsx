@@ -218,8 +218,6 @@ export default function WritePostForm({ id }: Props) {
 
   return (
     <form id={FORM_ID} onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">{post.publishedAt ? "글 수정" : "글쓰기"}</h1>
-
       <input
         value={title}
         onChange={(e) => {

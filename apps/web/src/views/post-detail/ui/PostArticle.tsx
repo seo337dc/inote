@@ -1,4 +1,4 @@
-import type { Post } from "@/entities/post";
+import { PrivateBadge, type Post } from "@/entities/post";
 import { buildToc } from "@/shared/lib/toc";
 import { PostOutline } from "@/widgets/post-outline";
 import { ContentToc } from "@/shared/ui/content-toc";
@@ -20,9 +20,12 @@ export default function PostArticle({ post }: { post: Post }) {
         </aside>
         <article className="mx-auto min-w-0 max-w-5xl flex-1">
           <div className="mb-3 flex items-center justify-between">
-            <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
-              {post.category}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
+                {post.category}
+              </span>
+              {post.isPrivate && <PrivateBadge />}
+            </div>
             <div className="flex items-center gap-3">
               <TogglePinButton postId={post.id} authorId={post.userId} initialPinned={post.pinned} />
               <EditPostLink postId={post.id} authorId={post.userId} />

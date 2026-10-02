@@ -3,6 +3,7 @@ export { MOCK_POSTS } from "./model/mock";
 export { useMyDrafts } from "./model/useMyDrafts";
 export { useMyPosts } from "./model/useMyPosts";
 export { default as PostAiSummary } from "./ui/PostAiSummary";
+export { default as PrivateBadge } from "./ui/PrivateBadge";
 export { usePostOutline } from "./model/usePostOutline";
 export { useMyPostOutline } from "./model/useMyPostOutline";
 export { MY_POSTS_KEY, POST_OUTLINE_KEY, MY_POST_OUTLINE_KEY } from "./model/queryKeys";
