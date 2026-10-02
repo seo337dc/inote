@@ -1,23 +1,26 @@
-# HANDOFF — inote 전체 (inote · inote-server · inote-ai)
+# HANDOFF — inote 전체 (inote · inote-server · inote-ai · inote-money)
 
 > PC·채팅·AI 메모리가 바뀌어도 이 파일 + git이 맥락의 단일 소스다.
-> **새 세션 시작 시 이 파일을 먼저 읽는다.** (레포 3개에 걸친 작업이라 대표 문서를 `inote`에 둔다)
-> 마지막 갱신: 2026-09-30 (작성자: Claude Code) · 다음 작업 PC: 다른 PC
+> **새 세션 시작 시 이 파일을 먼저 읽는다.** (레포 여러 개에 걸친 작업이라 대표 문서를 `inote`에 둔다)
+> 마지막 갱신: 2026-10-02 (작성자: Claude Code) · 다음 작업 PC: 미정
 
 ---
 
 ## 0. 새 PC에서 시작하는 순서 (필수)
 
-1. 세 레포를 같은 부모 폴더에 받는다 (경로는 문서에 나오는 대로 형제 폴더여야 편함)
+1. 레포를 같은 부모 폴더에 받는다 (경로는 문서에 나오는 대로 형제 폴더여야 편함)
    - `inote` (FE, Next.js) — https://github.com/seo337dc/inote
    - `inote-server` (BE, NestJS) — https://github.com/seo337dc/inote-server
    - `inote-ai` (AI, FastAPI) — https://github.com/seo337dc/inote-ai
+   - `inote-money` (자산관리 FE) — https://github.com/seo337dc/inote-money
 2. 각 레포에서 `git pull`
 3. **환경 변수 파일은 git에 없다.** 각자 안전한 방법(비밀번호 관리자 등)으로 옮기거나 다시 만든다. **채팅·문서에 값을 붙이지 않는다.**
-   - `inote/apps/web/.env.local`: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_AI_API_URL`
-   - `inote-server/.env`: `DATABASE_URL`(Neon pooled, **비밀번호를 9/30에 재설정함 — 새 값 사용**), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID/SECRET`, `INTERNAL_SECRET`, `INOTE_AI_URL`, `CF_*`(R2), `SENTRY_DSN`(선택), `PORT`
-   - `inote-ai/.env`: `GROQ_API_KEY`, `DATABASE_URL`(AI 전용 Neon DB), `INTERNAL_SECRET`(BE와 같은 값), `INOTE_SERVER_URL`(끝에 `/api/v1`), `ALLOWED_ORIGINS`, `KAKAO_REST_API_KEY`
+   - `inote/apps/web/.env.local`: `NEXT_PUBLIC_API_URL`(BE 주소), `NEXT_PUBLIC_AI_API_URL`(**AI 서버 주소 `https://inote-ai-cyan.vercel.app`** — BE 주소를 넣으면 `/chat/stream`이 404)
+   - `inote-server/.env`: `DATABASE_URL`(**Supabase Session pooler 5432**), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID/SECRET`, `INTERNAL_SECRET`, `INOTE_AI_URL`, `AUTH_ERROR_FALLBACK_URL`, `CF_*`(R2, 아직 미설정), `PORT`
+   - `inote-ai/.env`: `GROQ_API_KEY`, `DATABASE_URL`(**AI 전용 Supabase 프로젝트, Transaction pooler 6543**), `INTERNAL_SECRET`(BE와 같은 값), `INOTE_SERVER_URL`(끝에 `/api/v1`), `ALLOWED_ORIGINS`, `KAKAO_REST_API_KEY`
+   - **`DATABASE_URL` 형식 주의**: 값 앞뒤 따옴표 금지(Vercel·Render 입력란), `?pgbouncer=true` 금지(psycopg는 오류, Session pooler는 불필요). 사용자명은 `postgres.<프로젝트ref>`. 로컬 `.env` 파일은 따옴표가 있어도 파이썬(dotenv)이 벗겨주지만 배포 환경 변수에는 넣지 않는다
    - 예시 키 목록은 각 레포의 `.env.example`
+   - **이 PC에만 있는 파일**(다른 PC에는 없음, 필요하면 안전하게 옮길 것): `inote-server/.env.supabase.local`, `inote-server/.env.supabase-ai.local`(gitignore 적용), Neon 백업 `~/inote-backups/2026-10-02/`
 4. 의존성 설치: 각 레포에서 `pnpm install` (inote는 `apps/web`), inote-ai는 `python3 -m venv venv && venv/bin/pip install -r requirements.txt`
 5. 로컬 실행
    - FE: `cd apps/web && pnpm dev` → http://localhost:3011
@@ -27,79 +30,86 @@
 
 ---
 
-## 1. 지금 인프라 상태 (2026-09-30 기준)
+## 1. 지금 인프라 상태 (2026-10-02 기준)
 
 | 구성 | 위치 | 상태 |
 |---|---|---|
-| FE | Vercel (`https://inote-main.vercel.app`) | 정상 |
-| AI 서버 | **Vercel** (`https://inote-ai-cyan.vercel.app`) | 정상 (요약·스트리밍·CORS·DB 저장 확인, `/health/db` 진단 엔드포인트 있음) |
-| BE | **Render 무료** (`https://inote-server-5a63.onrender.com`) | ⛔ **정지(Suspended)** — 무료 750시간 초과, 다음 달 시작에 재개 예상 |
-| BE DB | Neon `ep-fancy-bar` (us-east-1) | 무료 한도 초과 일시정지 경고 있음, 접속은 됨. 비밀번호 재설정 완료 |
-| AI DB | Neon `ep-wispy-moon` (us-east-2) | 정상 |
-| 슬립 방지 | cron-job.org | AI 작업 삭제함. **Inote Server 작업은 비활성화 상태** — BE 재개를 확인한 뒤 켠다 |
+| FE | Vercel (`https://inote-main.vercel.app`) | 정상. `NEXT_PUBLIC_AI_API_URL`을 AI 주소로 교체·재빌드 완료(이전엔 BE 주소가 들어가 있었음) |
+| AI 서버 | **Vercel** (`https://inote-ai-cyan.vercel.app`) | 정상. 새 DB로 전환 완료 (`/health/db` ok, 내부 시크릿 헤더 필요) |
+| BE | **Render 무료** (`https://inote-server-5a63.onrender.com`) | 정상 (10/2 복구). 서비스 1개만 상시 유지 — 월 750시간 한도에 거의 붙어 있음 |
+| BE DB | **Supabase** (Ohio `us-east-2`, 무료) | 정상. Session pooler 5432, 테이블 21개, RLS 켬, 단일 baseline 마이그레이션 |
+| AI DB | **Supabase 별도 프로젝트 `inote-ai`** (Ohio, 무료) | 정상. `public` 스키마, Transaction pooler 6543, 세션 5·대화 16, RLS 켬 |
+| Neon (옛 BE DB·AI DB) | | **아직 삭제하지 않음 — 롤백용**. 안정화 후 정리 |
+| 슬립 방지 | cron-job.org | **Inote Server 작업(10분 간격, `/api/v1/health`)을 켜야 함 — 활성화 여부 확인 필요** |
 
-- Koyeb 이전은 **취소**했다 (Mistral 인수 후 신규 무료 플랜 없음). BE는 Render 무료에 남긴다 (서비스 1개라 월 744시간 < 750시간).
-- Render의 `inote-ai` 서비스는 삭제했다. Render 환경 변수 `DATABASE_URL`(새 비밀번호)·`INOTE_AI_URL`(Vercel AI 주소)은 이미 교체했다.
-- 상세 기록: `docs/infra/hosting-migration.md`(공통), `inote-ai/docs/vercel-migration.md`, `inote-server/docs/supabase-migration.md`, `inote-ai/docs/supabase-migration.md`, Notion용 초안 `docs/infra/notion-draft.md`
+- 결정: AI DB는 BE 프로젝트에 `ai` 스키마로 합치려다 **별도 프로젝트로 분리**했다 (AI 서버가 `postgres` 계정으로 BE의 사용자·OAuth 토큰·글까지 읽을 수 있고, 스키마 분리는 보안 경계가 아니라서). 코드는 `ai.` 접두사 없이 원래 SQL 그대로다.
+- BE 프로젝트에 합치기 시도 때 복원한 **`ai` 스키마 사본이 남아 있다** → 안정화 후 삭제 대상.
+- 새로 만들었다가 쓰지 않는 Supabase 프로젝트가 있으면 정리한다 (무료 프로젝트는 2개까지, 1주 미사용 시 자동 일시중지).
+- 상세 기록: `docs/infra/hosting-migration.md`(공통), `inote-ai/docs/vercel-migration.md`, `inote-ai/docs/supabase-migration.md`, `inote-server/docs/supabase-migration.md`
+- Notion `Inote-server` 페이지: 기술 스택·인프라·환경변수·API(68개)·DB 스키마(21개)·테스트·미결정 항목을 10/2에 갱신함. **하위 페이지 5개(DB 문서, API 문서, devlog, 학습 노트, planning)는 아직 낡음.**
 
 ---
 
-## 2. 오늘(9/30) 한 일 (전부 푸시됨, 아래 ⚠️ 제외)
+## 2. 최근 한 일 (전부 푸시됨)
 
-**AI/인프라**
-- AI 서버를 Render → Vercel로 이전·배포, DB 주소 오류(BE DB를 가리킴) 수정, 에러 로그 정책(`request_id`)과 `/health/db` 진단 추가
-- Koyeb 시도 후 중단, Neon 비밀번호 재설정, Render 환경 변수·cron 정리
+**2026-10-01~02 인프라 (Render 한도 초과 → Supabase 이전)**
+- Render 서비스 정지 원인(2개 상시 유지로 750시간 초과) 정리 → BE만 남김
+- Neon 백업 → Supabase 이전 (BE 195행·AI 21행, 행 수와 내용 해시 모두 동일). 어긋났던 마이그레이션 3개를 단일 baseline으로 교체
+- Render 배포에서 `P3009`(옛 `init` 실패 기록이 새 마이그레이션을 막음) 발생 → `_prisma_migrations`의 실패 행을 직접 삭제하고 재배포로 해결
+- `dotenv`가 `package.json`에 없던 것을 직접 의존성으로 추가 (`node dist/main`이 `Cannot find module 'dotenv/config'`로 죽을 수 있었음)
+- AI DB를 별도 Supabase 프로젝트로 분리·전환, `schema.sql`에 RLS 추가
 
 **FE (`inote`)**
-- 글 저장 설정 화면(썸네일·카테고리·공개), 링크 편집 팝업·hover, 인라인 코드, `/write/{id}` 주소, 고정 글 별도 페이지네이션, `useSession` hydration 수정, 글 상세 본문 폭
-- 카테고리 관리 화면: 트리 개편, 드래그 위치 이동(dnd-kit), 폴더 접기/펼치기, **이름 수정(FE)**, **'글 이동' 탭(폴더 안 글 표시 + 글 드래그 이동)**
+- 글쓰기 에디터 **표 편집 플로팅 툴바**: 행·열 추가/삭제, 셀 내용 지우기, 셀 병합/분할, 표 삭제 (`shared/ui/editor/table-commands.ts`, `TableToolbar.tsx`). 활성 판정은 `editor.can()`이 아니라 아무것도 안 하는 dispatch로 명령을 돌려서 한다 (`can()`은 행이 하나뿐이어도 `deleteRow`를 true로 돌려줌). FE 테스트 305개 통과, 병합·분할은 브라우저에서 확인
+- 카테고리 관리 화면: 트리 개편, 드래그 위치 이동(dnd-kit), 폴더 접기/펼치기, 이름 수정(FE), '글 이동' 탭
 
 **BE (`inote-server`)**
-- `thumbnailUrl`, 고정 글 페이지네이션(`pinnedPage`), AI 다시 요약하기 API, 카테고리 트리용 글 목록(`/blog/posts/outline`)
-- ⚠️ **이름 수정 API(#6) 테스트 19개를 작성했고 지금 일부러 "빨간색"이다** (구현 전, 자리표시자 `rename`/DTO만 있음)
+- 고정 글 페이지네이션, AI 다시 요약하기 API, 카테고리 트리용 글 목록(`/blog/posts/outline`)
+- ⚠️ **이름 수정 API(#6) 테스트 19개는 일부러 "빨간색"** (구현 전, 자리표시자 `rename`/DTO만 있음)
 
 ---
 
-## 3. 내일 할 일 (순서대로)
+## 3. 다음 할 일 (순서대로)
 
-### A. 아침: 서비스 복구 확인
-1. Render 대시보드에서 `inote-server`가 재개됐는지 확인 (Suspended 배지가 사라졌는지)
-   - 자동 재개가 안 되면: Resume/Manual Deploy를 시도, 급하면 유료 플랜(월 약 $7)
-2. `GET https://inote-server-5a63.onrender.com/api/v1/health` = 200 확인
-3. 운영 확인: 로그인(Google), 글 목록·상세, 글 작성/저장, 이미지 업로드
-4. AI 연동 확인: FE 채팅이 **Vercel AI**를 부르는지
-   - Vercel(FE) 환경 변수 `NEXT_PUBLIC_AI_API_URL`이 `https://inote-ai-cyan.vercel.app`인지 확인, 아니면 교체 후 재배포
-   - Vercel(AI)에 `KAKAO_REST_API_KEY`가 있는지 확인 (없으면 책 검색이 조용히 실패)
-   - 글에 연결된 채팅(BE 작성자 확인), 독서 채팅, AI 다시 요약하기
-5. 정상이면 cron-job.org의 **Inote Server** 작업을 켠다 (주기 10분, 이 작업 1개만)
+### A. 사람이 확인할 것 (아직 안 한 것)
+1. 로그인한 상태에서 `/write`의 **표 편집 툴바** 확인: `/`로 표 삽입 → 툴바, 행·열 추가/삭제, 드래그로 여러 칸 선택 → 병합/분할, 표 삭제. 저장 후 글 상세(`/posts/[id]`)와 다시 열기(`/write/[id]`)에서 병합 유지. 독서 기록 작성(`/reading/write`)도 같은 에디터
+2. 운영 FE에서 AI 채팅: 기존 대화 이력(세션 5건) 보이는지, 새 메시지 저장되는지, Vercel AI 로그에 에러 없는지
+3. **Render `INOTE_AI_URL`이 Vercel AI 주소인지 확인** (옛 Render AI 주소면 글 삭제·탈퇴 시 AI 세션 삭제가 조용히 실패)
+4. Vercel(AI)에 `KAKAO_REST_API_KEY`가 있는지 확인 (없으면 책 검색이 조용히 실패)
+5. cron-job.org **Inote Server** 작업 켜기 (10분, `/api/v1/health`) — Render 월 750시간 한도가 거의 차 있으니 이 작업 1개만
 
-### B. Neon 백업 — ✅ 2026-10-02 완료 (이 PC의 `~/inote-backups/2026-10-02/`, 다른 PC에는 없음)
-- BE DB(`ep-fancy-bar`)와 AI DB(`ep-wispy-moon`)를 로컬로 백업 (저장소에 커밋 금지 — 개인 데이터)
-- 로컬에 `pg_dump`가 없다: `brew install libpq` (서버 버전이 **18**이라 pg_dump도 18 이상 필요) 또는 Python(psycopg)으로 테이블별 내보내기
-- 행 수를 기록해 이전 후 대조
+### B. `inote-money` 변경 (사용자가 변경이 필요하다고 함 — **구체 범위는 사용자가 정한다**)
+- 이 레포는 같은 BE(`inote-server`)를 쓰는 자산관리 FE이고 `https://inote-money.vercel.app`로 배포돼 있다. 인프라가 바뀌었으니 최소한 아래를 점검한다
+  - 배포 환경 변수의 `NEXT_PUBLIC_API_URL`이 현재 BE(Render)인지, 로그인·가계부·주식·미니게임이 새 DB(Supabase)에서 정상인지
+  - `CLAUDE.md`의 **기술 스택·배포 전략 표가 낡음**: DB를 Neon으로, Render를 "영구 무료"로 적고 있다 → Supabase, 월 750시간 한도로 정정. "현재 단계"·"미결정 항목"도 갱신
+  - BE의 `trustedOrigins`에 `https://inote-money.vercel.app`이 이미 들어 있다 (바꿀 일 없음)
+- 모바일 앱(`apps/app`, RN+WebView)은 별도 협업 모드(사람이 코딩, Claude는 가이드)이고 `inote-money/CLAUDE.md`의 "모바일 앱" 절이 기준이다. 로그인 쿠키 교환 방식은 BE 쿠키 정책(`SameSite=None; Secure`, `NODE_ENV=production`)과 맞물린다
 
-### C. Neon → Supabase 이전 (`inote-server/docs/supabase-migration.md` 체크리스트 순서)
-- 프로젝트 2개(`inote-prod`, `inote-dev`, 리전 us-east-1), Prisma용 사용자
-- **스키마 기준선 마이그레이션 재생성** (기존 3개로는 최신 스키마가 안 만들어짐 — `db push`로 반영해 왔음)
-- 데이터 이전 → 행 수 대조 → AI 테이블은 별도 스키마 `ai`로 합치기 (AI 코드 SQL에 `ai.` 접두사)
-- 보안: Data API 노출 끄기/RLS, 연결은 풀러 주소 (BE는 Session pooler 5432, AI는 Transaction pooler 6543)
-- 환경 변수 교체 (Render BE, Vercel AI, 로컬 `.env`) → 검증 → **Neon은 안정화될 때까지 삭제하지 않는다** (롤백용)
-- ⚠️ 이 단계는 반나절 예상. A(복구)와 B(백업)가 끝난 뒤에 시작
+### C. 안정화 후 정리 (바로 하지 않는다 — 문제가 없는 것을 며칠 확인한 뒤)
+- BE 프로젝트의 `ai` 스키마(합치기 시도 사본) 삭제, Neon 두 DB 삭제(백업 보관 후), 쓰지 않는 Supabase 프로젝트 삭제
+- Supabase 비밀번호 로테이션 (BE 프로젝트는 한 번 노출된 적 있음). 바꾸면 Render·로컬 `.env`를 같이 갱신
+- AI 프로젝트의 **1주 미사용 일시중지 방지**: cron-job으로 AI `/health/db`(내부 시크릿 헤더 필요)를 주기 호출
+- `inote-ai`의 `README.md`·`CLAUDE.md`·`docs/vercel-migration.md` DB 정보 최신화, `render.yaml`·`runtime.txt` 삭제
 
-### D. BE 카테고리 작업 (Supabase와 별개로 진행 가능, 순서 유지)
+### D. 보안·설계 과제 (사람 승인 후 진행 — AI가 임의로 정하지 않는다)
+- **AI 서버가 요청자를 검증하지 않는다**: FE가 보낸 `user_id`를 그대로 신뢰해서, 공개 글 API에 `userId`가 노출되는 점과 합치면 다른 사람의 대화 목록·이력을 읽을 수 있을 가능성이 크다. 후보: BE가 짧은 수명 토큰 발급 / AI가 Better Auth 세션 직접 검증
+- 운영 Swagger(`/api/docs`) 공개 범위, Cloudflare R2 설정(이미지 업로드), Render 750시간 한도 대응(낮 시간대만 핑 vs 유료)
+
+### E. BE 카테고리 작업 (순서 유지)
 1. **#6 이름 수정 API — 테스트를 통과하게 구현**
    - 테스트: `inote-server/src/categories/categories.rename.spec.ts`(12개), `dto/rename-category.dto.spec.ts`(7개). 각 테스트에 주석이 있고 파일 상단에 계약·구현 계획이 있다
-   - 구현: `dto/rename-category.dto.ts`(공백 정리 `@Transform` + 1~50자), `categories.service.ts`의 `rename`(조회 → 남의 것 404 → 같은 이름이면 그대로 → 중복 400 → 카테고리·내 글을 한 `$transaction`으로 갱신), 컨트롤러 `PATCH /categories/:id`
-   - 사용자가 "테스트가 너무 많다"고 해서 **핵심만 남길지** 먼저 정해도 된다 (핵심: 남의 카테고리 404, 이름 중복 400, 글 category를 같은 트랜잭션에서 함께 변경, 내 글만 갱신, DTO 빈 값/51자/공백 정리)
+   - 구현: `dto/rename-category.dto.ts`(공백 정리 `@Transform` + 1~50자), `categories.service.ts`의 `rename`(조회 → 남의 것 404 → 같은 이름이면 그대로 → 중복 400 → 카테고리·내 글을 한 `$transaction`으로 갱신), 컨트롤러 `PATCH /categories/:id`. `Post.category`는 이름 문자열이라 이름이 바뀌면 그 사용자의 글도 같이 갱신해야 한다
+   - 사용자가 "테스트가 너무 많다"고 해서 **핵심만 남길지** 먼저 정해도 된다
 2. **#7 내 글 목록 API** `GET /blog/posts/mine/outline` — 내 글(임시저장 포함, 빈 임시저장 제외) `[{id,title,category,isPrivate,publishedAt}]`, 최신순, 최대 500개. 규칙: **테스트 목록·골격은 Claude가 주고 사용자가 채운 뒤 구현**
-3. **#8 카테고리 위치 이동 API** — `it.todo` 38개 골격이 `categories.move.spec.ts`, `dto/move-category.dto.spec.ts`에 있음. `PostCategory.position` 컬럼이 필요 → **Supabase 기준선(C)과 함께** 하는 것이 안전
+3. **#8 카테고리 위치 이동 API** — `it.todo` 38개 골격이 `categories.move.spec.ts`, `dto/move-category.dto.spec.ts`에 있음. `PostCategory.position` 컬럼이 필요 → 이제 baseline이 있으니 **그 위에 새 마이그레이션**으로 추가 (옛 `db push` 방식 금지, 배포 순서 주의)
 - FE는 이미 전부 준비됨: 이름 수정·내 글 목록·위치 이동은 BE가 붙으면 바로 동작 (지금은 낙관적으로 바뀌었다 되돌아가고 토스트가 뜸)
 
-### E. 그 뒤 / 보류
-- 통합 테스트: Supabase `inote-dev` 프로젝트가 생긴 뒤 (로컬과 운영이 같은 DB라 지금은 위험). Playwright 확장은 보류
+### F. 그 뒤 / 보류
+- Notion: `Inote-server` 하위 페이지 5개 정리(특히 devlog에 인프라 이전 기록, DB 문서의 ERD, API 문서의 엔드포인트 목록)
+- 통합 테스트: dev DB가 없으니 대상 DB를 먼저 정해야 한다. Playwright 확장은 보류
 - BE를 Vercel(NestJS zero-config)로 옮길지 결정 — 필요한 조정: 시작 시 migrate → 빌드 단계로, 업로드 4.5MB 제한, Prisma `binaryTargets`, 풀러
-- 정리: `inote-ai/render.yaml`·`runtime.txt` 삭제, 각 README·CLAUDE.md 배포 정보 최신화, Notion 정리(`docs/infra/notion-draft.md` 기준)
-- 사용자 확인 대기: VS Code에서 `categories.rename.spec.ts` 빨간 밑줄 — CLI(tsc/eslint/prettier)는 오류 0개라 에디터 문제로 추정. `ESLint: Restart ESLint Server` → `TypeScript: Restart TS Server` → 그래도 남으면 Problems 패널의 메시지 확인
+- 포트폴리오(`portfolio-site`)는 **사용자가 직접 수정 중** — 건드리지 않는다
+- VS Code에서 `categories.rename.spec.ts` 빨간 밑줄 — CLI(tsc/eslint/prettier)는 오류 0개라 에디터 문제로 추정
 
 ---
 
@@ -110,19 +120,22 @@
 - **작업은 하나씩**, 끝날 때마다 결과 보고 후 멈춘다. 기획·UX·아키텍처는 대안 제시 → 사용자 승인 후 반영
 - **커밋·푸시는 사용자가 요청할 때만**, 기능 단위로 나눠서 커밋. 개인 노트(`backend-interview-notes.*`)는 절대 커밋하지 않는다
 - 낙관적 업데이트를 쓰고 로딩 표시는 넣지 않는다 (사용자 선호)
-- 무료 서비스는 **공식 요금 페이지·가입 화면으로 조건을 먼저 확인** (Koyeb 사례). 비밀번호·키는 채팅에 붙이지 않는다
+- 무료 서비스는 **공식 요금 페이지·가입 화면으로 조건을 먼저 확인** (Koyeb 사례). **비밀번호·키·DB 주소는 채팅·문서에 붙이지 않는다.** 에러 메시지에 접속 주소가 그대로 찍히는 경우가 있어 출력도 마스킹한다 (`postgres(ql)?://\S+` → `<연결주소 생략>`)
 - 이슈는 "문제 파악 → 해결 방법 검토 → 최종 결론" 순서로 답한다
+- Supabase는 앱에서 `DATABASE_URL`(Prisma/psycopg)로만 접속한다. anon/service_role 키는 쓰지 않는다 (service_role은 RLS를 우회)
 
 ---
 
 ## 5. 알려진 이슈 / 주의
 
-- **BE(Render)가 정지 중이라 운영 데이터 화면이 안 열린다** (9/30 밤 기준). 내일 재개 예정
+- ⚠️ **로컬 BE와 운영 BE가 같은 Supabase DB를 쓴다** (dev/prod 분리 없음). 로컬에서 데이터를 지우거나 스키마를 바꿀 때, `prisma migrate`·`db push`를 실행할 때 특히 주의
+- **DB 주소를 바꾸기 전에 그 DB에 맞는 마이그레이션 코드를 먼저 배포한다.** 반대로 하면 `P3009`로 서버가 재시작을 반복한다 (Render 시작 명령이 `prisma migrate deploy && node dist/main`). 해결은 `_prisma_migrations`의 실패 행(`finished_at`이 null)을 지우고 재배포
+- 풀러 에러 구분: `tenant/user ... not found`는 ref나 호스트가 틀린 것(비밀번호 문제 아님), `password authentication failed`는 비밀번호만 다른 것. ref는 이미지에서 읽지 말고 Copy로 복사한다
 - 카테고리 관리 화면의 **드래그 동작은 자동 테스트로 재현할 수 없어** 사람이 화면에서 확인해야 한다 (BE 목록 API가 생긴 뒤 글 이동 탭이 실제로 채워진다)
+- 표 편집 툴바는 표 바로 위 문단 글자를 툴바가 떠 있는 동안 가린다. 헤더 행 삭제는 허용 상태, 분할하면 합쳐졌던 내용은 위쪽 칸에 남는다
 - BE 전체 `npx jest`는 지금 **이름 수정 테스트 18개 때문에 실패** (구현 전이라 정상). 구현하면 초록색
 - `PostMover`/`buildOutline`의 폴더 트리 만드는 코드가 일부 중복 (레이어 때문에 분리됨, 나중에 정리 가능)
 - 개발 서버를 재시작할 때 이전 프로세스가 포트를 잡고 있는지 확인 (`lsof -iTCP:3200 -sTCP:LISTEN`)
-- 로컬 BE와 운영 BE가 **같은 Neon DB**를 쓴다 (Supabase 이전으로 분리 예정) — 로컬에서 데이터를 지우거나 스키마를 바꿀 때 주의
 
 ---
 
@@ -134,6 +147,7 @@
 | `inote/docs/infra/hosting-migration.md` | Render 정지 원인, 선택지, 결정, 진행 상황 |
 | `inote/docs/infra/notion-draft.md` | Notion 게시용 초안 |
 | `inote-ai/docs/vercel-migration.md` | AI 서버 Vercel 이전 상세·트러블슈팅 |
-| `inote-server/docs/supabase-migration.md` | Neon → Supabase 이전 계획·체크리스트 |
-| `inote-ai/docs/supabase-migration.md` | AI DB 합치기(`ai` 스키마) 계획 |
+| `inote-ai/docs/supabase-migration.md` | AI DB를 별도 Supabase 프로젝트로 분리한 기록·트러블슈팅 |
+| `inote-server/docs/supabase-migration.md` | Neon → Supabase 이전 계획·진행 로그·트러블슈팅 |
 | `inote-server/docs/handoff/HANDOFF.md` | BE 쪽 handoff (이 문서를 가리킴) |
+| `inote-money/CLAUDE.md`, `inote-money/apps/app/CLAUDE.md` | 자산관리 FE·모바일 앱 규칙 |
