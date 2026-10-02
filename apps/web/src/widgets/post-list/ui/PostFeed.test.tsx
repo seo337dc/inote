@@ -3,8 +3,14 @@ import { render, screen, within } from "@testing-library/react";
 import PostFeed from "./PostFeed";
 import { makePost, makePostListPage } from "@/test/fixtures/posts";
 
-function renderFeed(data = makePostListPage(), category: string | null = null) {
-  return render(<PostFeed data={data} basePath="/" category={category} emptyMessage="비었어요" />);
+function renderFeed(
+  data = makePostListPage(),
+  category: string | null = null,
+  q: string | null = null,
+) {
+  return render(
+    <PostFeed data={data} basePath="/" category={category} q={q} emptyMessage="비었어요" />,
+  );
 }
 
 describe("PostFeed", () => {
@@ -85,5 +91,26 @@ describe("PostFeed", () => {
     renderFeed(makePostListPage({ total: 0 }), "이직");
 
     expect(screen.getByText("비었어요")).toBeInTheDocument();
+  });
+
+  it("검색 결과가 0개면 '첫 글' 빈 화면이 아니라 목록 안에 '검색 결과가 없습니다.'를 보여준다", () => {
+    renderFeed(makePostListPage({ total: 0 }), null, "없는단어");
+
+    expect(screen.getByText("검색 결과가 없습니다.")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "전체 글 페이지 이동" })).toBeInTheDocument();
+  });
+
+  it("검색어는 페이지를 넘겨도 주소에 유지된다 (카테고리와 함께)", () => {
+    renderFeed(
+      makePostListPage({ items: [makePost("a")], page: 1, totalPages: 3, total: 25 }),
+      "학습",
+      "리액트",
+    );
+
+    const allNav = screen.getByRole("navigation", { name: "전체 글 페이지 이동" });
+    expect(within(allNav).getByRole("link", { name: "다음" })).toHaveAttribute(
+      "href",
+      `/?category=${encodeURIComponent("학습")}&q=${encodeURIComponent("리액트")}&page=2`,
+    );
   });
 });

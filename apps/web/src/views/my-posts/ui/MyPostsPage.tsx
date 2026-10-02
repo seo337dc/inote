@@ -13,12 +13,13 @@ type Props = {
   category: string | null;
   page: number;
   pinnedPage: number;
+  q: string | null;
 };
 
-export default function MyPostsPage({ category, page, pinnedPage }: Props) {
+export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, category);
+  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, category, q);
   const categoriesQuery = useCategories();
   const flatCategories = flattenCategoryTree(buildCategoryTree(categoriesQuery.data ?? []));
 
@@ -44,17 +45,19 @@ export default function MyPostsPage({ category, page, pinnedPage }: Props) {
           totalCount={allCount}
           activeCategory={category}
           basePath="/my-posts"
+          q={q}
           categories={flatCategories}
         />
       </div>
 
       <div className="flex-1">
-        <PostListHeader title="나의 글" count={data.total} />
+        <PostListHeader title="나의 글" count={data.total} basePath="/my-posts" category={category} q={q} />
 
         <PostFeed
           data={data}
           basePath="/my-posts"
           category={category}
+          q={q}
           emptyMessage="이 카테고리엔 아직 글이 없습니다."
         />
       </div>

@@ -1,4 +1,4 @@
-import { toPageNumber } from "@/shared/lib/pageParam";
+import { toPageNumber, toSearchQuery } from "@/shared/lib/pageParam";
 import { MyPostsPage } from "@/views/my-posts";
 
 export default async function Page(props: PageProps<"/my-posts">) {
@@ -8,6 +8,7 @@ export default async function Page(props: PageProps<"/my-posts">) {
 
   const page = toPageNumber(searchParams.page);
   const pinnedPage = toPageNumber(searchParams.pinnedPage);
+  const q = toSearchQuery(searchParams.q);
 
-  return <MyPostsPage category={category} page={page} pinnedPage={pinnedPage} />;
+  return <MyPostsPage category={category} page={page} pinnedPage={pinnedPage} q={q} />;
 }

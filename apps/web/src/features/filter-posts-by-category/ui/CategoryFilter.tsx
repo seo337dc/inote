@@ -22,7 +22,17 @@ type Props = {
   // 페이지네이션으로 posts에 전체 글이 없을 때 서버가 준 카테고리별/전체 개수를 쓴다.
   counts?: Record<string, number>;
   totalCount?: number;
+  // 걸려 있는 검색어 — 카테고리를 바꿔도 검색은 유지한다 (카테고리 안에서 검색)
+  q?: string | null;
 };
+
+function hrefFor(basePath: string, category: string | null, q: string | null) {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (q) params.set("q", q);
+  const qs = params.toString();
+  return qs ? `${basePath}?${qs}` : basePath;
+}
 
 export default function CategoryFilter({
   posts,
@@ -33,6 +43,7 @@ export default function CategoryFilter({
   categories = DEFAULT_CATEGORY_OPTIONS,
   counts,
   totalCount,
+  q = null,
 }: Props) {
   return (
     <aside className={cn("w-40 shrink-0", className)}>
@@ -49,7 +60,7 @@ export default function CategoryFilter({
       <ul className="space-y-1 text-sm">
         <li>
           <Link
-            href={basePath}
+            href={hrefFor(basePath, null, q)}
             onClick={onNavigate}
             className={`block rounded px-2 py-1 ${
               !activeCategory
@@ -63,7 +74,7 @@ export default function CategoryFilter({
         {categories.map((c) => (
           <li key={c.name}>
             <Link
-              href={`${basePath}?category=${encodeURIComponent(c.name)}`}
+              href={hrefFor(basePath, c.name, q)}
               onClick={onNavigate}
               className={`block rounded px-2 py-1 ${
                 activeCategory === c.name

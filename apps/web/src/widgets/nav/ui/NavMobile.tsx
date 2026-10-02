@@ -80,6 +80,7 @@ export default function NavMobile() {
                 className="w-full"
                 onNavigate={() => setOpen(false)}
                 basePath={pathname}
+                q={searchParams.get("q")}
               />
             </div>
           )}
