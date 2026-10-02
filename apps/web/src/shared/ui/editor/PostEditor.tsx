@@ -139,7 +139,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         },
       },
       attributes: {
-        class: "prose prose-zinc max-w-none min-h-[400px] focus:outline-none",
+        class: "prose prose-zinc prose-compact max-w-none min-h-[400px] focus:outline-none",
       },
     },
   });

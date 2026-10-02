@@ -149,6 +149,57 @@
   overflow-wrap: break-word;
 }
 
+/* typography 기본 간격(문단 1.25em, 줄간격 1.75, 제목 위 2em 등)이 글 상세에서 너무 벌어져 보여서
+   좁힌 버전. .prose와 같이 붙여 쓴다 (예: "prose prose-zinc prose-compact") */
+.prose-compact {
+  line-height: 1.6;
+}
+.prose-compact p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose-compact h1 {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+.prose-compact h2 {
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+}
+.prose-compact h3,
+.prose-compact h4 {
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+.prose-compact ul,
+.prose-compact ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.prose-compact li {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+.prose-compact li > p {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+.prose-compact blockquote,
+.prose-compact pre,
+.prose-compact table,
+.prose-compact img,
+.prose-compact figure {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}
+/* 위 규칙들이 typography의 "첫/마지막 요소 바깥 여백 0" 규칙을 덮어쓰지 않게 다시 지정 */
+.prose-compact > :first-child {
+  margin-top: 0;
+}
+.prose-compact > :last-child {
+  margin-bottom: 0;
+}
+
 /* Tailwind preflight가 hr의 기본 margin을 0으로 리셋해버려서, 위아래 내용에 딱 붙어 보임 */
 .tiptap hr,
 .prose hr {
