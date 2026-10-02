@@ -73,7 +73,7 @@
    - 글에 연결된 채팅(BE 작성자 확인), 독서 채팅, AI 다시 요약하기
 5. 정상이면 cron-job.org의 **Inote Server** 작업을 켠다 (주기 10분, 이 작업 1개만)
 
-### B. Neon 백업 (Supabase 이전 전, 최우선)
+### B. Neon 백업 — ✅ 2026-10-02 완료 (이 PC의 `~/inote-backups/2026-10-02/`, 다른 PC에는 없음)
 - BE DB(`ep-fancy-bar`)와 AI DB(`ep-wispy-moon`)를 로컬로 백업 (저장소에 커밋 금지 — 개인 데이터)
 - 로컬에 `pg_dump`가 없다: `brew install libpq` (서버 버전이 **18**이라 pg_dump도 18 이상 필요) 또는 Python(psycopg)으로 테이블별 내보내기
 - 행 수를 기록해 이전 후 대조
