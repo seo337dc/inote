@@ -4,6 +4,9 @@ export type Post = {
   content: string;
   excerpt: string | null;
   category: string;
+  // 글 상세(GET /blog/posts/:id)에서만 내려오는 카테고리 경로 — 최상위부터 이 글의 카테고리까지의 이름 (예: ["학습", "AI"]).
+  // 목록 응답과 아직 이 필드를 안 보내는 BE에서는 없다 → 없으면 [category] 하나로 대신한다 (CategoryBreadcrumb)
+  categoryPath?: string[];
   userId: string | null;
   user: { name: string; email: string } | null;
   createdAt: string;

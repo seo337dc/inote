@@ -1,5 +1,6 @@
 import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { buildToc } from "@/shared/lib/toc";
+import CategoryBreadcrumb from "./CategoryBreadcrumb";
 import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
 import PostArticleLayout, {
@@ -24,9 +25,7 @@ export default function PostArticle({ post }: { post: Post }) {
     >
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
-            {post.category}
-          </span>
+          <CategoryBreadcrumb post={post} />
           {post.isPrivate && <PrivateBadge />}
         </div>
         <div className="flex items-center gap-3">

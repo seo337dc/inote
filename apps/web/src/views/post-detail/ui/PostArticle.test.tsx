@@ -17,6 +17,23 @@ vi.mock("./EditPostLink", () => ({ default: () => null }));
 vi.mock("./DeletePostButton", () => ({ default: () => null }));
 vi.mock("./PostSummarySection", () => ({ default: () => null }));
 
+describe("PostArticle — 카테고리 경로", () => {
+  it("제목 위에 카테고리 경로('학습 > AI')를 링크로 보여준다", () => {
+    render(<PostArticle post={makePost("p1", { category: "AI", categoryPath: ["학습", "AI"] })} />);
+
+    const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
+    expect(within(nav).getByRole("link", { name: "학습" })).toHaveAttribute("href", `/?category=${encodeURIComponent("학습")}`);
+    expect(within(nav).getByRole("link", { name: "AI" })).toHaveAttribute("href", "/?category=AI");
+  });
+
+  it("BE가 아직 경로를 안 보내면 카테고리 이름 하나만 보여준다", () => {
+    render(<PostArticle post={makePost("p1", { category: "학습" })} />);
+
+    const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
+    expect(within(nav).getAllByRole("link")).toHaveLength(1);
+  });
+});
+
 describe("PostArticle — 비공개 표시", () => {
   it("비공개 글이면 상단에 '비공개'를 보여준다", () => {
     render(<PostArticle post={makePost("p1", { isPrivate: true })} />);
