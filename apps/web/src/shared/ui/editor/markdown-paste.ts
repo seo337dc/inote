@@ -17,9 +17,20 @@ export const MarkdownPaste = Extension.create({
     return [
       new Plugin({
         props: {
-          handlePaste(_view, event) {
+          handlePaste(view, event) {
             const clipboardData = event.clipboardData;
             if (!clipboardData) return false;
+
+            // 코드 블록 안에서는 마크다운으로 바꾸지 않고 글자 그대로 넣는다.
+            // 변환하면 문단·제목·목록 같은 블록이 만들어지는데 코드 블록은 글자만 담을 수 있어서,
+            // 내용이 블록 밖(아래)으로 밀려나고 코드 속 "# ..."·"- ..." 줄이 제목·목록으로 망가진다.
+            const { $from, $to } = view.state.selection;
+            if ($from.parent === $to.parent && $from.parent.type.name === "codeBlock") {
+              const plain = clipboardData.getData("text/plain");
+              if (!plain) return false;
+              view.dispatch(view.state.tr.insertText(plain.replace(/\r\n?/g, "\n")).scrollIntoView());
+              return true;
+            }
 
             const html = clipboardData.getData("text/html");
             if (html && STRUCTURAL_HTML_TAG.test(html)) return false;
