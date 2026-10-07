@@ -113,4 +113,33 @@ describe("PostFeed", () => {
       `/?category=${encodeURIComponent("학습")}&q=${encodeURIComponent("리액트")}&page=2`,
     );
   });
+
+  it("emptyState를 주면 글이 하나도 없을 때 기본 '첫 글 쓰기' 화면 대신 그것을 보여준다", () => {
+    render(
+      <PostFeed
+        data={makePostListPage({ total: 0 })}
+        basePath="/users/u1"
+        category={null}
+        emptyState={<p>아직 공개된 글이 없어요.</p>}
+      />,
+    );
+
+    expect(screen.getByText("아직 공개된 글이 없어요.")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "글쓰기" })).toBeNull();
+  });
+
+  it("emptyState가 있어도 검색 결과가 0개면 목록 안에서 '검색 결과가 없습니다.'로 안내한다", () => {
+    render(
+      <PostFeed
+        data={makePostListPage({ total: 0 })}
+        basePath="/users/u1"
+        category={null}
+        q="없는말"
+        emptyState={<p>아직 공개된 글이 없어요.</p>}
+      />,
+    );
+
+    expect(screen.getByText("검색 결과가 없습니다.")).toBeInTheDocument();
+    expect(screen.queryByText("아직 공개된 글이 없어요.")).toBeNull();
+  });
 });

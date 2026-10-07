@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Star } from "lucide-react";
 import type { PostListPage } from "@/entities/post";
 import PostList from "./PostList";
@@ -11,15 +12,17 @@ type Props = {
   // 검색어 — 있으면 페이지를 넘겨도 유지하고, 결과가 없을 때 "검색 결과 없음"으로 안내
   q?: string | null;
   emptyMessage?: string;
+  // 조건 없이 글이 0개일 때 보여줄 화면 — 기본은 "첫 글을 써 보세요"(내 글 기준). 다른 사람의 목록은 다른 안내를 넘긴다
+  emptyState?: ReactNode;
 };
 
 // 위 "고정 글"(3개씩, pinnedPage) + 아래 "전체 글"(page)을 각각 자기 페이지네이션으로 넘긴다.
 // 한쪽을 넘겨도 다른 쪽 페이지는 주소에 남겨 유지한다. 홈과 나의 글이 같이 씀.
-export default function PostFeed({ data, basePath, category, q = null, emptyMessage }: Props) {
+export default function PostFeed({ data, basePath, category, q = null, emptyMessage, emptyState }: Props) {
   const { pinned, pinnedPage, pinnedTotal, pinnedTotalPages, items, total, page, totalPages } = data;
 
   // 아무 조건 없이 글이 0개일 때만 "첫 글을 써 보세요" 화면 — 필터·검색 결과가 0개인 건 목록 안에서 안내
-  if (total === 0 && !category && !q) return <PostListEmpty />;
+  if (total === 0 && !category && !q) return <>{emptyState ?? <PostListEmpty />}</>;
 
   const listEmptyMessage = q ? "검색 결과가 없습니다." : emptyMessage;
 

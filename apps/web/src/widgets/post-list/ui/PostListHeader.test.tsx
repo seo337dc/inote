@@ -39,4 +39,11 @@ describe("PostListHeader — 검색", () => {
 
     expect(screen.getByRole("link", { name: "글쓰기" })).toHaveAttribute("href", "/write");
   });
+
+  it("showWrite를 끄면 글쓰기 버튼을 보여주지 않는다 (다른 사람의 글 목록)", () => {
+    render(<PostListHeader title="서동찬의 글" count={3} basePath="/users/u1" category={null} q={null} showWrite={false} />);
+
+    expect(screen.queryByRole("link", { name: "글쓰기" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "서동찬의 글" })).toBeInTheDocument();
+  });
 });

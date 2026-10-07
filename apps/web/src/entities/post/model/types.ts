@@ -25,6 +25,9 @@ export type Post = {
 // GET /blog/posts, /blog/posts/mine 공통 응답.
 // 고정 글은 한 페이지 3개씩 pinnedPage로, 나머지(고정 글 제외) 일반 글은 page로 따로 페이지네이션한다.
 export type PostListPage = {
+  // 작성자 필터(?userId=)로 불렀을 때만 내려오는 그 작성자 — 글이 0개(검색 결과 없음 포함)여도 이름을 알 수 있다.
+  // 없는 사용자면 null, 필터가 없는 요청에는 필드 자체가 없다
+  author?: { id: string; name: string } | null;
   // pinnedPage 페이지의 고정 글 (최대 3개)
   pinned: Post[];
   pinnedPage: number;

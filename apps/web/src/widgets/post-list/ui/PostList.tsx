@@ -18,23 +18,25 @@ export default function PostList({
     <ul className="divide-y divide-zinc-100">
       {posts.map((post) => (
         <li key={post.id} className="py-5">
-          <Link href={`/posts/${post.id}`} className="group flex items-start gap-4">
+          {/* 카드 전체가 아니라 제목(글)과 작성자(그 사람의 글 목록)가 각각 링크 — 링크 안에 링크를 넣을 수 없어서 카드를 링크로 감싸지 않는다 */}
+          <div className="flex items-start gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-400">
                 <div className="flex items-center gap-2 overflow-hidden">
                   {showPinIcon && post.pinned && <Star className="size-3 shrink-0 fill-amber-400 text-amber-400" />}
-                  {/* 카드 전체가 글 링크라서 경로는 링크 없이 글자로만 보여준다 */}
                   <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">{getCategoryPath(post).join(" > ")}</span>
                   {post.isPrivate && <PrivateBadge />}
-                  <span className="truncate">
-                    {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"}
-                  </span>
+                  <PostAuthor post={post} />
                 </div>
                 <span className="shrink-0">
                   <PostDates post={post} />
                 </span>
               </div>
-              <h2 className="text-lg font-semibold group-hover:underline">{post.title}</h2>
+              <h2 className="text-lg font-semibold">
+                <Link href={`/posts/${post.id}`} className="hover:underline">
+                  {post.title}
+                </Link>
+              </h2>
               {post.excerpt && <p className="mt-1 text-sm text-zinc-500">{post.excerpt}</p>}
             </div>
             {post.thumbnailUrl && (
@@ -45,12 +47,24 @@ export default function PostList({
                 className="h-20 w-32 shrink-0 rounded object-cover"
               />
             )}
-          </Link>
+          </div>
         </li>
       ))}
       {posts.length === 0 && (
         <li className="py-10 text-center text-sm text-zinc-400">{emptyMessage}</li>
       )}
     </ul>
+  );
+}
+
+// 작성자 — 누르면 그 사람의 공개 글 목록(/users/[id])으로 간다. 작성자 정보가 없는 글(탈퇴 등)은 글자로만.
+function PostAuthor({ post }: { post: Post }) {
+  if (!post.user) return <span className="truncate">작성자 없음</span>;
+  const label = `${post.user.name} (${post.user.email})`;
+  if (!post.userId) return <span className="truncate">{label}</span>;
+  return (
+    <Link href={`/users/${post.userId}`} className="truncate hover:text-zinc-700 hover:underline">
+      {label}
+    </Link>
   );
 }
