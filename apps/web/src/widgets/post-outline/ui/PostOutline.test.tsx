@@ -130,6 +130,41 @@ describe("PostOutline", () => {
     await vi.waitFor(() => expect(container).toBeEmptyDOMElement());
   });
 
+  it("각 카테고리 줄 맨 오른쪽에 그 카테고리의 글 목록 페이지로 가는 링크가 있다", async () => {
+    mockOutline();
+    renderWithQueryClient(<PostOutline currentPostId="p1" />);
+
+    const study = await screen.findByRole("link", { name: "학습 목록 보기" });
+    expect(study).toHaveAttribute("href", `/?category=${encodeURIComponent("학습")}`);
+    expect(screen.getByRole("link", { name: "이직 목록 보기" })).toHaveAttribute(
+      "href",
+      `/?category=${encodeURIComponent("이직")}`,
+    );
+    // 같은 줄에서 펼침 버튼 다음(오른쪽)에 온다
+    const row = screen.getByRole("button", { name: /학습/ }).parentElement!;
+    expect(row.lastElementChild).toBe(study);
+  });
+
+  it("목록 링크를 눌러도 폴더가 펼쳐지거나 접히지 않는다 (펼침은 버튼만 담당)", async () => {
+    mockOutline();
+    const user = userEvent.setup();
+    renderWithQueryClient(<PostOutline currentPostId="p1" />);
+    await screen.findByRole("link", { name: "리액트 쿼리" });
+    const link = screen.getByRole("link", { name: "학습 목록 보기" });
+    link.addEventListener("click", (e) => e.preventDefault()); // jsdom 이동 방지
+
+    await user.click(link);
+
+    expect(screen.getByRole("button", { name: /학습/ })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("접히면 카테고리 목록 링크도 함께 가려진다", async () => {
+    mockOutline();
+    renderWithQueryClient(<PostOutline currentPostId="p1" collapsed />);
+
+    expect(await screen.findByRole("link", { name: "학습 목록 보기", hidden: true })).not.toBeVisible();
+  });
+
   it("카테고리 제목 옆에 관리 페이지로 가는 '관리' 링크가 있다", async () => {
     mockOutline();
     renderWithQueryClient(<PostOutline currentPostId="p1" />);

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Lock, Minus, Plus } from "lucide-react";
+import { ExternalLink, Lock, Minus, Plus } from "lucide-react";
 import { CATEGORIES, useCategories, type Category } from "@/entities/category";
 import { usePostOutline } from "@/entities/post";
 import { revealInContainer } from "@/shared/lib/scroll";
@@ -105,18 +105,30 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, depth }: ListPro
         const open = isOpen(folder.key);
         return (
           <li key={folder.key}>
-            <button
-              type="button"
-              onClick={() => onToggle(folder.key)}
-              aria-expanded={open}
-              className="flex w-full items-center gap-1.5 rounded py-1 text-left text-[13px] font-medium text-zinc-700 hover:bg-zinc-100"
-            >
-              <span className="flex size-4 shrink-0 items-center justify-center rounded border border-zinc-300 text-zinc-500">
-                {open ? <Minus className="size-3" aria-hidden /> : <Plus className="size-3" aria-hidden />}
-              </span>
-              <span className="truncate">{folder.name}</span>
-              <span className="shrink-0 text-xs font-normal text-zinc-400">{folder.total}</span>
-            </button>
+            {/* 한 줄: 펼치기/접기(왼쪽, 남는 폭 전부) + 그 카테고리 글 목록으로 가는 링크(맨 오른쪽).
+                누를 때마다 목록 페이지로 가서 글을 확인하는 흐름을 한 번에 가게 한다 */}
+            <div className="flex items-center rounded hover:bg-zinc-100">
+              <button
+                type="button"
+                onClick={() => onToggle(folder.key)}
+                aria-expanded={open}
+                className="flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-[13px] font-medium text-zinc-700"
+              >
+                <span className="flex size-4 shrink-0 items-center justify-center rounded border border-zinc-300 text-zinc-500">
+                  {open ? <Minus className="size-3" aria-hidden /> : <Plus className="size-3" aria-hidden />}
+                </span>
+                <span className="truncate">{folder.name}</span>
+                <span className="shrink-0 text-xs font-normal text-zinc-400">{folder.total}</span>
+              </button>
+              <Link
+                href={`/?category=${encodeURIComponent(folder.name)}`}
+                aria-label={`${folder.name} 목록 보기`}
+                title={`${folder.name} 목록 보기`}
+                className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
+              >
+                <ExternalLink className="size-3.5" aria-hidden />
+              </Link>
+            </div>
             {open && (
               <>
                 {folder.folders.length > 0 && (
