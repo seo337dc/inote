@@ -21,6 +21,7 @@ import {
 } from "./link-popover";
 import { toggleHeadingOnLine } from "./line-heading";
 import { TableToolbar } from "./TableToolbar";
+import { DEFAULT_TABLE } from "./table-commands";
 
 type Props = {
   content?: string;
@@ -58,18 +59,21 @@ const NO_ACTIVE: ActiveFormats = {
 function ToolbarButton({
   onClick,
   active,
+  disabled,
   children,
 }: {
   onClick: () => void;
   active?: boolean;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={Boolean(active)}
-      className={`rounded px-2 py-1 text-sm ${
+      className={`rounded px-2 py-1 text-sm disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent ${
         active ? "bg-zinc-900 font-medium text-white hover:bg-zinc-800" : "hover:bg-zinc-100"
       }`}
     >
@@ -181,6 +185,13 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
     },
   });
 
+  // 표 안에 커서가 있으면 새 표를 넣을 수 없게(표 안에 표가 중첩되는 것을 막기) 따로 구독한다.
+  // 위 activeState에 넣지 않는 이유: 그쪽은 서식이 겹치면 전부 꺼 버려서 굵은 글씨가 든 칸에서 판정이 틀어진다
+  const inTable = useEditorState({
+    editor,
+    selector: ({ editor }) => editor?.isActive("table") ?? false,
+  });
+
   const closeLinkPopup = useCallback(
     (refocus: boolean) => {
       setLinkPopup(null);
@@ -268,6 +279,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           active={active.codeBlock}
         >
           코드 블록
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().insertTable(DEFAULT_TABLE).run()}
+          disabled={Boolean(inTable)}
+        >
+          표
         </ToolbarButton>
         <span className="ml-auto self-center text-xs text-zinc-400">
           &apos;/&apos;로 블록 삽입

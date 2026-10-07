@@ -6,6 +6,7 @@ import Suggestion, {
   type SuggestionProps,
 } from "@tiptap/suggestion";
 import SlashCommandMenu, { type SlashCommandMenuRef } from "./SlashCommandMenu";
+import { DEFAULT_TABLE } from "./table-commands";
 
 // 글쓰기 화면의 하단 고정 바(sticky bottom-0 z-10)보다는 위, 모달(z-50)보다는 아래에 둔다.
 // 화면에 붙는 요소는 메뉴 안쪽 div가 아니라 Tiptap이 감싸는 래퍼라서 z-index는 래퍼에 줘야 적용된다.
@@ -80,7 +81,7 @@ const COMMAND_ITEMS: SlashCommandItem[] = [
         .chain()
         .focus()
         .deleteRange(range)
-        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .insertTable(DEFAULT_TABLE)
         .run(),
   },
 ];

@@ -21,6 +21,9 @@ import {
 // dispatch가 있을 때만 하기 때문에, can()은 행이 하나뿐이어도 deleteRow를 true로 돌려준다.
 // 예) 행이 하나뿐일 때 deleteRow는 false → 툴바에서 비활성, 표를 지우려면 deleteTable을 쓴다.
 
+// 새 표의 기본 크기 — 슬래시 메뉴("/표")와 툴바의 "표" 버튼이 같이 쓴다
+export const DEFAULT_TABLE = { rows: 3, cols: 3, withHeaderRow: true } as const;
+
 export type TableAction =
   | "addRowBefore"
   | "addRowAfter"
