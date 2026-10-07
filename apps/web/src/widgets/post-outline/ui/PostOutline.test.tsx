@@ -154,6 +154,19 @@ describe("PostOutline", () => {
       expect(row.lastElementChild).toBe(study);
     });
 
+    it("목록 링크는 줄에 마우스를 올렸을 때(또는 줄 안에 포커스가 있을 때)만 보이고, 터치 기기에서는 항상 보인다", async () => {
+      loginAsUser();
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" />);
+
+      const link = await screen.findByRole("link", { name: "학습 목록 보기" });
+      const row = screen.getByRole("button", { name: /학습/ }).parentElement!;
+      // jsdom은 CSS를 계산하지 않아서, 숨김·표시를 정하는 클래스가 제자리에 있는지 본다
+      expect(row).toHaveClass("group"); // group-hover/group-focus-within이 이 줄을 기준으로 동작
+      expect(link).toHaveClass("[@media(hover:hover)]:opacity-0"); // 마우스 환경에서만 평소에 투명 (터치는 항상 보임)
+      expect(link).toHaveClass("group-hover:opacity-100", "group-focus-within:opacity-100", "focus-visible:opacity-100");
+    });
+
     it("로그인 전이면 목록 링크를 보여주지 않는다 (카테고리별 목록은 나의 글에만 있다)", async () => {
       mockOutline();
       renderWithQueryClient(<PostOutline currentPostId="p1" />);

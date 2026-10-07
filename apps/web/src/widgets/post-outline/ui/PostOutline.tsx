@@ -111,9 +111,9 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, showListLink, de
         const open = isOpen(folder.key);
         return (
           <li key={folder.key}>
-            {/* 한 줄: 펼치기/접기(왼쪽, 남는 폭 전부) + 그 카테고리 글 목록으로 가는 링크(맨 오른쪽).
+            {/* 한 줄: 펼치기/접기(왼쪽, 남는 폭 전부) + 그 카테고리 글 목록으로 가는 링크(맨 오른쪽, 줄에 마우스를 올렸을 때만 보임).
                 누를 때마다 목록 페이지로 가서 글을 확인하는 흐름을 한 번에 가게 한다 */}
-            <div className="flex items-center rounded hover:bg-zinc-100">
+            <div className="group flex items-center rounded hover:bg-zinc-100">
               <button
                 type="button"
                 onClick={() => onToggle(folder.key)}
@@ -131,7 +131,9 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, showListLink, de
                   href={`/my-posts?category=${encodeURIComponent(folder.name)}`}
                   aria-label={`${folder.name} 목록 보기`}
                   title={`${folder.name} 목록 보기`}
-                  className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
+                  // 마우스를 쓸 수 있는 환경에선 줄에 올렸을 때(또는 키보드로 줄 안에 포커스가 있을 때)만 보이고, 터치 기기에선 항상 보인다.
+                  // 투명하게만 하고 자리는 그대로 두어서, 나타나도 줄 안의 글자가 밀리지 않는다
+                  className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
                 >
                   <ExternalLink className="size-3.5" aria-hidden />
                 </Link>
