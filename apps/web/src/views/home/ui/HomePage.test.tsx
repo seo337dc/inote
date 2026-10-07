@@ -7,7 +7,7 @@ import { TEST_API_URL } from "@/test/msw/handlers";
 import { makePost, makePostListPage } from "@/test/fixtures/posts";
 
 describe("HomePage", () => {
-  it("주소의 page·pinnedPage·category·q(검색어)를 BE 요청에 그대로 실어 보내고, 두 영역을 그린다", async () => {
+  it("주소의 page·pinnedPage·q(검색어)를 BE 요청에 그대로 실어 보내고, 두 영역을 그린다", async () => {
     let requested: URL | undefined;
     server.use(
       http.get(`${TEST_API_URL}/api/v1/blog/posts`, ({ request }) => {
@@ -27,11 +27,12 @@ describe("HomePage", () => {
       }),
     );
 
-    render(await HomePage({ category: "학습", page: 3, pinnedPage: 2, q: "리액트" }));
+    render(await HomePage({ page: 3, pinnedPage: 2, q: "리액트" }));
 
     expect(requested?.searchParams.get("page")).toBe("3");
     expect(requested?.searchParams.get("pinnedPage")).toBe("2");
-    expect(requested?.searchParams.get("category")).toBe("학습");
+    // 전체 글에는 카테고리 필터가 없어서 BE 요청에 category를 싣지 않는다
+    expect(requested?.searchParams.has("category")).toBe(false);
     expect(requested?.searchParams.get("q")).toBe("리액트");
     expect(screen.getByText("고정된 글")).toBeInTheDocument();
     expect(screen.getByText("일반 글")).toBeInTheDocument();
@@ -48,7 +49,7 @@ describe("HomePage", () => {
       }),
     );
 
-    render(await HomePage({ category: null, page: 1, pinnedPage: 1, q: null }));
+    render(await HomePage({ page: 1, pinnedPage: 1, q: null }));
 
     expect(requested?.searchParams.has("q")).toBe(false);
   });
