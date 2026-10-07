@@ -153,15 +153,23 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
   });
 
   useEffect(() => {
-    if (!editor) return;
-    if (content !== editor.getHTML()) {
+    if (!editor || content === editor.getHTML()) return;
+    // 바깥에서 content가 바뀌면(수정 화면에서 글을 불러온 뒤 등) 에디터 내용을 맞춘다.
+    // 내용에 React 노드뷰(콜아웃)가 있으면 Tiptap이 그릴 때 flushSync를 쓰는데, 효과(useEffect) 안에서 부르면
+    // React가 "flushSync was called from inside a lifecycle method" 오류를 낸다 → 효과가 끝난 직후(마이크로태스크)에 넣는다.
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || editor.isDestroyed || content === editor.getHTML()) return;
       isSyncingRef.current = true;
       try {
         editor.commands.setContent(content);
       } finally {
         isSyncingRef.current = false;
       }
-    }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [content, editor]);
 
   // 커서가 놓인 위치의 서식을 툴바에 표시하려면 선택이 바뀔 때마다 다시 그려야 하는데,
