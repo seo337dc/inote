@@ -158,18 +158,29 @@
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
+/* 제목 글자 크기도 한 단계씩 줄인다 — typography 기본(h1 2.25em · h2 1.5em · h3 1.25em)은 본문 대비 커서
+   글 안에서 제목이 지나치게 튄다. h4는 본문과 같은 크기이고 굵기로 구분한다.
+   값을 em으로 둬서 본문 글자 크기가 바뀌어도 비율이 유지된다 */
 .prose-compact h1 {
   margin-top: 0;
   margin-bottom: 0.5em;
+  font-size: 1.75em;
 }
 .prose-compact h2 {
   margin-top: 1.4em;
   margin-bottom: 0.5em;
+  font-size: 1.375em;
 }
 .prose-compact h3,
 .prose-compact h4 {
   margin-top: 1.2em;
   margin-bottom: 0.4em;
+}
+.prose-compact h3 {
+  font-size: 1.125em;
+}
+.prose-compact h4 {
+  font-size: 1em;
 }
 .prose-compact ul,
 .prose-compact ol {
