@@ -13,11 +13,12 @@ export function moveCountKey(
   return next;
 }
 
-// 글 목록에서 id가 같은 글 하나의 category만 바꾼다
+// 글 목록에서 id가 같은 글 하나의 category를 바꾼다. 카테고리 경로(categoryPath)는 옛 카테고리 기준이라 틀려지므로
+// 비워 둔다 — 그동안은 새 카테고리 이름 하나로 보이고, 곧 서버 값으로 다시 맞춰진다 (getCategoryPath의 대체 동작)
 export function changePostCategory<T extends { id: string; category: string }>(
   posts: T[],
   id: string,
   to: string,
 ): T[] {
-  return posts.map((p) => (p.id === id ? { ...p, category: to } : p));
+  return posts.map((p) => (p.id === id ? ({ ...p, category: to, categoryPath: undefined } as T) : p));
 }

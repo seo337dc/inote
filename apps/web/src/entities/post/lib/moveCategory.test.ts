@@ -32,4 +32,17 @@ describe("changePostCategory", () => {
       { id: "2", category: "일기" },
     ]);
   });
+
+  it("옮긴 글의 옛 카테고리 경로(categoryPath)는 지우고, 다른 글의 경로는 그대로 둔다", () => {
+    const posts = [
+      { id: "1", category: "AI", categoryPath: ["학습", "AI"] },
+      { id: "2", category: "AI", categoryPath: ["학습", "AI"] },
+    ];
+
+    const [other, moved] = changePostCategory(posts, "2", "일기");
+
+    expect(other.categoryPath).toEqual(["학습", "AI"]);
+    expect(moved.category).toBe("일기");
+    expect(moved.categoryPath).toBeUndefined();
+  });
 });
