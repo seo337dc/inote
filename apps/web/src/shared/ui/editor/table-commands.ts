@@ -21,6 +21,10 @@ import {
 // dispatch가 있을 때만 하기 때문에, can()은 행이 하나뿐이어도 deleteRow를 true로 돌려준다.
 // 예) 행이 하나뿐일 때 deleteRow는 false → 툴바에서 비활성, 표를 지우려면 deleteTable을 쓴다.
 
+// 표 설정 — 열 경계를 드래그해 열 너비를 바꿀 수 있다. 너비는 칸의 colwidth와 표의 <colgroup>으로 저장돼서
+// 글 상세(저장된 HTML)에도 그대로 보인다. 너무 좁아져 글자가 안 보이지 않게 최소 너비를 둔다.
+export const TABLE_OPTIONS = { resizable: true, cellMinWidth: 60 } as const;
+
 // 새 표의 기본 크기 — 슬래시 메뉴("/표")와 툴바의 "표" 버튼이 같이 쓴다
 export const DEFAULT_TABLE = { rows: 3, cols: 3, withHeaderRow: true } as const;
 

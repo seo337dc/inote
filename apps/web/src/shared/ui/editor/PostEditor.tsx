@@ -22,7 +22,7 @@ import {
 import { toggleHeadingOnLine } from "./line-heading";
 import { TableToolbar } from "./TableToolbar";
 import { Callout } from "./CalloutView";
-import { DEFAULT_TABLE } from "./table-commands";
+import { DEFAULT_TABLE, TABLE_OPTIONS } from "./table-commands";
 
 type Props = {
   content?: string;
@@ -116,7 +116,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       StarterKit.configure({ link: { openOnClick: false } }),
       SlashCommand,
       MarkdownPaste,
-      Table.configure({ resizable: false }),
+      Table.configure(TABLE_OPTIONS),
       TableRow,
       TableHeader,
       TableCell,

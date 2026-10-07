@@ -270,6 +270,12 @@
   margin: 1rem 0;
 }
 
+/* 열 너비를 넓혀 표가 글 영역보다 넓어지면(글 상세) 페이지가 옆으로 밀리지 않고 본문 카드 안에서 가로로 스크롤된다 */
+/* 에디터 본문(.tiptap)에는 걸지 않는다 — 거기는 .tableWrapper가 스크롤을 맡고, 떠 있는 팝업이 잘리지 않게 한다 */
+.prose:not(.tiptap) {
+  overflow-x: auto;
+}
+
 .tiptap table td,
 .tiptap table th,
 .prose table td,
@@ -285,6 +291,32 @@
   background-color: var(--color-zinc-50, #fafafa);
   font-weight: 600;
   text-align: left;
+}
+
+/* 열 너비 조절(에디터에서만): 편집 중인 표는 .tableWrapper로 감싸져서 표가 좁은 화면보다 넓어져도 가로로 스크롤된다.
+   열 경계 위에 마우스를 올리면 .column-resize-handle(세로 막대)이 보이고, 커서가 좌우 화살표로 바뀐다(.resize-cursor).
+   저장되는 HTML에는 이 래퍼·막대가 없고 colgroup 너비만 남는다 */
+.tiptap .tableWrapper {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.tiptap .tableWrapper table {
+  margin: 0;
+}
+
+.tiptap .column-resize-handle {
+  background-color: var(--color-zinc-400, #a1a1aa);
+  bottom: -2px;
+  pointer-events: none;
+  position: absolute;
+  right: -2px;
+  top: 0;
+  width: 4px;
+}
+
+.tiptap.resize-cursor {
+  cursor: col-resize;
 }
 
 .tiptap table .selectedCell::after {
