@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { PostDates, PrivateBadge, type Post } from "@/entities/post";
+import { PostDates, PrivateBadge, getCategoryPath, type Post } from "@/entities/post";
 
 type Props = {
   posts: Post[];
@@ -23,7 +23,8 @@ export default function PostList({
               <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-400">
                 <div className="flex items-center gap-2 overflow-hidden">
                   {showPinIcon && post.pinned && <Star className="size-3 shrink-0 fill-amber-400 text-amber-400" />}
-                  <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">{post.category}</span>
+                  {/* 카드 전체가 글 링크라서 경로는 링크 없이 글자로만 보여준다 */}
+                  <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">{getCategoryPath(post).join(" > ")}</span>
                   {post.isPrivate && <PrivateBadge />}
                   <span className="truncate">
                     {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"}

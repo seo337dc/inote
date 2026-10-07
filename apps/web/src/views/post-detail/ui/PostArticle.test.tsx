@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import PostArticle from "./PostArticle";
 import { OUTLINE_HEADER_CLASS, TOC_HEADER_CLASS } from "./PostArticleLayout";
 import { makePost } from "@/test/fixtures/posts";
+import { useSession } from "@/shared/lib/auth-client";
 
 // 배지 표시만 보려는 테스트라 세션·쿼리가 필요한 주변 컴포넌트는 비워 둔다
 // 카테고리 영역 헤더 줄에 비워 둔 간격(headerClassName)이 전달되는지 볼 수 있게 받은 값을 표시만 한다
@@ -12,22 +13,44 @@ vi.mock("@/widgets/post-outline", () => ({
     <div data-testid="outline" data-header-class={headerClassName ?? ""} data-collapsed={String(Boolean(collapsed))} />
   ),
 }));
+vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 vi.mock("./TogglePinButton", () => ({ default: () => null }));
 vi.mock("./EditPostLink", () => ({ default: () => null }));
 vi.mock("./DeletePostButton", () => ({ default: () => null }));
 vi.mock("./PostSummarySection", () => ({ default: () => null }));
 
 describe("PostArticle — 카테고리 경로", () => {
-  it("제목 위에 카테고리 경로('학습 > AI')를 링크로 보여준다", () => {
+  function loginAs(userId: string | null) {
+    vi.mocked(useSession).mockReturnValue({
+      data: userId ? { user: { id: userId } } : null,
+      isPending: false,
+    } as unknown as ReturnType<typeof useSession>);
+  }
+
+  it("제목 위에 카테고리 경로('학습 > AI')를 보여주고, 작성자 본인이면 각 이름이 나의 글 목록 링크다", () => {
+    loginAs("u1");
+    render(<PostArticle post={makePost("p1", { userId: "u1", category: "AI", categoryPath: ["학습", "AI"] })} />);
+
+    const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
+    expect(within(nav).getByRole("link", { name: "학습" })).toHaveAttribute(
+      "href",
+      `/my-posts?category=${encodeURIComponent("학습")}`,
+    );
+    expect(within(nav).getByRole("link", { name: "AI" })).toHaveAttribute("href", "/my-posts?category=AI");
+  });
+
+  it("다른 사람이 보면 같은 경로를 링크 없이 글자로만 보여준다", () => {
+    loginAs(null);
     render(<PostArticle post={makePost("p1", { category: "AI", categoryPath: ["학습", "AI"] })} />);
 
     const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
-    expect(within(nav).getByRole("link", { name: "학습" })).toHaveAttribute("href", `/?category=${encodeURIComponent("학습")}`);
-    expect(within(nav).getByRole("link", { name: "AI" })).toHaveAttribute("href", "/?category=AI");
+    expect(within(nav).queryByRole("link")).toBeNull();
+    expect(nav).toHaveTextContent("학습");
   });
 
   it("BE가 아직 경로를 안 보내면 카테고리 이름 하나만 보여준다", () => {
-    render(<PostArticle post={makePost("p1", { category: "학습" })} />);
+    loginAs("u1");
+    render(<PostArticle post={makePost("p1", { userId: "u1", category: "학습" })} />);
 
     const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
     expect(within(nav).getAllByRole("link")).toHaveLength(1);

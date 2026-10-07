@@ -3,6 +3,20 @@ import { render, screen, within } from "@testing-library/react";
 import PostList from "./PostList";
 import { makePost } from "@/test/fixtures/posts";
 
+describe("PostList — 카테고리 경로", () => {
+  it("카드 배지에 카테고리 경로('학습 > AI')를 보여준다", () => {
+    render(<PostList posts={[makePost("a", { category: "AI", categoryPath: ["학습", "AI"] })]} />);
+
+    expect(screen.getByText("학습 > AI")).toBeInTheDocument();
+  });
+
+  it("경로가 없으면(BE가 아직 안 보냄) 카테고리 이름 하나만 보여준다", () => {
+    render(<PostList posts={[makePost("a", { category: "학습" })]} />);
+
+    expect(screen.getByText("학습")).toBeInTheDocument();
+  });
+});
+
 describe("PostList — 비공개 표시", () => {
   it("비공개 글 행에만 '비공개'를 보여준다", () => {
     render(

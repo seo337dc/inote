@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ExternalLink, Lock, Minus, Plus } from "lucide-react";
 import { CATEGORIES, useCategories, type Category } from "@/entities/category";
 import { usePostOutline } from "@/entities/post";
+import { useSession } from "@/shared/lib/auth-client";
 import { revealInContainer } from "@/shared/lib/scroll";
 import { cn } from "@/shared/lib/utils";
 import { buildOutline, findActiveFolderKeys, type OutlineFolder } from "../lib/buildOutline";
@@ -33,6 +34,8 @@ type Props = {
 export default function PostOutline({ currentPostId, headerClassName, collapsed = false }: Props) {
   const outlineQuery = usePostOutline();
   const categoriesQuery = useCategories();
+  // 카테고리별 목록은 "나의 글"에만 있으므로, 로그인했을 때만 각 폴더 줄에 그 목록으로 가는 링크를 보여준다
+  const { data: session } = useSession();
   // 사용자가 직접 펼치거나 접은 폴더. 값이 없는 폴더는 "지금 글이 들어 있는지"로 정한다
   // — 다른 글로 이동해도 새 글이 있는 폴더가 자동으로 펼쳐지게 하려고 상태 대신 계산으로 둠.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
@@ -83,6 +86,7 @@ export default function PostOutline({ currentPostId, headerClassName, collapsed 
           currentPostId={currentPostId}
           isOpen={isOpen}
           onToggle={toggle}
+          showListLink={!!session}
           depth={0}
         />
       </div>
@@ -95,10 +99,12 @@ type ListProps = {
   currentPostId: string;
   isOpen: (key: string) => boolean;
   onToggle: (key: string) => void;
+  // 각 폴더 줄 오른쪽의 "그 카테고리 나의 글 목록" 링크를 보일지 (로그인했을 때만)
+  showListLink: boolean;
   depth: number;
 };
 
-function FolderList({ folders, currentPostId, isOpen, onToggle, depth }: ListProps) {
+function FolderList({ folders, currentPostId, isOpen, onToggle, showListLink, depth }: ListProps) {
   return (
     <ul className={cn(depth > 0 && "ml-2 border-l border-zinc-200 pl-2")}>
       {folders.map((folder) => {
@@ -120,14 +126,16 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, depth }: ListPro
                 <span className="truncate">{folder.name}</span>
                 <span className="shrink-0 text-xs font-normal text-zinc-400">{folder.total}</span>
               </button>
-              <Link
-                href={`/?category=${encodeURIComponent(folder.name)}`}
-                aria-label={`${folder.name} 목록 보기`}
-                title={`${folder.name} 목록 보기`}
-                className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
-              >
-                <ExternalLink className="size-3.5" aria-hidden />
-              </Link>
+              {showListLink && (
+                <Link
+                  href={`/my-posts?category=${encodeURIComponent(folder.name)}`}
+                  aria-label={`${folder.name} 목록 보기`}
+                  title={`${folder.name} 목록 보기`}
+                  className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700"
+                >
+                  <ExternalLink className="size-3.5" aria-hidden />
+                </Link>
+              )}
             </div>
             {open && (
               <>
@@ -137,6 +145,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, depth }: ListPro
                     currentPostId={currentPostId}
                     isOpen={isOpen}
                     onToggle={onToggle}
+                    showListLink={showListLink}
                     depth={depth + 1}
                   />
                 )}

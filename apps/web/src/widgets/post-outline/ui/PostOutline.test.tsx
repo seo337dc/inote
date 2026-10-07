@@ -130,39 +130,59 @@ describe("PostOutline", () => {
     await vi.waitFor(() => expect(container).toBeEmptyDOMElement());
   });
 
-  it("각 카테고리 줄 맨 오른쪽에 그 카테고리의 글 목록 페이지로 가는 링크가 있다", async () => {
-    mockOutline();
-    renderWithQueryClient(<PostOutline currentPostId="p1" />);
+  describe("카테고리 목록 링크 (나의 글)", () => {
+    function loginAsUser() {
+      mockedUseSession.mockReturnValue({
+        data: { user: { id: "u1" } },
+        isPending: false,
+      } as unknown as ReturnType<typeof useSession>);
+    }
 
-    const study = await screen.findByRole("link", { name: "학습 목록 보기" });
-    expect(study).toHaveAttribute("href", `/?category=${encodeURIComponent("학습")}`);
-    expect(screen.getByRole("link", { name: "이직 목록 보기" })).toHaveAttribute(
-      "href",
-      `/?category=${encodeURIComponent("이직")}`,
-    );
-    // 같은 줄에서 펼침 버튼 다음(오른쪽)에 온다
-    const row = screen.getByRole("button", { name: /학습/ }).parentElement!;
-    expect(row.lastElementChild).toBe(study);
-  });
+    it("로그인하면 각 카테고리 줄 맨 오른쪽에 그 카테고리의 나의 글 목록으로 가는 링크가 있다", async () => {
+      loginAsUser();
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" />);
 
-  it("목록 링크를 눌러도 폴더가 펼쳐지거나 접히지 않는다 (펼침은 버튼만 담당)", async () => {
-    mockOutline();
-    const user = userEvent.setup();
-    renderWithQueryClient(<PostOutline currentPostId="p1" />);
-    await screen.findByRole("link", { name: "리액트 쿼리" });
-    const link = screen.getByRole("link", { name: "학습 목록 보기" });
-    link.addEventListener("click", (e) => e.preventDefault()); // jsdom 이동 방지
+      const study = await screen.findByRole("link", { name: "학습 목록 보기" });
+      expect(study).toHaveAttribute("href", `/my-posts?category=${encodeURIComponent("학습")}`);
+      expect(screen.getByRole("link", { name: "이직 목록 보기" })).toHaveAttribute(
+        "href",
+        `/my-posts?category=${encodeURIComponent("이직")}`,
+      );
+      // 같은 줄에서 펼침 버튼 다음(오른쪽)에 온다
+      const row = screen.getByRole("button", { name: /학습/ }).parentElement!;
+      expect(row.lastElementChild).toBe(study);
+    });
 
-    await user.click(link);
+    it("로그인 전이면 목록 링크를 보여주지 않는다 (카테고리별 목록은 나의 글에만 있다)", async () => {
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" />);
 
-    expect(screen.getByRole("button", { name: /학습/ })).toHaveAttribute("aria-expanded", "true");
-  });
+      await screen.findByRole("button", { name: /학습/ });
+      expect(screen.queryByRole("link", { name: /목록 보기/ })).toBeNull();
+    });
 
-  it("접히면 카테고리 목록 링크도 함께 가려진다", async () => {
-    mockOutline();
-    renderWithQueryClient(<PostOutline currentPostId="p1" collapsed />);
+    it("목록 링크를 눌러도 폴더가 펼쳐지거나 접히지 않는다 (펼침은 버튼만 담당)", async () => {
+      loginAsUser();
+      mockOutline();
+      const user = userEvent.setup();
+      renderWithQueryClient(<PostOutline currentPostId="p1" />);
+      await screen.findByRole("link", { name: "리액트 쿼리" });
+      const link = screen.getByRole("link", { name: "학습 목록 보기" });
+      link.addEventListener("click", (e) => e.preventDefault()); // jsdom 이동 방지
 
-    expect(await screen.findByRole("link", { name: "학습 목록 보기", hidden: true })).not.toBeVisible();
+      await user.click(link);
+
+      expect(screen.getByRole("button", { name: /학습/ })).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("접히면 카테고리 목록 링크도 함께 가려진다", async () => {
+      loginAsUser();
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" collapsed />);
+
+      expect(await screen.findByRole("link", { name: "학습 목록 보기", hidden: true })).not.toBeVisible();
+    });
   });
 
   it("카테고리 제목 옆에 관리 페이지로 가는 '관리' 링크가 있다", async () => {
