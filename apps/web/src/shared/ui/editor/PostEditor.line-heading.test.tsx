@@ -75,6 +75,15 @@ describe("제목 버튼은 누른 줄에만 적용된다 (줄바꿈으로 이어
     expect(html()).toBe("<h2>계획</h2><p>각 회사 채용 정보</p>");
   });
 
+  it("H4도 누른 줄에만 적용된다 (가운데 줄)", async () => {
+    const { cursorIn, click, html } = await setup("<p>계획<br>각 회사 채용 정보<br>다음 줄</p>");
+    cursorIn("각 회사");
+
+    await click("H4");
+
+    expect(html()).toBe("<p>계획</p><h4>각 회사 채용 정보</h4><p>다음 줄</p>");
+  });
+
   it("줄바꿈이 연속된(빈 줄) 경우에도 경계의 빈 줄바꿈은 정리하고 블록으로 나눈다", async () => {
     const { cursorIn, click, html } = await setup("<p>기업리스트<br><br>보살핌 링크</p>");
     cursorIn("기업리스트");

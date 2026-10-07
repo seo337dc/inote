@@ -16,10 +16,16 @@ describe("슬래시 메뉴 검색 — 영어로도 찾아진다", () => {
     expect(titles(query)).toEqual(expected);
   });
 
-  it("heading은 제목 1·2·3 모두, h2는 제목 2만 찾는다", () => {
-    expect(titles("heading")).toEqual(["제목 1", "제목 2", "제목 3"]);
+  it("heading은 제목 1~4 모두, h2는 제목 2만 찾는다", () => {
+    expect(titles("heading")).toEqual(["제목 1", "제목 2", "제목 3", "제목 4"]);
     expect(titles("h2")).toEqual(["제목 2"]);
     expect(titles("heading3")).toEqual(["제목 3"]);
+  });
+
+  it("h4·heading4는 제목 4만 찾는다", () => {
+    expect(titles("h4")).toEqual(["제목 4"]);
+    expect(titles("heading4")).toEqual(["제목 4"]);
+    expect(titles("제목4")).toEqual(["제목 4"]);
   });
 
   it("list는 글머리 기호 목록과 번호 매기기 목록 둘 다, bullet·number는 각각 하나만 찾는다", () => {
@@ -34,14 +40,14 @@ describe("슬래시 메뉴 검색 — 영어로도 찾아진다", () => {
 
   it("대문자로 쳐도 찾는다 (TABLE, Heading)", () => {
     expect(titles("TABLE")).toEqual(["표"]);
-    expect(titles("Heading")).toEqual(["제목 1", "제목 2", "제목 3"]);
+    expect(titles("Heading")).toEqual(["제목 1", "제목 2", "제목 3", "제목 4"]);
   });
 });
 
 describe("슬래시 메뉴 검색 — 한글 검색은 그대로 동작한다", () => {
   it("제목의 일부로 찾는다", () => {
     expect(titles("표")).toEqual(["표"]);
-    expect(titles("제목")).toEqual(["제목 1", "제목 2", "제목 3"]);
+    expect(titles("제목")).toEqual(["제목 1", "제목 2", "제목 3", "제목 4"]);
     expect(titles("목록")).toEqual(["글머리 기호 목록", "번호 매기기 목록"]);
   });
 
@@ -52,7 +58,7 @@ describe("슬래시 메뉴 검색 — 한글 검색은 그대로 동작한다", 
 
 describe("슬래시 메뉴 검색 — 경계", () => {
   it("빈 쿼리('/'만 친 상태)는 모든 항목을 돌려준다", () => {
-    expect(titles("")).toHaveLength(10);
+    expect(titles("")).toHaveLength(11);
   });
 
   it("어디에도 없는 글자는 빈 목록이다", () => {

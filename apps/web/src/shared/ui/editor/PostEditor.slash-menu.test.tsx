@@ -64,6 +64,15 @@ describe("슬래시(/) 메뉴가 열릴 때", () => {
     expect(container.querySelectorAll("tr")).toHaveLength(3);
   });
 
+  it("/h4를 입력하고 Enter를 누르면 현재 줄이 가장 작은 제목(h4)이 된다", async () => {
+    const { user, container } = await openMenu();
+
+    await user.keyboard("h4{Enter}");
+
+    expect(container.querySelector(".ProseMirror h4")).not.toBeNull();
+    await waitFor(() => expect(screen.queryByText("제목 1")).toBeNull());
+  });
+
   it("영어 검색 결과가 없으면 안내 문구가 뜬다: /zzzz", async () => {
     const { user } = await openMenu();
 

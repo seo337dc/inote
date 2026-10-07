@@ -34,6 +34,7 @@ type ActiveFormats = {
   h1: boolean;
   h2: boolean;
   h3: boolean;
+  h4: boolean;
   bold: boolean;
   italic: boolean;
   bulletList: boolean;
@@ -47,6 +48,7 @@ const NO_ACTIVE: ActiveFormats = {
   h1: false,
   h2: false,
   h3: false,
+  h4: false,
   bold: false,
   italic: false,
   bulletList: false,
@@ -172,6 +174,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         h1: editor.isActive("heading", { level: 1 }),
         h2: editor.isActive("heading", { level: 2 }),
         h3: editor.isActive("heading", { level: 3 }),
+        h4: editor.isActive("heading", { level: 4 }),
         bold: editor.isActive("bold"),
         italic: editor.isActive("italic"),
         bulletList: editor.isActive("bulletList"),
@@ -205,7 +208,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
   const active = activeState ?? NO_ACTIVE;
 
   // 줄바꿈(<br>)으로 이어진 문단에선 누른 줄만 제목으로, 그 외에는 블록 전체를 토글
-  const toggleHeading = (level: 1 | 2 | 3) => {
+  const toggleHeading = (level: 1 | 2 | 3 | 4) => {
     editor.chain().focus().run();
     if (!toggleHeadingOnLine(editor, level)) {
       editor.chain().focus().toggleHeading({ level }).run();
@@ -232,6 +235,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           active={active.h3}
         >
           H3
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => toggleHeading(4)}
+          active={active.h4}
+        >
+          H4
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}

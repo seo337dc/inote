@@ -193,6 +193,22 @@ describe("PostEditor", () => {
     });
   });
 
+  it("H4 버튼으로 현재 문단을 가장 작은 제목(h4)으로 바꾸고, 다시 누르면 문단으로 되돌린다", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<PostEditor content="<p>작은 제목 후보</p>" onChange={vi.fn()} />);
+    const el = await findEditorEl(container);
+    act(() => el.editor.commands.setTextSelection(2));
+
+    await user.click(screen.getByRole("button", { name: "H4" }));
+    expect(el.querySelector("h4")?.textContent).toBe("작은 제목 후보");
+    expect(screen.getByRole("button", { name: "H4" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "H3" })).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(screen.getByRole("button", { name: "H4" }));
+    expect(el.querySelector("h4")).toBeNull();
+    expect(el.querySelector("p")?.textContent).toBe("작은 제목 후보");
+  });
+
   it("H3 버튼으로 현재 문단을 소제목(h3)으로 바꾸고, 다시 누르면 문단으로 되돌린다", async () => {
     const user = userEvent.setup();
     const { container } = render(<PostEditor content="<p>소제목 후보</p>" onChange={vi.fn()} />);

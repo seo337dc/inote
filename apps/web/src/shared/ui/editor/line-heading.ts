@@ -39,7 +39,7 @@ function joinLines(lines: Line[], hardBreak: PMNode): PMNode[] {
 
 // 줄 단위로 처리했으면 true. 줄바꿈이 없거나 블록의 모든 줄이 대상이면 false를 돌려주니
 // 호출한 쪽에서 기본 toggleHeading으로 넘기면 된다.
-export function toggleHeadingOnLine(editor: Editor, level: 1 | 2 | 3): boolean {
+export function toggleHeadingOnLine(editor: Editor, level: 1 | 2 | 3 | 4): boolean {
   const { state, view } = editor;
   const { selection, schema } = state;
   const { $from, $to, from, to } = selection;

@@ -50,6 +50,13 @@ const COMMAND_ITEMS: SlashCommandItem[] = [
       editor.chain().focus().deleteRange(range).setNode("heading", { level: 3 }).run(),
   },
   {
+    title: "제목 4",
+    description: "가장 작은 섹션 제목",
+    keywords: ["h4", "heading4", "heading"],
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).setNode("heading", { level: 4 }).run(),
+  },
+  {
     title: "글머리 기호 목록",
     description: "점으로 시작하는 목록",
     keywords: ["bullet", "bulleted", "list", "ul", "unordered"],
