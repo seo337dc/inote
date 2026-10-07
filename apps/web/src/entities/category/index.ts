@@ -7,5 +7,5 @@ export { useMoveCategory } from "./model/useMoveCategory";
 export { canMove, evaluateDrop, moveCategory, resolveDrop } from "./lib/move";
 export type { DropZone, MoveTarget } from "./lib/move";
 export { useRenameCategory } from "./model/useRenameCategory";
-export { checkCategoryName, MAX_CATEGORY_NAME_LENGTH } from "./lib/rename";
-export type { NameCheck } from "./lib/rename";
+export { checkCategoryName, checkNewCategoryName, MAX_CATEGORY_NAME_LENGTH } from "./lib/rename";
+export type { NameCheck, NewNameCheck } from "./lib/rename";

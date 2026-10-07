@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Category } from "../model/types";
 import {
   checkCategoryName,
+  checkNewCategoryName,
   renameCategoryInList,
   renameCountKey,
   renamePostCategory,
@@ -78,5 +79,31 @@ describe("renamePostCategory", () => {
       { id: "1", category: "공부" },
       { id: "2", category: "이직" },
     ]);
+  });
+});
+
+describe("checkNewCategoryName", () => {
+  const list = [cat("1", "학습"), cat("2", "일기")];
+
+  it("겹치지 않는 이름은 ok다 (앞뒤 공백은 무시)", () => {
+    expect(checkNewCategoryName(list, "  이직 ")).toBe("ok");
+  });
+
+  it("빈 이름·공백만이면 empty", () => {
+    expect(checkNewCategoryName(list, "   ")).toBe("empty");
+  });
+
+  it("50자를 넘으면 too-long (50자는 ok)", () => {
+    expect(checkNewCategoryName(list, "가".repeat(51))).toBe("too-long");
+    expect(checkNewCategoryName(list, "가".repeat(50))).toBe("ok");
+  });
+
+  it("내 카테고리 중 같은 이름이 있으면 duplicate (다른 단계에 있어도 겹침)", () => {
+    expect(checkNewCategoryName(list, "학습")).toBe("duplicate");
+    expect(checkNewCategoryName(list, " 일기 ")).toBe("duplicate");
+  });
+
+  it("목록이 비어 있으면 어떤 이름이든 ok", () => {
+    expect(checkNewCategoryName([], "학습")).toBe("ok");
   });
 });

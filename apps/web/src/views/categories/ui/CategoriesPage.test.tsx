@@ -40,7 +40,9 @@ describe("CategoriesPage", () => {
 
     expect(screen.getByText("글 이동 화면")).toBeInTheDocument();
     expect(screen.queryByText("구조 관리 화면")).not.toBeInTheDocument();
-    expect(screen.getByText("글을 끌어서 다른 카테고리 폴더로 옮겨요.")).toBeInTheDocument();
+    expect(
+      screen.getByText("글을 끌어서 다른 카테고리 폴더로 옮겨요. 옮길 폴더가 없으면 여기서 바로 추가할 수 있어요."),
+    ).toBeInTheDocument();
     expect(screen.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", "categories-tab-posts");
   });
 

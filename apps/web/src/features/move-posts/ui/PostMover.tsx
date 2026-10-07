@@ -15,7 +15,14 @@ import {
 } from "@dnd-kit/core";
 import { FileText, GripVertical, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useCategories } from "@/entities/category";
+import {
+  MAX_CATEGORY_NAME_LENGTH,
+  MAX_CATEGORY_DEPTH,
+  checkNewCategoryName,
+  useCategories,
+  useCreateCategory,
+  type NewNameCheck,
+} from "@/entities/category";
 import {
   useMyPostOutline,
   useMovePostCategory,
@@ -38,11 +45,17 @@ export default function PostMover() {
   const categoriesQuery = useCategories();
   const postsQuery = useMyPostOutline();
   const movePost = useMovePostCategory();
+  const createCategory = useCreateCategory();
   // 열어 둔 폴더의 key — 기본은 모두 접힘
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   // 끌고 있는 글의 id, 지금 그 위에 있는 폴더의 key
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [overFolderKey, setOverFolderKey] = useState<string | null>(null);
+  // 폴더 추가: 최상위 입력값, 하위를 추가하는 중인 폴더(key)와 그 입력값, 이름 검사 오류(어느 입력줄의 것인지 scope로 구분)
+  const [newRootName, setNewRootName] = useState("");
+  const [addingChildOf, setAddingChildOf] = useState<string | null>(null);
+  const [newChildName, setNewChildName] = useState("");
+  const [nameError, setNameError] = useState<{ scope: string; check: NewNameCheck } | null>(null);
 
   // 클릭(제목 링크, +/− 버튼)과 구분되도록 조금 끌어야 드래그로 본다
   const sensors = useSensors(
@@ -62,6 +75,51 @@ export default function PostMover() {
       return next;
     });
   }
+
+  // 이름 검사를 통과하면 추가하고 true. 겹치는 이름이면 추가하지 않고 그 입력줄 아래에 안내를 띄운다
+  function tryCreate(scope: string, rawName: string, parentId?: string): boolean {
+    const check = checkNewCategoryName(categoriesQuery.data ?? [], rawName);
+    if (check !== "ok") {
+      setNameError({ scope, check });
+      return false;
+    }
+    setNameError(null);
+    createCategory.mutate({ name: rawName.trim(), ...(parentId ? { parentId } : {}) });
+    return true;
+  }
+
+  function handleAddRoot(e: React.FormEvent) {
+    e.preventDefault();
+    if (tryCreate("root", newRootName)) setNewRootName("");
+  }
+
+  function handleAddChild(e: React.FormEvent, parentKey: string) {
+    e.preventDefault();
+    if (!tryCreate(parentKey, newChildName, parentKey)) return;
+    // 새 하위 폴더가 바로 보이도록 부모를 펼친다
+    setExpanded((prev) => new Set(prev).add(parentKey));
+    setNewChildName("");
+    setAddingChildOf(null);
+  }
+
+  function toggleAddChild(key: string) {
+    setNameError(null);
+    setNewChildName("");
+    setAddingChildOf((prev) => (prev === key ? null : key));
+  }
+
+  const addProps: AddChildProps = {
+    addingKey: addingChildOf,
+    name: newChildName,
+    error: nameError,
+    isCreating: createCategory.isPending,
+    onToggle: toggleAddChild,
+    onChangeName: (value) => {
+      setNewChildName(value);
+      setNameError(null);
+    },
+    onSubmit: handleAddChild,
+  };
 
   const activePost = activePostId
     ? findPost(folders, activePostId)?.post
@@ -124,7 +182,33 @@ export default function PostMover() {
 
   return (
     <>
-      <div className="mb-3 flex items-center justify-between">
+      <form onSubmit={handleAddRoot} className="mb-1 flex gap-2">
+        <input
+          value={newRootName}
+          onChange={(e) => {
+            setNewRootName(e.target.value);
+            setNameError(null);
+          }}
+          placeholder="새 최상위 폴더 이름"
+          aria-label="새 최상위 폴더 이름"
+          className="flex-1 rounded border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500"
+        />
+        <button
+          type="submit"
+          disabled={!newRootName.trim() || createCategory.isPending}
+          className="rounded bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900"
+        >
+          추가
+        </button>
+      </form>
+      {nameError?.scope === "root" && <NameErrorText check={nameError.check} />}
+      {createCategory.isError && (
+        <p role="alert" className="mt-1 text-sm text-red-500">
+          폴더를 추가하지 못했어요. 잠시 후 다시 시도해 주세요.
+        </p>
+      )}
+
+      <div className="mb-3 mt-4 flex items-center justify-between">
         <p className="text-xs text-zinc-400">
           폴더의 + 로 글을 열고, 글 왼쪽 손잡이(⋮⋮)를 다른 폴더로 끌어 놓으면 옮겨져요.
         </p>
@@ -166,6 +250,7 @@ export default function PostMover() {
               onToggle={toggle}
               activePostId={activePostId}
               validDropKey={validDropKey}
+              add={addProps}
             />
           ))}
         </ul>
@@ -187,6 +272,32 @@ export default function PostMover() {
   );
 }
 
+// 폴더 추가(하위) 입력줄에 필요한 상태와 핸들러 — 모든 FolderItem이 같은 값을 공유한다
+type AddChildProps = {
+  // 하위 추가 입력줄이 열려 있는 폴더의 key
+  addingKey: string | null;
+  name: string;
+  error: { scope: string; check: NewNameCheck } | null;
+  isCreating: boolean;
+  onToggle: (key: string) => void;
+  onChangeName: (value: string) => void;
+  onSubmit: (e: React.FormEvent, parentKey: string) => void;
+};
+
+function NameErrorText({ check }: { check: NewNameCheck }) {
+  const message =
+    check === "duplicate"
+      ? "이미 있는 이름이에요. 다른 이름을 써 주세요."
+      : check === "too-long"
+        ? `이름은 ${MAX_CATEGORY_NAME_LENGTH}자까지 쓸 수 있어요.`
+        : "이름을 입력해 주세요.";
+  return (
+    <p role="alert" className="mt-1 text-sm text-red-500">
+      {message}
+    </p>
+  );
+}
+
 type FolderProps = {
   folder: PostFolder;
   depth: number;
@@ -194,6 +305,7 @@ type FolderProps = {
   onToggle: (key: string) => void;
   activePostId: string | null;
   validDropKey: string | null;
+  add: AddChildProps;
 };
 
 function FolderItem({
@@ -203,6 +315,7 @@ function FolderItem({
   onToggle,
   activePostId,
   validDropKey,
+  add,
 }: FolderProps) {
   const { setNodeRef: setDropRef } = useDroppable({
     id: `folder:${folder.key}`,
@@ -212,13 +325,16 @@ function FolderItem({
   const hasContent = folder.folders.length > 0 || folder.posts.length > 0;
   const isOpen = hasContent && expanded.has(folder.key);
   const indent = (depth - 1) * INDENT_PX;
+  // 하위는 최대 3단계까지. 카테고리 트리에 없는 이름의 폴더(목록에 없는 카테고리)에는 추가할 수 없다
+  const canAddChild = depth < MAX_CATEGORY_DEPTH && !folder.isOrphan;
+  const isAddingHere = add.addingKey === folder.key;
 
   return (
     <li>
       <div
         ref={setDropRef}
         className={cn(
-          "flex items-center gap-2 border-t border-zinc-100 py-2.5 pr-3",
+          "group flex items-center gap-2 border-t border-zinc-100 py-2.5 pr-3",
           isDropTarget && "bg-blue-50 ring-1 ring-inset ring-blue-300",
         )}
         style={{ paddingLeft: 12 + indent }}
@@ -255,7 +371,63 @@ function FolderItem({
             목록에 없는 카테고리
           </span>
         )}
+        {canAddChild && (
+          <button
+            type="button"
+            onClick={() => add.onToggle(folder.key)}
+            aria-label={
+              isAddingHere
+                ? `${folder.name} 하위 폴더 추가 취소`
+                : `${folder.name}의 하위 폴더 추가`
+            }
+            // 마우스를 쓸 수 있는 환경에선 줄에 올렸을 때만 보이고, 터치 기기에선 항상 보인다
+            className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
+          >
+            {isAddingHere ? (
+              "취소"
+            ) : (
+              <>
+                <Plus className="size-3" aria-hidden />
+                하위 추가
+              </>
+            )}
+          </button>
+        )}
       </div>
+
+      {isAddingHere && (
+        <>
+          <form
+            onSubmit={(e) => add.onSubmit(e, folder.key)}
+            className="flex gap-2 border-t border-zinc-100 bg-zinc-50 py-2.5 pr-3"
+            style={{ paddingLeft: 12 + indent + INDENT_PX }}
+          >
+            <input
+              autoFocus
+              value={add.name}
+              onChange={(e) => add.onChangeName(e.target.value)}
+              placeholder={`${folder.name}의 하위 폴더 이름`}
+              aria-label="하위 폴더 이름"
+              className="flex-1 rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm outline-none focus:border-zinc-500"
+            />
+            <button
+              type="submit"
+              disabled={!add.name.trim() || add.isCreating}
+              className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900"
+            >
+              추가
+            </button>
+          </form>
+          {add.error?.scope === folder.key && (
+            <div
+              className="bg-zinc-50 pb-2 pr-3"
+              style={{ paddingLeft: 12 + indent + INDENT_PX }}
+            >
+              <NameErrorText check={add.error.check} />
+            </div>
+          )}
+        </>
+      )}
 
       {isOpen && (
         <>
@@ -270,6 +442,7 @@ function FolderItem({
                   onToggle={onToggle}
                   activePostId={activePostId}
                   validDropKey={validDropKey}
+                  add={add}
                 />
               ))}
             </ul>

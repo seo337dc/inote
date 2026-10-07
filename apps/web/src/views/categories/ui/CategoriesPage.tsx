@@ -18,7 +18,7 @@ const TABS = [
 const DESCRIPTIONS: Record<TabId, string> = {
   structure:
     "글을 나눌 카테고리를 확인하고 추가해요. 하위 카테고리는 최대 3단계까지 만들 수 있고, 숫자는 그 카테고리(하위 포함)의 글 수예요.",
-  posts: "글을 끌어서 다른 카테고리 폴더로 옮겨요.",
+  posts: "글을 끌어서 다른 카테고리 폴더로 옮겨요. 옮길 폴더가 없으면 여기서 바로 추가할 수 있어요.",
 };
 
 export default function CategoriesPage() {

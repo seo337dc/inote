@@ -16,6 +16,17 @@ export function checkCategoryName(list: Category[], id: string, raw: string): Na
   return "ok";
 }
 
+export type NewNameCheck = Exclude<NameCheck, "unchanged">;
+
+// 새 카테고리를 추가하기 전 이름 검사 — 이름 수정과 같은 규칙(빈 이름·길이·내 카테고리 사이 중복 금지)
+export function checkNewCategoryName(list: Category[], raw: string): NewNameCheck {
+  const name = raw.trim();
+  if (!name) return "empty";
+  if (name.length > MAX_CATEGORY_NAME_LENGTH) return "too-long";
+  if (list.some((c) => c.name === name)) return "duplicate";
+  return "ok";
+}
+
 export function renameCategoryInList(list: Category[], id: string, name: string): Category[] {
   return list.map((c) => (c.id === id ? { ...c, name } : c));
 }
