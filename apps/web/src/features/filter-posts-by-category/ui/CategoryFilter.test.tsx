@@ -47,3 +47,26 @@ describe("CategoryFilter — 검색어 유지", () => {
     expect(screen.getByRole("link", { name: "전체 (1)" })).toHaveAttribute("href", "/my-posts");
   });
 });
+
+describe("CategoryFilter — 관리 링크", () => {
+  it("기본은 내 카테고리 관리 링크를 보여준다", () => {
+    render(<CategoryFilter posts={[]} activeCategory={null} categories={CATEGORIES} counts={{ 학습: 1 }} totalCount={1} />);
+
+    expect(screen.getByRole("link", { name: "관리" })).toHaveAttribute("href", "/categories");
+  });
+
+  it("showManage를 끄면(다른 사람의 카테고리) 관리 링크를 숨긴다", () => {
+    render(
+      <CategoryFilter
+        posts={[]}
+        activeCategory={null}
+        categories={CATEGORIES}
+        counts={{ 학습: 1 }}
+        totalCount={1}
+        showManage={false}
+      />,
+    );
+
+    expect(screen.queryByRole("link", { name: "관리" })).toBeNull();
+  });
+});

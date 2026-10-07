@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { PostDates, PrivateBadge, getCategoryPath, type Post } from "@/entities/post";
+import PostAuthor from "./PostAuthor";
 
 type Props = {
   posts: Post[];
@@ -54,17 +55,5 @@ export default function PostList({
         <li className="py-10 text-center text-sm text-zinc-400">{emptyMessage}</li>
       )}
     </ul>
-  );
-}
-
-// 작성자 — 누르면 그 사람의 공개 글 목록(/users/[id])으로 간다. 작성자 정보가 없는 글(탈퇴 등)은 글자로만.
-function PostAuthor({ post }: { post: Post }) {
-  if (!post.user) return <span className="truncate">작성자 없음</span>;
-  const label = `${post.user.name} (${post.user.email})`;
-  if (!post.userId) return <span className="truncate">{label}</span>;
-  return (
-    <Link href={`/users/${post.userId}`} className="truncate hover:text-zinc-700 hover:underline">
-      {label}
-    </Link>
   );
 }

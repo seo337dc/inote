@@ -24,6 +24,8 @@ type Props = {
   totalCount?: number;
   // 걸려 있는 검색어 — 카테고리를 바꿔도 검색은 유지한다 (카테고리 안에서 검색)
   q?: string | null;
+  // 내 카테고리를 관리하는 화면으로 가는 '관리' 링크 — 다른 사람의 카테고리를 볼 때는 숨긴다
+  showManage?: boolean;
 };
 
 function hrefFor(basePath: string, category: string | null, q: string | null) {
@@ -44,18 +46,21 @@ export default function CategoryFilter({
   counts,
   totalCount,
   q = null,
+  showManage = true,
 }: Props) {
   return (
     <aside className={cn("w-40 shrink-0", className)}>
       <div className="mb-3 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">카테고리</p>
-        <Link
-          href="/categories"
-          onClick={onNavigate}
-          className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
-        >
-          관리
-        </Link>
+        {showManage && (
+          <Link
+            href="/categories"
+            onClick={onNavigate}
+            className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+          >
+            관리
+          </Link>
+        )}
       </div>
       <ul className="space-y-1 text-sm">
         <li>
