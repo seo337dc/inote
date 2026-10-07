@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -25,6 +26,65 @@ describe("PostOutline", () => {
   beforeEach(() => {
     // 비로그인: 카테고리는 기본 5개로 대체된다
     mockedUseSession.mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+  });
+
+  describe("collapsed", () => {
+    it("접히면 제목('카테고리')만 남고 폴더 목록과 '관리' 링크는 가려진다", async () => {
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" collapsed />);
+
+      expect(await screen.findByText("카테고리")).toBeVisible();
+      expect(screen.queryByRole("link", { name: "관리" })).toBeNull();
+      expect(screen.getByRole("button", { name: /학습/, hidden: true })).not.toBeVisible();
+      expect(screen.getByRole("link", { name: "리액트 쿼리", hidden: true })).not.toBeVisible();
+    });
+
+    it("접지 않으면(기본) 목록과 '관리' 링크가 보인다", async () => {
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" />);
+
+      expect(await screen.findByRole("link", { name: "관리" })).toBeVisible();
+      expect(screen.getByRole("button", { name: /학습/ })).toBeVisible();
+    });
+
+    it("접었다 펼쳐도 직접 펼친 폴더가 그대로 남는다 — 목록을 언마운트하지 않고 숨기기만 한다", async () => {
+      mockOutline();
+      const user = userEvent.setup();
+      // renderWithQueryClient의 rerender는 QueryClientProvider를 다시 감싸지 않으므로, 접고 펴는 버튼이 있는 하니스로 감싼다
+      function Harness() {
+        const [collapsed, setCollapsed] = useState(false);
+        return (
+          <>
+            <button type="button" onClick={() => setCollapsed((v) => !v)}>
+              접기토글
+            </button>
+            <PostOutline currentPostId="p1" collapsed={collapsed} />
+          </>
+        );
+      }
+      renderWithQueryClient(<Harness />);
+      const folder = await screen.findByRole("button", { name: /이직/ });
+      expect(folder).toHaveAttribute("aria-expanded", "false");
+      await user.click(folder); // 직접 펼침
+      expect(screen.getByRole("button", { name: /이직/ })).toHaveAttribute("aria-expanded", "true");
+
+      await user.click(screen.getByRole("button", { name: "접기토글" })); // 접기
+      await user.click(screen.getByRole("button", { name: "접기토글" })); // 다시 펼치기
+
+      expect(screen.getByRole("button", { name: /이직/ })).toHaveAttribute("aria-expanded", "true");
+    });
+  });
+
+  it("headerClassName을 주면 헤더 줄(카테고리·관리)에 그 클래스가 붙고, 안 주면 기본 모양 그대로다", async () => {
+    mockOutline();
+    const { unmount } = renderWithQueryClient(<PostOutline currentPostId="p1" headerClassName="pl-7" />);
+    const header = (await screen.findByText("카테고리")).parentElement!;
+    expect(header).toHaveClass("pl-7", "flex", "justify-between");
+    unmount();
+
+    renderWithQueryClient(<PostOutline currentPostId="p1" />);
+    const plain = (await screen.findByText("카테고리")).parentElement!;
+    expect(plain).not.toHaveClass("pl-7");
   });
 
   it("지금 보는 글이 들어 있는 폴더만 펼쳐지고, 그 글이 현재 글로 표시된다", async () => {

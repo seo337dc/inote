@@ -21,9 +21,16 @@ const DEFAULT_CATEGORIES: Category[] = CATEGORIES.map((name, position) => ({
   updatedAt: "",
 }));
 
-type Props = { currentPostId: string };
+type Props = {
+  currentPostId: string;
+  // 헤더 줄("카테고리 · 관리")에 더할 클래스 — 바깥에서 아이콘 버튼을 같은 줄에 겹쳐 놓을 때 자리를 비우는 용도
+  headerClassName?: string;
+  // true면 제목 줄(아이콘 옆 "카테고리")만 남기고 폴더 목록과 "관리" 링크는 가린다. 목록은 언마운트하지 않고 숨기기만 해서
+  // 직접 펼쳐 둔 폴더와 스크롤 위치가 접었다 펴도 그대로 남는다.
+  collapsed?: boolean;
+};
 
-export default function PostOutline({ currentPostId }: Props) {
+export default function PostOutline({ currentPostId, headerClassName, collapsed = false }: Props) {
   const outlineQuery = usePostOutline();
   const categoriesQuery = useCategories();
   // 사용자가 직접 펼치거나 접은 폴더. 값이 없는 폴더는 "지금 글이 들어 있는지"로 정한다
@@ -44,8 +51,9 @@ export default function PostOutline({ currentPostId }: Props) {
   useEffect(() => {
     const nav = navRef.current;
     const current = nav?.querySelector<HTMLElement>("[aria-current]");
-    if (nav && current) revealInContainer(nav, current);
-  }, [currentPostId, outlineQuery.data]);
+    // 접혀 있는 동안은 목록이 보이지 않아 스크롤 계산이 무의미하다 — 다시 펼칠 때 현재 글이 보이게 맞춘다
+    if (nav && current && !collapsed) revealInContainer(nav, current);
+  }, [currentPostId, outlineQuery.data, collapsed]);
 
   if (!outlineQuery.data || outlineQuery.data.length === 0) return null;
 
@@ -58,22 +66,26 @@ export default function PostOutline({ currentPostId }: Props) {
       aria-label="카테고리"
       className="hide-scrollbar sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
     >
-      <div className="mb-2 flex items-center justify-between">
+      <div className={cn("mb-2 flex items-center justify-between", headerClassName)}>
         <p className="text-xs font-semibold tracking-wide text-zinc-500">카테고리</p>
-        <Link
-          href="/categories"
-          className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
-        >
-          관리
-        </Link>
+        {!collapsed && (
+          <Link
+            href="/categories"
+            className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+          >
+            관리
+          </Link>
+        )}
       </div>
-      <FolderList
-        folders={folders}
-        currentPostId={currentPostId}
-        isOpen={isOpen}
-        onToggle={toggle}
-        depth={0}
-      />
+      <div hidden={collapsed}>
+        <FolderList
+          folders={folders}
+          currentPostId={currentPostId}
+          isOpen={isOpen}
+          onToggle={toggle}
+          depth={0}
+        />
+      </div>
     </nav>
   );
 }

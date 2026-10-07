@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { revealInContainer } from "@/shared/lib/scroll";
+import { cn } from "@/shared/lib/utils";
 import type { TocItem } from "@/shared/lib/toc";
 
 // 제목이 화면 위쪽에서 이만큼(px) 안쪽으로 들어오면 "지금 읽는 제목"으로 본다
@@ -11,7 +12,17 @@ const INDENT = { 1: "pl-3", 2: "pl-6", 3: "pl-9" } as const;
 
 // 글 옆에 고정되는 목차. 항목을 누르면 그 제목으로 부드럽게 이동하고 주소 뒤에 #제목이 붙는다.
 // 이 앱은 window가 아니라 main 요소가 스크롤되므로, 스크롤 추적도 그 요소 기준으로 한다.
-export function ContentToc({ items }: { items: TocItem[] }) {
+export function ContentToc({
+  items,
+  headerClassName,
+  collapsed = false,
+}: {
+  items: TocItem[];
+  // true면 제목 줄("목차")만 남기고 목록은 가린다 (언마운트하지 않고 숨기기만 한다)
+  collapsed?: boolean;
+  // 제목 줄("목차")에 더할 클래스 — 바깥에서 아이콘 버튼을 같은 줄에 겹쳐 놓을 때 자리를 비우고 높이를 맞추는 용도
+  headerClassName?: string;
+}) {
   const [activeId, setActiveId] = useState<string | null>(items[0]?.id ?? null);
   // 항목을 눌러 이동하는 동안(부드러운 스크롤)에는 스크롤 위치로 강조를 다시 계산하지 않는다.
   // 글 끝쪽 제목은 화면 맨 위까지 못 올라와서(스크롤이 바닥에서 멈춤) 계산하면 앞 제목으로 덮어써지기 때문.
@@ -97,8 +108,8 @@ export function ContentToc({ items }: { items: TocItem[] }) {
       {/* 세로선은 "목차" 제목부터 목록 끝까지 한 줄로 이어지게 감싸는 div의 왼쪽 테두리로 그린다.
           (스크롤되는 nav 바깥으로 삐져나가면 잘려서, 선은 nav 안쪽 div에 둠) */}
       <div className="border-l-2 border-zinc-200">
-        <p className="mb-2 pl-3 text-xs font-semibold tracking-wide text-zinc-500">목차</p>
-        <ul>
+        <p className={cn("mb-2 pl-3 text-xs font-semibold tracking-wide text-zinc-500", headerClassName)}>목차</p>
+        <ul hidden={collapsed}>
           {items.map((item) => {
             const active = item.id === activeId;
             return (

@@ -41,6 +41,27 @@ describe("ContentToc", () => {
     window.history.replaceState(null, "", "/");
   });
 
+  it("collapsed면 제목('목차')만 남고 목록이 가려진다. 접지 않으면 목록이 보인다", () => {
+    const { rerender } = render(<ContentToc items={items} collapsed />);
+    expect(screen.getByText("목차")).toBeVisible();
+    // 숨겨진 요소는 접근성 쿼리에서 빠지므로 hidden: true로 찾는다
+    expect(screen.getByRole("link", { name: "소개", hidden: true })).not.toBeVisible();
+
+    rerender(<ContentToc items={items} />);
+    expect(screen.getByRole("link", { name: "소개" })).toBeVisible();
+  });
+
+  it("headerClassName을 주면 제목 줄('목차')에 붙고 기본 왼쪽 간격(pl-3)을 덮어쓴다. 안 주면 기본 모양 그대로", () => {
+    const { unmount } = render(<ContentToc items={items} headerClassName="pl-[34px] min-h-[22px]" />);
+    const custom = screen.getByText("목차");
+    expect(custom).toHaveClass("pl-[34px]", "min-h-[22px]");
+    expect(custom).not.toHaveClass("pl-3"); // tailwind-merge가 충돌하는 기본 간격을 걷어낸다
+    unmount();
+
+    render(<ContentToc items={items} />);
+    expect(screen.getByText("목차")).toHaveClass("pl-3");
+  });
+
   it("h1~h3 항목을 순서대로 보여주고 각 항목은 #id 링크다", () => {
     render(<ContentToc items={items} />);
 
