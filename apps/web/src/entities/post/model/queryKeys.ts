@@ -2,3 +2,4 @@
 export const MY_POSTS_KEY = ["my-posts"] as const;
 export const POST_OUTLINE_KEY = ["post-outline"] as const;
 export const MY_POST_OUTLINE_KEY = ["my-post-outline"] as const;
+export const USER_OUTLINE_KEY = ["user-outline"] as const;

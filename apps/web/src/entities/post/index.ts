@@ -1,4 +1,4 @@
-export type { Post, PostListPage, PublicCategory, MyPostListPage, PostOutlineItem, MyPostOutlineItem } from "./model/types";
+export type { Post, PostListPage, PublicCategory, UserOutline, MyPostListPage, PostOutlineItem, MyPostOutlineItem } from "./model/types";
 export { MOCK_POSTS } from "./model/mock";
 export { useMyDrafts } from "./model/useMyDrafts";
 export { useMyPosts } from "./model/useMyPosts";
@@ -8,6 +8,7 @@ export { default as PostDates } from "./ui/PostDates";
 export { getPostDates } from "./lib/postDates";
 export { getCategoryPath } from "./lib/categoryPath";
 export { usePostOutline } from "./model/usePostOutline";
+export { useUserOutline } from "./model/useUserOutline";
 export { useMyPostOutline } from "./model/useMyPostOutline";
 export { MY_POSTS_KEY, POST_OUTLINE_KEY, MY_POST_OUTLINE_KEY } from "./model/queryKeys";
 export { useMovePostCategory } from "./model/useMovePostCategory";

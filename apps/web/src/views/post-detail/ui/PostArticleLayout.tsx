@@ -85,13 +85,23 @@ export function useIsCollapsed(panel: "outline" | "toc"): boolean {
 // PostOutline·ContentToc는 이 레이아웃을 몰라도 되도록 collapsed만 받게 두고, 컨텍스트 읽기는 여기서 한다.
 export function OutlinePanel({
   currentPostId,
+  authorId,
   headerClassName,
 }: {
   currentPostId: string;
+  // 이 글의 작성자 — 다른 사람의 글이면 왼쪽 카테고리가 그 작성자의 공개 카테고리로 바뀐다
+  authorId?: string | null;
   headerClassName?: string;
 }) {
   const collapsed = useIsCollapsed("outline");
-  return <PostOutline currentPostId={currentPostId} headerClassName={headerClassName} collapsed={collapsed} />;
+  return (
+    <PostOutline
+      currentPostId={currentPostId}
+      authorId={authorId}
+      headerClassName={headerClassName}
+      collapsed={collapsed}
+    />
+  );
 }
 
 export function TocPanel({ items, headerClassName }: { items: TocItem[]; headerClassName?: string }) {

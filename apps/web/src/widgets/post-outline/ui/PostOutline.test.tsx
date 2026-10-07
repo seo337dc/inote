@@ -198,6 +198,123 @@ describe("PostOutline", () => {
     });
   });
 
+  describe("다른 사람의 글 (작성자의 공개 카테고리)", () => {
+    const USER_OUTLINE = {
+      author: { id: "u9", name: "김작성" },
+      categories: [
+        { id: "k1", name: "여행", parentId: null, depth: 1, createdAt: "2026-01-01" },
+        { id: "k2", name: "제주", parentId: "k1", depth: 2, createdAt: "2026-01-02" },
+      ],
+      posts: [
+        { id: "x1", title: "제주 맛집", category: "제주", isPrivate: false, pinned: false },
+        { id: "x2", title: "여행 준비물", category: "여행", isPrivate: false, pinned: false },
+      ],
+    };
+
+    function mockUserOutline(data: object = USER_OUTLINE, onRequest?: (userId: string) => void) {
+      server.use(
+        http.get(`${TEST_API_URL}/api/v1/blog/posts/outline/user/:userId`, ({ params }) => {
+          onRequest?.(String(params.userId));
+          return HttpResponse.json(data);
+        }),
+      );
+    }
+    function loginAs(userId: string | null) {
+      mockedUseSession.mockReturnValue({
+        data: userId ? { user: { id: userId } } : null,
+        isPending: false,
+      } as unknown as ReturnType<typeof useSession>);
+    }
+
+    it("내가 아닌 작성자의 글이면 그 작성자의 공개 글·카테고리로 트리를 그리고, 제목에 작성자 이름을 붙인다", async () => {
+      loginAs("me");
+      mockUserOutline();
+      mockOutline(); // 내 기준 목록(여기엔 '학습' 등이 있다)은 쓰이지 않아야 한다
+      renderWithQueryClient(<PostOutline currentPostId="x1" authorId="u9" />);
+
+      expect(await screen.findByText("김작성의 카테고리")).toBeInTheDocument();
+      // 현재 글이 들어 있는 폴더(제주)가 열려 있어 글이 보이고, 상위(여행)는 하위 폴더로 이어진다
+      expect(screen.getByRole("link", { name: "제주 맛집" })).toHaveAttribute("aria-current", "page");
+      expect(screen.getByRole("button", { name: /여행/ })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /학습/ })).toBeNull();
+      expect(screen.queryByRole("button", { name: /이직/ })).toBeNull();
+    });
+
+    it("그 작성자의 목록(/users/[id]?category=)으로 가는 링크를 로그인 여부와 상관없이 보여주고, '관리' 링크는 없다", async () => {
+      loginAs(null);
+      mockUserOutline();
+      renderWithQueryClient(<PostOutline currentPostId="x1" authorId="u9" />);
+
+      const link = await screen.findByRole("link", { name: "여행 목록 보기" });
+      expect(link).toHaveAttribute("href", `/users/u9?category=${encodeURIComponent("여행")}`);
+      expect(screen.getByRole("link", { name: "제주 목록 보기" })).toHaveAttribute(
+        "href",
+        `/users/u9?category=${encodeURIComponent("제주")}`,
+      );
+      expect(screen.queryByRole("link", { name: "관리" })).toBeNull();
+    });
+
+    it("그 작성자의 id로 요청하고, 내 기준 목록은 요청하지 않는다", async () => {
+      loginAs("me");
+      let requestedUser: string | undefined;
+      let ownRequested = false;
+      mockUserOutline(USER_OUTLINE, (id) => (requestedUser = id));
+      server.use(
+        http.get(`${TEST_API_URL}/api/v1/blog/posts/outline`, () => {
+          ownRequested = true;
+          return HttpResponse.json(OUTLINE);
+        }),
+      );
+      renderWithQueryClient(<PostOutline currentPostId="x1" authorId="u9" />);
+
+      await screen.findByText("김작성의 카테고리");
+      expect(requestedUser).toBe("u9");
+      expect(ownRequested).toBe(false);
+    });
+
+    it("로그인하지 않았어도 남의 글이면 그 작성자의 카테고리를 보여준다", async () => {
+      loginAs(null);
+      mockUserOutline();
+      renderWithQueryClient(<PostOutline currentPostId="x1" authorId="u9" />);
+
+      expect(await screen.findByText("김작성의 카테고리")).toBeInTheDocument();
+    });
+
+    it("내 글이면(작성자 id가 내 id) 지금처럼 내 카테고리·내 목록을 쓰고 작성자 목록은 요청하지 않는다", async () => {
+      loginAs("u9");
+      let userRequested = false;
+      server.use(
+        http.get(`${TEST_API_URL}/api/v1/blog/posts/outline/user/:userId`, () => {
+          userRequested = true;
+          return HttpResponse.json(USER_OUTLINE);
+        }),
+      );
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" authorId="u9" />);
+
+      expect(await screen.findByRole("button", { name: /학습/ })).toBeInTheDocument();
+      expect(screen.queryByText(/의 카테고리/)).toBeNull();
+      expect(screen.getByRole("link", { name: "관리" })).toBeInTheDocument();
+      expect(userRequested).toBe(false);
+    });
+
+    it("작성자 정보가 없으면(authorId 없음) 지금처럼 내 기준 목록을 쓴다", async () => {
+      loginAs("me");
+      mockOutline();
+      renderWithQueryClient(<PostOutline currentPostId="p1" authorId={null} />);
+
+      expect(await screen.findByRole("button", { name: /학습/ })).toBeInTheDocument();
+    });
+
+    it("없는 작성자이거나 공개 글이 없으면 아무것도 그리지 않는다", async () => {
+      loginAs("me");
+      mockUserOutline({ author: null, categories: [], posts: [] });
+      const { container } = renderWithQueryClient(<PostOutline currentPostId="x1" authorId="u9" />);
+
+      await vi.waitFor(() => expect(container).toBeEmptyDOMElement());
+    });
+  });
+
   it("카테고리 제목 옆에 관리 페이지로 가는 '관리' 링크가 있다", async () => {
     mockOutline();
     renderWithQueryClient(<PostOutline currentPostId="p1" />);

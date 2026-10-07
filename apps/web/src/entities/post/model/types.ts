@@ -68,6 +68,14 @@ export type PostOutlineItem = {
   pinned: boolean;
 };
 
+// GET /blog/posts/outline/user/:userId — 다른 사람의 글 상세 왼쪽 카테고리 트리용: 그 작성자의 공개 글과, 공개 글이 있는 카테고리
+// (비공개 글·비공개 글만 있는 카테고리는 없다). 없는 사용자면 author가 null
+export type UserOutline = {
+  author: { id: string; name: string } | null;
+  categories: PublicCategory[];
+  posts: PostOutlineItem[];
+};
+
 // GET /blog/posts/mine/outline — 카테고리 관리 화면용 (내 글 전체, 본문 없이)
 export type MyPostOutlineItem = {
   id: string;

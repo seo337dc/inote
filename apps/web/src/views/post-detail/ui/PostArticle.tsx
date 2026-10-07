@@ -1,4 +1,5 @@
 import { PostDates, PrivateBadge, type Post } from "@/entities/post";
+import { PostAuthor } from "@/widgets/post-list";
 import { buildToc } from "@/shared/lib/toc";
 import CategoryBreadcrumb from "./CategoryBreadcrumb";
 import DeletePostButton from "./DeletePostButton";
@@ -20,7 +21,7 @@ export default function PostArticle({ post }: { post: Post }) {
 
   return (
     <PostArticleLayout
-      outline={<OutlinePanel currentPostId={post.id} headerClassName={OUTLINE_HEADER_CLASS} />}
+      outline={<OutlinePanel currentPostId={post.id} authorId={post.userId} headerClassName={OUTLINE_HEADER_CLASS} />}
       toc={items.length > 0 ? <TocPanel items={items} headerClassName={TOC_HEADER_CLASS} /> : null}
     >
       <div className="mb-3 flex items-center justify-between">
@@ -36,8 +37,9 @@ export default function PostArticle({ post }: { post: Post }) {
       </div>
       <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
       <div className="mb-6 flex items-start justify-between gap-4 text-sm text-zinc-400">
-        <p className="min-w-0 truncate">
-          {post.user ? `${post.user.name} (${post.user.email})` : "작성자 없음"}
+        {/* 작성자를 누르면 그 사람의 홈(/users/[id]) — 내 글이면 나의 글로 (목록 카드와 같은 규칙) */}
+        <p className="flex min-w-0">
+          <PostAuthor post={post} />
         </p>
         <p className="shrink-0 text-right">
           <PostDates post={post} />

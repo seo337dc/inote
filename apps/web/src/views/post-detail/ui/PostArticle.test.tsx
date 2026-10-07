@@ -9,8 +9,21 @@ import { useSession } from "@/shared/lib/auth-client";
 // 배지 표시만 보려는 테스트라 세션·쿼리가 필요한 주변 컴포넌트는 비워 둔다
 // 카테고리 영역 헤더 줄에 비워 둔 간격(headerClassName)이 전달되는지 볼 수 있게 받은 값을 표시만 한다
 vi.mock("@/widgets/post-outline", () => ({
-  PostOutline: ({ headerClassName, collapsed }: { headerClassName?: string; collapsed?: boolean }) => (
-    <div data-testid="outline" data-header-class={headerClassName ?? ""} data-collapsed={String(Boolean(collapsed))} />
+  PostOutline: ({
+    headerClassName,
+    collapsed,
+    authorId,
+  }: {
+    headerClassName?: string;
+    collapsed?: boolean;
+    authorId?: string | null;
+  }) => (
+    <div
+      data-testid="outline"
+      data-header-class={headerClassName ?? ""}
+      data-collapsed={String(Boolean(collapsed))}
+      data-author-id={authorId ?? ""}
+    />
   ),
 }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
@@ -18,6 +31,44 @@ vi.mock("./TogglePinButton", () => ({ default: () => null }));
 vi.mock("./EditPostLink", () => ({ default: () => null }));
 vi.mock("./DeletePostButton", () => ({ default: () => null }));
 vi.mock("./PostSummarySection", () => ({ default: () => null }));
+
+describe("PostArticle — 작성자", () => {
+  function loginAs(userId: string | null) {
+    vi.mocked(useSession).mockReturnValue({
+      data: userId ? { user: { id: userId } } : null,
+      isPending: false,
+    } as unknown as ReturnType<typeof useSession>);
+  }
+
+  it("작성자 이름을 누르면 그 사람의 홈(/users/[id])으로 이동한다", () => {
+    loginAs("other");
+    render(<PostArticle post={makePost("p1", { userId: "u1", user: { name: "서동찬", email: "a@a.com" } })} />);
+
+    expect(screen.getByRole("link", { name: "서동찬 (a@a.com)" })).toHaveAttribute("href", "/users/u1");
+  });
+
+  it("내 글이면 작성자 이름이 나의 글(/my-posts)로 연결된다", () => {
+    loginAs("u1");
+    render(<PostArticle post={makePost("p1", { userId: "u1", user: { name: "서동찬", email: "a@a.com" } })} />);
+
+    expect(screen.getByRole("link", { name: "서동찬 (a@a.com)" })).toHaveAttribute("href", "/my-posts");
+  });
+
+  it("작성자 정보가 없으면 링크 없이 '작성자 없음'을 보여준다", () => {
+    loginAs(null);
+    render(<PostArticle post={makePost("p1", { userId: null, user: null })} />);
+
+    expect(screen.getByText("작성자 없음")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /작성자/ })).toBeNull();
+  });
+
+  it("왼쪽 카테고리 영역에 이 글의 작성자 id를 넘긴다 (남의 글이면 그 작성자의 카테고리를 보여주기 위해)", () => {
+    loginAs(null);
+    render(<PostArticle post={makePost("p1", { userId: "u1" })} />);
+
+    expect(screen.getByTestId("outline")).toHaveAttribute("data-author-id", "u1");
+  });
+});
 
 describe("PostArticle — 카테고리 경로", () => {
   function loginAs(userId: string | null) {
