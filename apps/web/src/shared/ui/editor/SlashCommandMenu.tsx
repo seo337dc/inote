@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { SuggestionKeyDownProps } from "@tiptap/suggestion";
 import type { SlashCommandItem } from "./slash-command";
 
@@ -16,8 +16,14 @@ export type SlashCommandMenuRef = {
 const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
   ({ items, command }, ref) => {
     const [selected, setSelected] = useState(0);
+    const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
     useEffect(() => setSelected(0), [items]);
+
+    // 목록에 높이 제한이 있어 스크롤되므로, 방향키로 고른 항목이 가려진 영역에 있으면 보이는 곳까지 스크롤한다
+    useEffect(() => {
+      itemRefs.current[selected]?.scrollIntoView?.({ block: "nearest" });
+    }, [selected]);
 
     function select(index: number) {
       const item = items[index];
@@ -51,10 +57,14 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
     }
 
     return (
-      <div className="w-64 rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+      // 항목이 10개라 그대로 펼치면 500px이 넘어 하단 고정 바·화면 아래로 넘친다 — 높이를 제한하고 스크롤
+      <div className="max-h-80 w-64 overflow-y-auto overscroll-contain rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
         {items.map((item, index) => (
           <button
             key={item.title}
+            ref={(el) => {
+              itemRefs.current[index] = el;
+            }}
             type="button"
             onClick={() => select(index)}
             onMouseEnter={() => setSelected(index)}
