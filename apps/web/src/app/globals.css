@@ -284,6 +284,91 @@
   position: absolute;
 }
 
+/* 콜아웃: 에디터(.callout-node, React 노드뷰)와 글 상세(.prose [data-type="callout"], 저장된 HTML)가 같은 모양.
+   저장된 HTML에는 아이콘 요소가 없어서 글 상세는 data-emoji를 ::before로 그리고,
+   에디터는 노드뷰가 눌러서 바꿀 수 있는 아이콘 버튼(.callout-icon)을 직접 그린다 */
+.tiptap .callout-node,
+.prose [data-type="callout"] {
+  position: relative;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-zinc-100, #f4f4f5);
+}
+
+.prose [data-type="callout"]::before {
+  content: attr(data-emoji);
+  position: absolute;
+  left: 0.9rem;
+  top: 0.75rem;
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+}
+
+/* 박스 안 첫·마지막 블록의 바깥 여백은 박스 패딩과 겹치지 않게 없앤다.
+   에디터는 React 노드뷰가 내용을 [data-node-view-content] > [data-node-view-content-react]로 한 겹 더 감싸서 그 안쪽 자식을 고른다 */
+.tiptap .callout-node [data-node-view-content-react] > :first-child,
+.prose [data-type="callout"] > :first-child {
+  margin-top: 0;
+}
+.tiptap .callout-node [data-node-view-content-react] > :last-child,
+.prose [data-type="callout"] > :last-child {
+  margin-bottom: 0;
+}
+
+/* 박스 배경(zinc-100)과 같은 색인 코드 블록이 묻히지 않게 흰색으로 */
+.tiptap .callout-node pre,
+.prose [data-type="callout"] pre {
+  background-color: var(--color-white, #fff);
+}
+
+.tiptap .callout-icon-area {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.6rem;
+  z-index: 1;
+  user-select: none;
+}
+
+.tiptap .callout-icon {
+  border-radius: 0.375rem;
+  padding: 0 0.25rem;
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+  cursor: pointer;
+}
+.tiptap .callout-icon:hover {
+  background-color: var(--color-zinc-200, #e4e4e7);
+}
+
+.tiptap .callout-emoji-picker {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem;
+  width: 11.5rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--color-zinc-200, #e4e4e7);
+  border-radius: 0.5rem;
+  background-color: var(--color-white, #fff);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+}
+.tiptap .callout-emoji-picker button {
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.25rem;
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+  cursor: pointer;
+}
+.tiptap .callout-emoji-picker button:hover,
+.tiptap .callout-emoji-picker button.is-selected {
+  background-color: var(--color-zinc-100, #f4f4f5);
+}
+
 /* 링크는 본문 글자색(zinc-900)과 같으면 링크로 안 보여서 파란색+밑줄로 구분 */
 .tiptap a,
 .prose a {

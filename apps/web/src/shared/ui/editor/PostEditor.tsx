@@ -21,6 +21,7 @@ import {
 } from "./link-popover";
 import { toggleHeadingOnLine } from "./line-heading";
 import { TableToolbar } from "./TableToolbar";
+import { Callout } from "./CalloutView";
 import { DEFAULT_TABLE } from "./table-commands";
 
 type Props = {
@@ -119,6 +120,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       TableRow,
       TableHeader,
       TableCell,
+      Callout,
       Placeholder.configure({
         placeholder: "내용을 입력하거나 '/'를 입력해 블록을 삽입하세요...",
       }),
@@ -193,6 +195,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
   const inTable = useEditorState({
     editor,
     selector: ({ editor }) => editor?.isActive("table") ?? false,
+  });
+
+  // 콜아웃 안인지는 서식 상태(activeState)와 따로 구독한다 — 콜아웃 안의 제목·목록에서도 버튼이 켜져 있어야 해서
+  const inCallout = useEditorState({
+    editor,
+    selector: ({ editor }) => editor?.isActive("callout") ?? false,
   });
 
   const closeLinkPopup = useCallback(
@@ -294,6 +302,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           disabled={Boolean(inTable)}
         >
           표
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCallout().run()}
+          active={Boolean(inCallout)}
+        >
+          콜아웃
         </ToolbarButton>
         <span className="ml-auto self-center text-xs text-zinc-400">
           &apos;/&apos;로 블록 삽입

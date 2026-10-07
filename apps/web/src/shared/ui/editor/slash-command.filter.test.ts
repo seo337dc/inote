@@ -34,6 +34,14 @@ describe("슬래시 메뉴 검색 — 영어로도 찾아진다", () => {
     expect(titles("number")).toEqual(["번호 매기기 목록"]);
   });
 
+  it("콜아웃은 callout·box·note로, 한글 '콜아웃'으로 찾는다", () => {
+    expect(titles("callout")).toEqual(["콜아웃"]);
+    expect(titles("box")).toEqual(["콜아웃"]);
+    expect(titles("note")).toEqual(["콜아웃"]);
+    expect(titles("콜아웃")).toEqual(["콜아웃"]);
+    expect(titles("콜")).toEqual(["콜아웃"]);
+  });
+
   it("영어 단어의 일부만 쳐도 찾는다 (tab → 표)", () => {
     expect(titles("tab")).toEqual(["표"]);
   });
@@ -58,7 +66,7 @@ describe("슬래시 메뉴 검색 — 한글 검색은 그대로 동작한다", 
 
 describe("슬래시 메뉴 검색 — 경계", () => {
   it("빈 쿼리('/'만 친 상태)는 모든 항목을 돌려준다", () => {
-    expect(titles("")).toHaveLength(11);
+    expect(titles("")).toHaveLength(12);
   });
 
   it("어디에도 없는 글자는 빈 목록이다", () => {

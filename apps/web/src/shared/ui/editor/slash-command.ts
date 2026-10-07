@@ -78,6 +78,13 @@ const COMMAND_ITEMS: SlashCommandItem[] = [
       editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
   },
   {
+    title: "콜아웃",
+    description: "아이콘이 있는 강조 박스",
+    keywords: ["callout", "box", "note", "tip", "info"],
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).wrapInCallout().run(),
+  },
+  {
     title: "코드 블록",
     description: "고정폭 코드 블록",
     keywords: ["code", "codeblock"],
