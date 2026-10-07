@@ -53,6 +53,25 @@ describe("슬래시(/) 메뉴가 열릴 때", () => {
     expect(list).toHaveClass("max-h-80", "overflow-y-auto");
   });
 
+  it("영어로 검색해도 찾는다: /table → 표 항목만 남고 Enter로 표가 삽입된다", async () => {
+    const { user, container, list } = await openMenu();
+
+    await user.keyboard("table");
+
+    await waitFor(() => expect(within(list).queryByText("제목 1")).toBeNull());
+    expect(within(list).getByText("표")).toBeInTheDocument();
+    await user.keyboard("{Enter}");
+    expect(container.querySelectorAll("tr")).toHaveLength(3);
+  });
+
+  it("영어 검색 결과가 없으면 안내 문구가 뜬다: /zzzz", async () => {
+    const { user } = await openMenu();
+
+    await user.keyboard("zzzz");
+
+    expect(await screen.findByText("일치하는 명령어가 없습니다")).toBeInTheDocument();
+  });
+
   it("방향키로 '표'까지 내려가 Enter를 누르면 표가 삽입되고 메뉴가 닫힌다", async () => {
     const { user, container } = await openMenu();
 
