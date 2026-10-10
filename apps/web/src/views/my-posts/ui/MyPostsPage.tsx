@@ -7,7 +7,7 @@ import { PostFeed, PostListHeader } from "@/widgets/post-list";
 import { PageLoading } from "@/shared/ui/page-loading";
 import { useSession } from "@/shared/lib/auth-client";
 import { useMyPosts } from "@/entities/post";
-import { useCategories, buildCategoryTree, flattenCategoryTree } from "@/entities/category";
+import { useCategories, buildCategoryTree, flattenCategoryTree, rollupCategoryCounts } from "@/entities/category";
 
 type Props = {
   category: string | null;
@@ -21,7 +21,8 @@ export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
   const { data: session, isPending: isSessionPending } = useSession();
   const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, category, q);
   const categoriesQuery = useCategories();
-  const flatCategories = flattenCategoryTree(buildCategoryTree(categoriesQuery.data ?? []));
+  const categoryTree = buildCategoryTree(categoriesQuery.data ?? []);
+  const flatCategories = flattenCategoryTree(categoryTree);
 
   useEffect(() => {
     if (!isSessionPending && !session) {
@@ -33,6 +34,8 @@ export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
     return <PageLoading />;
   }
 
+  // 상위 카테고리는 하위 글까지 합친 수로 보여준다 (눌렀을 때 하위 글까지 나오므로). 전체는 직속 합계 그대로
+  const rolledCounts = rollupCategoryCounts(categoryTree, data.categoryCounts);
   const allCount = Object.values(data.categoryCounts).reduce((sum, n) => sum + n, 0);
 
   return (
@@ -41,7 +44,7 @@ export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
       <div className="hidden lg:block">
         <CategoryFilter
           posts={[]}
-          counts={data.categoryCounts}
+          counts={rolledCounts}
           totalCount={allCount}
           activeCategory={category}
           basePath="/my-posts"

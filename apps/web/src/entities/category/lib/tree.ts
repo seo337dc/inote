@@ -36,3 +36,19 @@ export function buildCategoryTree(categories: Category[]): CategoryNode[] {
 export function flattenCategoryTree(nodes: CategoryNode[]): CategoryNode[] {
   return nodes.flatMap((node) => [node, ...flattenCategoryTree(node.children)]);
 }
+
+// 카테고리별 글 수를 하위 카테고리까지 합친 값으로 바꾼다 (그 카테고리를 눌렀을 때 목록에 나오는 글 수와 같게).
+// directCounts는 정확히 그 카테고리에 속한 글 수(글의 카테고리는 이름 문자열이라 이름으로 센다). 없는 이름은 0.
+export function rollupCategoryCounts(
+  tree: CategoryNode[],
+  directCounts: Record<string, number>,
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  const sum = (node: CategoryNode): number => {
+    const total = (directCounts[node.name] ?? 0) + node.children.reduce((acc, child) => acc + sum(child), 0);
+    counts[node.name] = total;
+    return total;
+  };
+  tree.forEach(sum);
+  return counts;
+}
