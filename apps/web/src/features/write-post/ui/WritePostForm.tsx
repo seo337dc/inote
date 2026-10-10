@@ -14,6 +14,7 @@ import { PostAiSummary, useMyDrafts } from "@/entities/post";
 import PostAccessDenied from "./PostAccessDenied";
 import DraftListModal from "./DraftListModal";
 import PublishScreen from "./PublishScreen";
+import WriteSidePanel from "./WriteSidePanel";
 
 const FORM_ID = "write-post-form";
 const EMPTY_CONTENT = ["", "<p></p>"];
@@ -89,7 +90,8 @@ export default function WritePostForm({ id }: Props) {
   }, [isSessionPending, session, post, isOwnPost, router]);
 
   const categoriesQuery = useCategories();
-  const flatCategories = flattenCategoryTree(buildCategoryTree(categoriesQuery.data ?? []));
+  const categoryTree = buildCategoryTree(categoriesQuery.data ?? []);
+  const flatCategories = flattenCategoryTree(categoryTree);
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -217,65 +219,82 @@ export default function WritePostForm({ id }: Props) {
   if (!post || !isOwnPost) return null;
 
   return (
-    <form id={FORM_ID} onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <input
-        value={title}
-        onChange={(e) => {
-          setTitle(e.target.value);
+    <form id={FORM_ID} onSubmit={handleSubmit} className="flex gap-6">
+      {/* 왼쪽 글 설정 영역 (카테고리, 이후 공개 설정·즐겨찾기). 좁은 화면에서는 아직 숨김 */}
+      <WriteSidePanel
+        categories={categoryTree}
+        category={category}
+        onCategoryChange={(name) => {
+          setCategory(name);
           setIsDirty(true);
         }}
-        placeholder="제목"
-        className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
+        isPrivate={isPrivate}
+        onPrivateChange={(v) => {
+          setIsPrivate(v);
+          setIsDirty(true);
+        }}
       />
 
-      {/* 수정하는 동안에도 저장돼 있는 이전 요약을 계속 보여줌 (저장하면 새 내용 기준으로 다시 생성) */}
-      {post.aiSummary && post.aiSummary.summary.length > 0 && (
-        <PostAiSummary
-          summary={post.aiSummary.summary}
-          hint="현재 저장된 요약이에요. 저장하면 수정한 내용으로 다시 만들어져요."
+      <div className="mx-auto flex min-w-0 max-w-4xl flex-1 flex-col gap-4">
+        <input
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setIsDirty(true);
+          }}
+          placeholder="제목"
+          className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
         />
-      )}
 
-      <PostEditor content={content} onChange={setContent} onUserEdit={() => setIsDirty(true)} />
+        {/* 수정하는 동안에도 저장돼 있는 이전 요약을 계속 보여줌 (저장하면 새 내용 기준으로 다시 생성) */}
+        {post.aiSummary && post.aiSummary.summary.length > 0 && (
+          <PostAiSummary
+            summary={post.aiSummary.summary}
+            hint="현재 저장된 요약이에요. 저장하면 수정한 내용으로 다시 만들어져요."
+          />
+        )}
 
-      {/* 저장 실패 메시지는 출간 설정 화면 안에 보여준다 (화면이 덮고 있으므로) */}
-      {error && !publishOpen && <p className="text-sm text-red-500">{error}</p>}
+        <PostEditor content={content} onChange={setContent} onUserEdit={() => setIsDirty(true)} />
 
-      {/* 에디터가 길어져도 저장/삭제 버튼이 항상 화면 하단에 보이도록 고정.
+        {/* 저장 실패 메시지는 출간 설정 화면 안에 보여준다 (화면이 덮고 있으므로) */}
+        {error && !publishOpen && <p className="text-sm text-red-500">{error}</p>}
+
+        {/* 에디터가 길어져도 저장/삭제 버튼이 항상 화면 하단에 보이도록 고정.
           모바일에선 버튼이 위, 안내 문구가 아래로 (좁은 폭에서 겹치는 것 방지).
           sticky를 씀 — main이 스크롤 컨테이너라 데스크톱 AI 패널 폭만큼 자동으로 좁아짐
           (fixed였다면 뷰포트 전체 폭이라 옆 패널을 덮어버림) */}
-      <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={saveMutation.isPending || deleteMutation.isPending}
-              className="rounded bg-red-600 px-5 py-2 text-white hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600"
-            >
-              {deleteMutation.isPending ? "삭제 중..." : "삭제"}
-            </button>
-            <button
-              type="submit"
-              className="rounded bg-zinc-900 px-5 py-2 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900"
-              disabled={
-                !title.trim() ||
-                isContentEmpty ||
-                saveMutation.isPending ||
-                deleteMutation.isPending
-              }
-            >
-              저장
-            </button>
+        <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
+          <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={saveMutation.isPending || deleteMutation.isPending}
+                className="rounded bg-red-600 px-5 py-2 text-white hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600"
+              >
+                {deleteMutation.isPending ? "삭제 중..." : "삭제"}
+              </button>
+              <button
+                type="submit"
+                className="rounded bg-zinc-900 px-5 py-2 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900"
+                disabled={
+                  !title.trim() ||
+                  isContentEmpty ||
+                  saveMutation.isPending ||
+                  deleteMutation.isPending
+                }
+              >
+                저장
+              </button>
+            </div>
+            {(autosaveMutation.isPending || autosavedAt) && (
+              <p className="text-xs text-zinc-400">
+                {autosaveMutation.isPending
+                  ? "임시 저장 중..."
+                  : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}
+              </p>
+            )}
           </div>
-          {(autosaveMutation.isPending || autosavedAt) && (
-            <p className="text-xs text-zinc-400">
-              {autosaveMutation.isPending
-                ? "임시 저장 중..."
-                : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}
-            </p>
-          )}
         </div>
       </div>
       <PublishScreen
