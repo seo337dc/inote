@@ -172,3 +172,66 @@ describe("코드 블록 밖에서는 기존 동작을 유지한다", () => {
     expect(editor.getText()).toContain("추가");
   });
 });
+
+describe("연도처럼 큰 숫자로 시작하는 줄 (번호 목록으로 오인하지 않는다)", () => {
+  function pasteIntoEmpty(text: string) {
+    setup("<p></p>");
+    editor.commands.setTextSelection(1);
+    return paste({ "text/plain": text });
+  }
+
+  it("'2023. 03 ~ 2024.03'은 2023번 목록이 아니라 문단으로 붙여넣어진다", () => {
+    pasteIntoEmpty("2023. 03 ~ 2024.03");
+
+    const html = editor.getHTML();
+    expect(html).not.toMatch(/<ol|<li/);
+    expect(html).toContain("<p>2023. 03 ~ 2024.03</p>");
+  });
+
+  it("연도 줄이 여러 개여도 줄바꿈을 지키며 문단으로 남는다", () => {
+    pasteIntoEmpty("2023. 03 ~ 2024.03\n2022. 02 ~ 2023.02");
+
+    const html = editor.getHTML();
+    expect(html).not.toMatch(/<ol|<li/);
+    expect(html).toContain("2023. 03 ~ 2024.03");
+    expect(html).toContain("2022. 02 ~ 2023.02");
+  });
+
+  it("앞뒤의 다른 마크다운은 그대로 변환된다", () => {
+    pasteIntoEmpty("# 경력\n\n2023. 03 ~ 2024.03\n\n- 항목");
+
+    const html = editor.getHTML();
+    expect(html).toContain("<h1>경력</h1>");
+    expect(html).toContain("2023. 03 ~ 2024.03");
+    expect(html).toMatch(/<ul>/);
+    expect(html).not.toMatch(/<ol/);
+  });
+
+  it("기준(1000) 바로 아래인 999는 기존처럼 번호 목록이다", () => {
+    pasteIntoEmpty("999. 항목");
+
+    expect(editor.getHTML()).toMatch(/<ol start="999">/);
+  });
+
+  it("기준(1000) 이상이면 문단이다", () => {
+    pasteIntoEmpty("1000. 항목");
+
+    expect(editor.getHTML()).not.toMatch(/<ol/);
+    expect(editor.getHTML()).toContain("1000. 항목");
+  });
+
+  it("일반 번호 목록(1. 2. 3.)은 그대로 목록이 된다", () => {
+    pasteIntoEmpty("1. 하나\n2. 둘\n3. 셋");
+
+    const html = editor.getHTML();
+    expect(html).toMatch(/<ol>/);
+    expect(html.match(/<li>/g)).toHaveLength(3);
+  });
+
+  it("코드 블록 안의 '2023. ...' 줄은 건드리지 않는다", () => {
+    pasteIntoEmpty("```\n2023. 03 ~ 2024.03\n```");
+
+    expect(codeText().trim()).toBe("2023. 03 ~ 2024.03");
+    expect(editor.getHTML()).not.toMatch(/<ol|<li/);
+  });
+});
