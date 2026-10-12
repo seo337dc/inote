@@ -2,9 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib/api";
-import { setEntryDone } from "../lib/dayCard";
-import { dayCardKey } from "./keys";
-import type { DailyEntry, DayCard } from "./types";
+import type { InfiniteData } from "@tanstack/react-query";
+import { setEntryDone, setEntryDoneInPages } from "../lib/dayCard";
+import { DAILY_HISTORY_KEY, dayCardKey } from "./keys";
+import type { DailyEntry, DayCard, DayCardPage } from "./types";
+
+type History = InfiniteData<DayCardPage, string | null>;
 
 const MUTATION_KEY = ["daily-toggle-entry"];
 
@@ -18,16 +21,22 @@ export function useToggleEntry() {
       api.patch<DailyEntry>(`/daily/entries/${id}`, { done }),
     onMutate: async ({ id, date, done }) => {
       await queryClient.cancelQueries({ queryKey: dayCardKey(date) });
+      await queryClient.cancelQueries({ queryKey: DAILY_HISTORY_KEY });
       const previous = queryClient.getQueryData<DayCard>(dayCardKey(date));
       if (previous) queryClient.setQueryData(dayCardKey(date), setEntryDone(previous, id, done));
-      return { previous };
+      // 지난 기록 화면의 카드는 목록 캐시에서 온다 — 거기도 같이 바꾼다
+      const previousHistory = queryClient.getQueryData<History>(DAILY_HISTORY_KEY);
+      if (previousHistory) queryClient.setQueryData(DAILY_HISTORY_KEY, setEntryDoneInPages(previousHistory, id, done));
+      return { previous, previousHistory };
     },
     onError: (_error, { date }, context) => {
       if (context?.previous) queryClient.setQueryData(dayCardKey(date), context.previous);
+      if (context?.previousHistory) queryClient.setQueryData(DAILY_HISTORY_KEY, context.previousHistory);
     },
     onSettled: (_data, _error, { date }) => {
       if (queryClient.isMutating({ mutationKey: MUTATION_KEY }) <= 1) {
         queryClient.invalidateQueries({ queryKey: dayCardKey(date) });
+        queryClient.invalidateQueries({ queryKey: DAILY_HISTORY_KEY });
       }
     },
   });

@@ -36,6 +36,13 @@ describe("DailyTab (오늘의 할일)", () => {
     expect(screen.getByText("2개 중 0개 완료")).toBeInTheDocument();
   });
 
+  it("오늘 카드 아래 '지난 기록 보기' 링크가 지난 기록 화면으로 간다", async () => {
+    setup();
+    renderWithQueryClient(<DailyTab />);
+
+    expect(await screen.findByRole("link", { name: /지난 기록 보기/ })).toHaveAttribute("href", "/todos/history");
+  });
+
   it("체크하면 바로 체크 표시와 합계가 바뀌고, 서버에도 반영된다", async () => {
     const { store, user } = setup();
     renderWithQueryClient(<DailyTab />);

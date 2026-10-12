@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useDayCard } from "@/entities/daily";
 import { todayKst } from "@/shared/lib/date";
 import { DayCard } from "@/widgets/day-card";
@@ -14,5 +15,14 @@ export default function DailyTab() {
     return <p className="py-10 text-center text-sm text-zinc-500">오늘의 할일을 불러오지 못했어요.</p>;
   }
 
-  return <DayCard card={card} isToday />;
+  return (
+    <div className="space-y-3">
+      <DayCard card={card} isToday />
+      <div className="text-right">
+        <Link href="/todos/history" className="text-sm text-zinc-500 hover:text-zinc-900">
+          지난 기록 보기 →
+        </Link>
+      </div>
+    </div>
+  );
 }

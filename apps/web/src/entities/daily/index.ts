@@ -1,6 +1,7 @@
 export type { DailyEntry, DayCard, DayCardPage, AddEntryInput } from "./model/types";
-export { DAILY_KEY, dayCardKey, TEMP_ID_PREFIX } from "./model/keys";
+export { DAILY_KEY, DAILY_HISTORY_KEY, dayCardKey, TEMP_ID_PREFIX } from "./model/keys";
 export { useDayCard } from "./model/useDayCard";
+export { useDayHistory, HISTORY_PAGE_SIZE } from "./model/useDayHistory";
 export { useToggleEntry } from "./model/useToggleEntry";
 export { useAddEntry } from "./model/useAddEntry";
 export { useMakeRoutine } from "./model/useMakeRoutine";
