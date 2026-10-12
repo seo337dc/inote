@@ -15,6 +15,11 @@ const replace = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
+// 오늘을 2026-10-12로 고정 — 가짜 서버 시드(어제·2·3·5일 전)와 주차·달 계산이 날짜에 흔들리지 않게 한다.
+vi.mock("@/shared/lib/date", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/shared/lib/date")>()),
+  todayKst: () => "2026-10-12",
+}));
 
 const yesterday = addDays(todayKst(), -1);
 
@@ -124,5 +129,147 @@ describe("HistoryPage (지난 기록)", () => {
     vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
     renderWithQueryClient(<HistoryPage />);
     expect(replace).toHaveBeenCalledWith("/login");
+  });
+
+  describe("주차별 탭", () => {
+    it("이번 달 카드를 'N주차'로 묶어 최신 주차부터 보여주고, 주차마다 완료 합계를 준다", async () => {
+      const { user } = setup();
+      renderWithQueryClient(<HistoryPage />);
+
+      await user.click(screen.getByRole("tab", { name: "주차별" }));
+
+      expect(await screen.findByText("2026년 10월")).toBeInTheDocument();
+      const weeks = await screen.findAllByRole("region", { name: /주차$/ });
+      expect(weeks.map((w) => w.getAttribute("aria-label"))).toEqual(["10월 3주차", "10월 2주차"]);
+      expect(within(weeks[0]).getByText("3개 중 1개 완료", { selector: "span" })).toBeInTheDocument();
+      expect(within(weeks[1]).getByText("8개 중 7개 완료", { selector: "span" })).toBeInTheDocument();
+      // 첫 h2는 주차 제목, 나머지가 날짜 카드
+      expect(within(weeks[1]).getAllByRole("heading", { level: 2 }).slice(1).map((h) => h.textContent)).toEqual([
+        "10월 10일 (토)",
+        "10월 9일 (금)",
+        "10월 7일 (수)",
+      ]);
+    });
+
+    it("이전 달로 가면 그 달 기록을 보여주고, 기록이 없으면 안내한다. 다음 달은 이번 달에서 막힌다", async () => {
+      const { user } = setup();
+      renderWithQueryClient(<HistoryPage />);
+      await user.click(screen.getByRole("tab", { name: "주차별" }));
+      await screen.findByText("10월 3주차");
+      expect(screen.getByRole("button", { name: "다음 달" })).toBeDisabled();
+
+      await user.click(screen.getByRole("button", { name: "이전 달" }));
+
+      expect(await screen.findByText("2026년 9월")).toBeInTheDocument();
+      expect(await screen.findByText("이 달에는 기록이 없어요.")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "다음 달" })).toBeEnabled();
+
+      await user.click(screen.getByRole("button", { name: "다음 달" }));
+      expect(await screen.findByText("10월 3주차")).toBeInTheDocument();
+    });
+
+    it("주차 안의 지난 카드도 체크할 수 있고, 서버와 합계에 반영된다", async () => {
+      const { store, user } = setup();
+      renderWithQueryClient(<HistoryPage />);
+      await user.click(screen.getByRole("tab", { name: "주차별" }));
+
+      const card = await screen.findByRole("region", { name: "10월 11일 (일)" });
+      await user.click(within(card).getByRole("checkbox", { name: "가계부 작성 완료" }));
+
+      expect(await screen.findByText("3개 중 2개 완료", { selector: "span" })).toBeInTheDocument();
+      await waitFor(() => expect(store.getDay("2026-10-11").entries.find((e) => e.title === "가계부 작성")?.done).toBe(true));
+    });
+  });
+
+  describe("월별 탭", () => {
+    it("주차 제목 없이 그 달 카드를 최신순으로 보여준다", async () => {
+      const { user } = setup();
+      renderWithQueryClient(<HistoryPage />);
+
+      await user.click(screen.getByRole("tab", { name: "월별" }));
+
+      expect(await screen.findByText("2026년 10월")).toBeInTheDocument();
+      const headings = await screen.findAllByRole("heading", { level: 2 });
+      expect(headings.map((h) => h.textContent)).toEqual(["10월 11일 (일)", "10월 10일 (토)", "10월 9일 (금)", "10월 7일 (수)"]);
+      expect(screen.queryByText(/\d주차/)).not.toBeInTheDocument();
+    });
+
+    it("불러오지 못하면 안내 문구를 보여준다", async () => {
+      const { user } = setup();
+      server.use(http.get("*/api/v1/daily", () => HttpResponse.json({ message: "x" }, { status: 500 })));
+      renderWithQueryClient(<HistoryPage />);
+
+      await user.click(screen.getByRole("tab", { name: "월별" }));
+
+      expect(await screen.findByText("지난 기록을 불러오지 못했어요.")).toBeInTheDocument();
+    });
+  });
+
+  describe("전체 탭의 달력 보기", () => {
+    async function openCalendar() {
+      const ctx = setup();
+      renderWithQueryClient(<HistoryPage />);
+      await ctx.user.click(screen.getByRole("button", { name: "달력" }));
+      await screen.findByRole("button", { name: /10월 11일 \(일\)/ });
+      return ctx;
+    }
+
+    it("처음엔 리스트고, 전체 탭 아래 [리스트 | 달력]으로 바꾼다. 다른 탭에는 이 선택이 없다", async () => {
+      const { user } = setup();
+      renderWithQueryClient(<HistoryPage />);
+
+      expect(screen.getByRole("button", { name: "리스트" })).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: "달력" })).toHaveAttribute("aria-pressed", "false");
+      await screen.findAllByRole("heading", { level: 2 });
+
+      await user.click(screen.getByRole("tab", { name: "월별" }));
+      expect(screen.queryByRole("button", { name: "달력" })).not.toBeInTheDocument();
+    });
+
+    it("기록이 있는 날에만 완료 현황이 찍히고, 기록 없는 날은 누를 수 없다", async () => {
+      await openCalendar();
+
+      expect(screen.getByText("2026년 10월")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "10월 11일 (일), 3개 중 1개 완료" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "10월 10일 (토), 3개 중 3개 완료" })).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: /개 중 \d개 완료$/ })).toHaveLength(4);
+      expect(screen.getByText("완료 1/3")).toBeInTheDocument();
+    });
+
+    it("날짜를 누르면 그날 카드가 팝업으로 열리고, 거기서 체크하면 달력 칸도 바뀐다", async () => {
+      const { store, user } = await openCalendar();
+
+      await user.click(screen.getByRole("button", { name: "10월 11일 (일), 3개 중 1개 완료" }));
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByRole("region", { name: "10월 11일 (일)" })).toBeInTheDocument();
+      expect(within(dialog).queryByLabelText("할 일 입력")).not.toBeInTheDocument();
+
+      await user.click(within(dialog).getByRole("checkbox", { name: "가계부 작성 완료" }));
+
+      await waitFor(() => expect(store.getDay("2026-10-11").entries.find((e) => e.title === "가계부 작성")?.done).toBe(true));
+      // 팝업이 열려 있는 동안 뒤 화면은 접근성 트리에서 가려지므로 hidden으로 찾는다
+      expect(await screen.findByRole("button", { name: "10월 11일 (일), 3개 중 2개 완료", hidden: true })).toBeInTheDocument();
+    });
+
+    it("이전 달로 가면 그 달 달력이 나오고, 다음 달은 이번 달에서 막힌다", async () => {
+      const { user } = await openCalendar();
+      expect(screen.getByRole("button", { name: "다음 달" })).toBeDisabled();
+
+      await user.click(screen.getByRole("button", { name: "이전 달" }));
+
+      expect(await screen.findByText("2026년 9월")).toBeInTheDocument();
+      await waitFor(() => expect(screen.queryAllByRole("button", { name: /개 중 \d개 완료$/ })).toHaveLength(0));
+      expect(screen.getByRole("button", { name: "다음 달" })).toBeEnabled();
+    });
+
+    it("불러오지 못하면 안내 문구를 보여준다", async () => {
+      const { user } = setup();
+      server.use(http.get("*/api/v1/daily", () => HttpResponse.json({ message: "x" }, { status: 500 })));
+      renderWithQueryClient(<HistoryPage />);
+
+      await user.click(screen.getByRole("button", { name: "달력" }));
+
+      expect(await screen.findByText("지난 기록을 불러오지 못했어요.")).toBeInTheDocument();
+    });
   });
 });

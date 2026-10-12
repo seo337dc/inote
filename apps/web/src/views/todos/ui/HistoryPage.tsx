@@ -1,20 +1,34 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { useDayHistory } from "@/entities/daily";
 import { PageLoading } from "@/shared/ui/page-loading";
-import { Button } from "@/shared/ui/button";
+import { Tabs } from "@/shared/ui/tabs";
 import { useSession } from "@/shared/lib/auth-client";
-import { DayCard } from "@/widgets/day-card";
+import HistoryAll from "./HistoryAll";
+import HistoryCalendar from "./HistoryCalendar";
+import HistoryMonth from "./HistoryMonth";
 
-// 지난 기록 — 기록이 있는 날의 카드를 최신순으로 쌓고, [더 보기]로 이어서 불러온다. 입력줄은 없고 체크는 바꿀 수 있다.
+const VIEWS = [
+  { id: "list", label: "리스트" },
+  { id: "calendar", label: "달력" },
+];
+
+const TABS = [
+  { id: "all", label: "전체" },
+  { id: "week", label: "주차별" },
+  { id: "month", label: "월별" },
+];
+
+// 지난 기록 — 전체(리스트: 최신순 + 더 보기 / 달력) / 주차별(달 이동 + N주차 묶음) / 월별(달 이동). 입력줄은 없고 체크는 바꿀 수 있다.
 export default function HistoryPage() {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const { data, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = useDayHistory();
+  const [tab, setTab] = useState("all");
+  // 전체 탭에서만 — 카드 목록(리스트) 또는 달력으로 본다
+  const [view, setView] = useState("list");
 
   useEffect(() => {
     if (!isSessionPending && !session) {
@@ -26,8 +40,6 @@ export default function HistoryPage() {
     return <PageLoading />;
   }
 
-  const cards = data?.pages.flatMap((page) => page.items) ?? [];
-
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 lg:px-6 lg:py-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3">
@@ -38,26 +50,30 @@ export default function HistoryPage() {
         </Link>
       </div>
 
-      {isPending ? (
-        <p className="py-10 text-center text-sm text-zinc-400">불러오는 중…</p>
-      ) : isError ? (
-        <p className="py-10 text-center text-sm text-zinc-500">지난 기록을 불러오지 못했어요.</p>
-      ) : cards.length === 0 ? (
-        <p className="py-10 text-center text-sm text-zinc-500">아직 지난 기록이 없어요.</p>
-      ) : (
-        <div className="space-y-4">
-          {cards.map((card) => (
-            <DayCard key={card.date} card={card} />
-          ))}
-          {hasNextPage && (
-            <div className="flex justify-center pt-2">
-              <Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                {isFetchingNextPage ? "불러오는 중…" : "더 보기"}
-              </Button>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} ariaLabel="지난 기록 보기" idPrefix="history" />
+
+      <div role="tabpanel" id={`history-panel-${tab}`} aria-labelledby={`history-tab-${tab}`} className="pt-6">
+        {tab === "all" && (
+          <>
+            <div role="group" aria-label="전체 보기 방식" className="mb-4 inline-flex rounded-lg border border-zinc-200 p-0.5">
+              {VIEWS.map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setView(id)}
+                  aria-pressed={view === id}
+                  className={`rounded-md px-3 py-1 text-sm ${view === id ? "bg-zinc-900 text-white" : "text-zinc-500 hover:text-zinc-900"}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-          )}
-        </div>
-      )}
+            {view === "list" ? <HistoryAll /> : <HistoryCalendar />}
+          </>
+        )}
+        {tab === "week" && <HistoryMonth grouped />}
+        {tab === "month" && <HistoryMonth grouped={false} />}
+      </div>
     </div>
   );
 }
