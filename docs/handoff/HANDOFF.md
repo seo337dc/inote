@@ -138,7 +138,7 @@
 - **FE는 BE 없이 MSW 가짜 서버로만 동작**한다: `NEXT_PUBLIC_API_MOCKING=true pnpm dev`(개발 전용, 운영 빌드에서는 무시). 가짜 서버 규칙(`apps/web/src/mocks/todo/store.ts`)이 곧 BE가 지켜야 할 계약이다. 로그인은 실제 BE로 하고 할일 데이터만 가짜.
 - ⚠️ **이 브랜치를 main에 머지하면 Vercel이 배포해서 운영 `/todos`가 깨진다**(BE에 `/daily`·`/routines`·`/task-groups`·`/tasks`가 없음). BE 구현 뒤에 머지한다. 옛 `/todos` 평면 API·`entities/todo`는 그때 함께 정리한다.
 - **사람이 화면에서 확인할 것**(자동 테스트로 못 봄): 작업을 **끌어서 순서 바꾸기**(jsdom에서 재현 불가), **달력 팝업의 모양·위치**(좁은 화면에서 잘리는지), 뱃지·달력 색.
-- **남은 FE**: 지난 기록 화면(`/todos/history`)과 오늘 카드의 "지난 기록 보기 →" 링크.
+- 지난 기록 화면(`/todos/history`)·"지난 기록 보기 →" 링크까지 FE 완료. 사람이 브라우저로 확인할 것에 지난 기록 [더 보기]·지난 카드 체크도 포함.
 - **다음(BE)**: `CLAUDE.md` 작업 순서대로 **계약 → FE → BE(사용자가 테스트 작성) → 통합**. FE·계약은 끝났으니 BE부터. 새 모델: 루틴, 날짜별 항목(그날 이름 스냅샷 저장), 묶음, 작업(순서·별·시작/종료일). 기존 `Todo` 데이터는 "기존 할일" 묶음으로 이전(마감일 → 시작일, 이전 때 사용자 확인). `inote-server`는 로컬·운영이 같은 Supabase DB이므로 **새 마이그레이션(추가만)**으로, `db push` 금지.
 - 이 작업 때 새로 설치한 의존성: `@dnd-kit/sortable`, `@dnd-kit/utilities`, `react-day-picker`, 그리고 `msw init`이 만든 `public/mockServiceWorker.js`.
 
