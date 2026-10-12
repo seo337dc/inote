@@ -38,26 +38,47 @@ describe("그날 항목을 매일 반복으로 만들기", () => {
     expect(store.makeRoutine(other.id)).toBeNull(); // 지난 날짜 항목
   });
 
-  it("다음 날 카드를 열면 루틴이 새 기록(체크 해제)으로 나온다", () => {
+  it("다음 날 카드는 열기만 해서는 비어 있고, 오늘 할일 생성을 하면 루틴이 새 기록(체크 해제)으로 나온다", () => {
     const { store, addRoutine, setToday } = setup();
     const { entry } = addRoutine("독서");
     store.patchEntry(entry.id, { done: true });
 
     setToday("2026-10-13");
-    const card = store.getDay("2026-10-13");
+    expect(store.getDay("2026-10-13").entries).toEqual([]); // 카드를 여는 것만으로는 만들지 않는다
+    const card = store.generateToday();
 
+    expect(card.date).toBe("2026-10-13");
     expect(card.entries).toHaveLength(1);
     expect(card.entries[0].done).toBe(false);
   });
 
-  it("카드를 여러 번 열어도 같은 날 루틴 기록이 중복되지 않는다", () => {
-    const { store, addRoutine } = setup();
+  it("오늘 할일 생성을 여러 번 눌러도 같은 날 루틴 기록이 중복되지 않는다", () => {
+    const { store, addRoutine, setToday } = setup();
     addRoutine("독서");
+    setToday("2026-10-13");
 
-    store.getDay(TODAY);
-    store.getDay(TODAY);
+    store.generateToday();
+    store.generateToday();
 
-    expect(store.getDay(TODAY).entries).toHaveLength(1);
+    expect(store.getDay("2026-10-13").entries).toHaveLength(1);
+  });
+
+  it("이미 있는 기록은 건너뛰고 빠진 것만 채운다", () => {
+    const { store, addRoutine, setToday } = setup();
+    addRoutine("독서");
+    addRoutine("운동");
+    setToday("2026-10-13");
+    store.generateToday();
+    store.createRoutine("일기"); // 오늘 중간에 고정 항목을 늘렸다
+
+    const card = store.generateToday();
+
+    expect(card.entries.map((e) => e.title)).toEqual(["독서", "운동", "일기"]);
+  });
+
+  it("고정 리스트가 비어 있으면 빈 카드가 돌아온다", () => {
+    const { store } = setup();
+    expect(store.generateToday()).toEqual({ date: TODAY, entries: [] });
   });
 
   it("그날 추가 항목(루틴 아님)은 다음 날로 이월되지 않는다", () => {
@@ -75,7 +96,7 @@ describe("루틴 이름 변경", () => {
     const { store, addRoutine, setToday } = setup();
     const { routineId } = addRoutine("독서");
     setToday("2026-10-13");
-    store.getDay("2026-10-13"); // 13일 기록 생성
+    store.generateToday(); // 13일 기록 생성
 
     store.renameRoutine(routineId, "책 읽기");
 
@@ -89,7 +110,7 @@ describe("루틴 삭제", () => {
     const { store, addRoutine, setToday } = setup();
     const { routineId } = addRoutine("독서");
     setToday("2026-10-13");
-    store.getDay("2026-10-13");
+    store.generateToday();
 
     store.deleteRoutine(routineId);
 
@@ -354,5 +375,33 @@ describe("작업 순서 변경", () => {
     makeTask(store, a.id, "a4");
 
     expect(store.listGroups()[0].tasks.map((t) => t.title)).toEqual(["a3", "a1", "a2", "a4"]);
+  });
+});
+
+describe("고정 리스트", () => {
+  it("설정에서 만든 항목은 목록에 들어가고 오늘 카드에는 바로 들어가지 않는다", () => {
+    const { store } = setup();
+
+    const routine = store.createRoutine("독서");
+
+    expect(store.listRoutines()).toEqual([routine]);
+    expect(store.getDay(TODAY).entries).toEqual([]);
+  });
+
+  it("삭제한 항목은 목록에서 빠지고, 만든 순서가 유지된다", () => {
+    const { store } = setup();
+    const a = store.createRoutine("독서");
+    store.createRoutine("운동");
+    store.createRoutine("일기");
+
+    store.deleteRoutine(a.id);
+
+    expect(store.listRoutines().map((r) => r.title)).toEqual(["운동", "일기"]);
+  });
+
+  it("그날 항목을 매일 반복으로 만들면 목록에도 나온다", () => {
+    const { store, addRoutine } = setup();
+    addRoutine("독서");
+    expect(store.listRoutines().map((r) => r.title)).toEqual(["독서"]);
   });
 });

@@ -13,8 +13,10 @@ import { todayKst } from "@/shared/lib/date";
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 
 // 가짜 서버(MSW)에 실제로 요청을 보내는 화면 테스트 — 낙관적 업데이트 뒤 서버 상태까지 확인한다.
-function setup(options: { seed?: boolean } = { seed: true }) {
+// 기본은 오늘 할일 생성까지 끝난 상태(고정 리스트가 오늘 카드에 들어와 있음). generated: false면 하루 시작 전의 빈 카드.
+function setup(options: { seed?: boolean; generated?: boolean } = { seed: true }) {
   const store = createTodoStore({ seed: options.seed });
+  if (options.seed !== false && options.generated !== false) store.generateToday();
   server.use(...createTodoHandlers(store));
   return { store, user: userEvent.setup() };
 }
@@ -36,11 +38,61 @@ describe("DailyTab (오늘의 할일)", () => {
     expect(screen.getByText("2개 중 0개 완료")).toBeInTheDocument();
   });
 
-  it("오늘 카드 아래 '지난 기록 보기' 링크가 지난 기록 화면으로 간다", async () => {
+  it("오늘 카드가 비어 있으면 [오늘 할일 생성]이 보이고, 누르면 고정 리스트가 오늘 카드로 들어온다", async () => {
+    const { store, user } = setup({ seed: true, generated: false });
+    renderWithQueryClient(<DailyTab />);
+
+    expect(await screen.findByText("오늘 할일이 아직 없어요.")).toBeInTheDocument();
+    expect(screen.queryByText("독서")).not.toBeInTheDocument(); // 열기만 해서는 가져오지 않는다
+    await user.click(screen.getByRole("button", { name: "오늘 할일 생성" }));
+
+    expect(await screen.findByText("독서")).toBeInTheDocument();
+    expect(screen.getByText("가계부 작성")).toBeInTheDocument();
+    expect(screen.getAllByText("매일")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "오늘 할일 생성" })).not.toBeInTheDocument();
+    expect(store.getDay(todayKst()).entries).toHaveLength(2);
+  });
+
+  it("직접 항목을 하나라도 추가하면 [오늘 할일 생성]은 사라진다", async () => {
+    const { user } = setup({ seed: false });
+    renderWithQueryClient(<DailyTab />);
+
+    await user.type(await screen.findByLabelText("할 일 입력"), "이력서 수정{Enter}");
+
+    expect(await screen.findByText("이력서 수정")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "오늘 할일 생성" })).not.toBeInTheDocument();
+  });
+
+  it("고정 리스트가 비어 있으면 생성 후 설정으로 가는 안내가 나온다", async () => {
+    const { user } = setup({ seed: false });
+    renderWithQueryClient(<DailyTab />);
+
+    await user.click(await screen.findByRole("button", { name: "오늘 할일 생성" }));
+
+    expect(await screen.findByText(/고정 리스트가 비어 있어요/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "설정" })).toHaveAttribute("href", "/todos/settings");
+    expect(screen.getByRole("button", { name: "오늘 할일 생성" })).toBeInTheDocument();
+  });
+
+  it("생성에 실패하면 안내하고 버튼이 그대로 남는다", async () => {
+    const { user } = setup({ seed: true, generated: false });
+    server.use(http.post("*/api/v1/daily/generate", () => HttpResponse.json({ message: "x" }, { status: 500 })));
+    renderWithQueryClient(<DailyTab />);
+
+    await user.click(await screen.findByRole("button", { name: "오늘 할일 생성" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("오늘 할일을 만들지 못했어요."));
+    expect(screen.getByRole("button", { name: "오늘 할일 생성" })).toBeEnabled();
+  });
+
+  it("오늘 카드 위에 '지난 기록 보기' 링크가 있고 지난 기록 화면으로 간다", async () => {
     setup();
     renderWithQueryClient(<DailyTab />);
 
-    expect(await screen.findByRole("link", { name: /지난 기록 보기/ })).toHaveAttribute("href", "/todos/history");
+    const link = await screen.findByRole("link", { name: /지난 기록 보기/ });
+    expect(link).toHaveAttribute("href", "/todos/history");
+    const card = screen.getByRole("region", { name: /\(.\)$/ });
+    expect(link.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("체크하면 바로 체크 표시와 합계가 바뀌고, 서버에도 반영된다", async () => {

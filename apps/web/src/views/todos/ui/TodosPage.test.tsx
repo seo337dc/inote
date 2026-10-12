@@ -33,6 +33,14 @@ describe("TodosPage (할 일 페이지)", () => {
     expect(await screen.findByText("· 오늘")).toBeInTheDocument();
   });
 
+  it("제목 오른쪽 끝에 '설정' 링크가 있고 설정 화면으로 간다", async () => {
+    mockSession({ data: { user: { id: "u1" } }, isPending: false });
+    renderWithQueryClient(<TodosPage />);
+
+    expect(screen.getByRole("link", { name: "설정" })).toHaveAttribute("href", "/todos/settings");
+    await screen.findByText("· 오늘");
+  });
+
   it("'할 일' 탭을 누르면 오늘 카드가 사라지고 그 탭 내용으로 바뀐다", async () => {
     mockSession({ data: { user: { id: "u1" } }, isPending: false });
     const user = userEvent.setup();

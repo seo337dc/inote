@@ -2,6 +2,7 @@ import { countDone, type DayCard as DayCardData } from "@/entities/daily";
 import { formatDayHeader } from "@/shared/lib/date";
 import AddEntryForm from "./AddEntryForm";
 import EntryRow from "./EntryRow";
+import GenerateTodayPanel from "./GenerateTodayPanel";
 
 type Props = {
   card: DayCardData;
@@ -9,7 +10,7 @@ type Props = {
   isToday?: boolean;
 };
 
-// 하루가 카드 한 장: 날짜 헤더 / 루틴·그날 항목(체크박스) / (오늘만) 입력줄 / 합계 줄. 작업 일정은 "할 일" 탭에서 본다.
+// 하루가 카드 한 장: 날짜 헤더 / 루틴·그날 항목(체크박스) / (오늘만) [오늘 할일 생성](비었을 때)·입력줄 / 합계 줄. 작업 일정은 "할 일" 탭에서 본다.
 export default function DayCard({ card, isToday = false }: Props) {
   const { done, total } = countDone(card.entries);
 
@@ -19,6 +20,8 @@ export default function DayCard({ card, isToday = false }: Props) {
         {formatDayHeader(card.date)}
         {isToday && <span className="ml-1.5 font-normal text-zinc-400">· 오늘</span>}
       </h2>
+
+      {isToday && card.entries.length === 0 && <GenerateTodayPanel />}
 
       {card.entries.length > 0 && (
         <ul className="divide-y divide-zinc-50">

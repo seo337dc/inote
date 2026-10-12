@@ -25,3 +25,9 @@ export type DayCardPage = {
 export type AddEntryInput = {
   title: string;
 };
+
+// 고정 리스트의 한 항목 — [오늘 할일 생성]을 누르면 오늘 카드에 기록으로 들어온다.
+export type Routine = {
+  id: string;
+  title: string;
+};

@@ -17,12 +17,12 @@ export default function DailyTab() {
 
   return (
     <div className="space-y-3">
-      <DayCard card={card} isToday />
       <div className="text-right">
         <Link href="/todos/history" className="text-sm text-zinc-500 hover:text-zinc-900">
           지난 기록 보기 →
         </Link>
       </div>
+      <DayCard card={card} isToday />
     </div>
   );
 }

@@ -37,7 +37,7 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
     return routine.startedOn <= date && (routine.endedOn === null || routine.endedOn > date);
   }
 
-  // 오늘 카드를 열면 활성 루틴의 오늘 기록이 없는 것만 만든다(여러 번 열어도 중복 안 됨).
+  // [오늘 할일 생성] — 활성 루틴(고정 리스트) 중 오늘 기록이 아직 없는 것만 만든다(여러 번 눌러도 중복 안 됨).
   function ensureRoutineEntries(date: string) {
     for (const routine of routines) {
       if (!isActive(routine, date)) continue;
@@ -48,8 +48,8 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
     }
   }
 
+  // 카드를 여는 것만으로는 아무것도 만들지 않는다 — 고정 리스트는 generateToday로만 가져온다.
   function getDay(date: string): DayCard {
-    if (date === today()) ensureRoutineEntries(date);
     return { date, entries: entries.filter((e) => e.date === date).map((e) => ({ ...e })) };
   }
 
@@ -67,13 +67,30 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
     };
   }
 
+  function generateToday(): DayCard {
+    ensureRoutineEntries(today());
+    return getDay(today());
+  }
+
+  // 고정 리스트(활성 루틴) — 만든 순서대로
+  function listRoutines(): { id: string; title: string }[] {
+    return routines.filter((r) => isActive(r, today())).map((r) => ({ id: r.id, title: r.title }));
+  }
+
+  // 설정 화면에서 직접 추가 — 오늘 카드에는 넣지 않는다(오늘 할일 생성 때 또는 내일부터 가져온다)
+  function createRoutine(title: string): { id: string; title: string } {
+    const routine: Routine = { id: nextId("r"), title, startedOn: today(), endedOn: null };
+    routines.push(routine);
+    return { id: routine.id, title };
+  }
+
   function addEntry({ title }: AddEntryInput): DailyEntry {
     const entry: DailyEntry = { id: nextId("e"), date: today(), title, done: false, routineId: null };
     entries.push(entry);
     return { ...entry };
   }
 
-  // 오늘의 그날 항목을 "매일 반복"으로 만든다 — 그 항목이 오늘 기록이 되고, 내일부터 자동으로 나온다.
+  // 오늘의 그날 항목을 "매일 반복"(고정 리스트)으로 만든다 — 그 항목이 오늘 기록이 되고, 내일부터 [오늘 할일 생성]에 들어간다.
   function makeRoutine(entryId: string): { id: string; title: string } | null {
     const entry = entries.find((e) => e.id === entryId);
     if (!entry || entry.date !== today() || entry.routineId !== null) return null;
@@ -266,6 +283,9 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
   return {
     getDay,
     history,
+    generateToday,
+    listRoutines,
+    createRoutine,
     addEntry,
     makeRoutine,
     patchEntry,
