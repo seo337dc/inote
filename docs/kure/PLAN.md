@@ -1,9 +1,9 @@
 # KURE 임베딩 활용 — 기획·설계 (inote)
 
 > 한국어 임베딩 모델 **KURE-v1**으로 내 글 사이의 "뜻이 비슷함"을 계산해서 관련 글 추천·카테고리 제안·중복 알림·내 글 기반 AI 답변(RAG)을 만든다.
-> 상태: ✅ **방향 승인(2026-10-12)** — 코드 위치·로컬 DB 결정 완료, **A1 완료**, 다음은 A2 · 작성자: Claude Code
+> 상태: ✅ **방향 승인(2026-10-12)** — **실험은 별도 임시 레포 `inote-embedder`에서** 하고 최종 위치는 결과 후 재결정, 로컬 DB는 도커 분리, **A1 완료**, A2 코드 작성 중 · 작성자: Claude Code
 > 이 문서는 **한 단계씩** 구현한다. 아키텍처·UX는 AI가 임의로 정하지 않는다 → 아래 **「10. 결정과 미결정」**에서 아직 열려 있는 항목은 풀리기 전에는 해당 부분을 구현하지 않는다.
-> 관련 레포: `inote`(FE) · `inote-server`(BE, 글·DB 소유) · `inote-ai`(AI 서버 + **`embedder/` 폴더에 임베딩 서비스**)
+> 관련 레포: `inote`(FE) · `inote-server`(BE, 글·DB 소유) · `inote-ai`(AI 서버) · **`inote-embedder`(임시 실험 레포: 임베딩 서비스·로컬 DB·평가)**
 
 ---
 
@@ -56,7 +56,7 @@
 ```mermaid
 flowchart LR
   FE[FE inote<br/>Next.js] -->|글 저장·조회| BE[BE inote-server<br/>NestJS]
-  BE -->|임베딩 요청 /embed| EMB[임베딩 서비스<br/>inote-ai/embedder · KURE-v1 · Docker]
+  BE -->|임베딩 요청 /embed| EMB[임베딩 서비스<br/>inote-embedder · KURE-v1 · Docker]
   BE <-->|pgvector| DB[(BE DB<br/>Supabase Postgres)]
   AI[AI 서버 inote-ai<br/>FastAPI] -->|D: 검색 요청<br/>내부 비밀키| BE
   FE -->|채팅| AI
@@ -95,10 +95,9 @@ GET  /health         → { "status": "ok", "model": "...", "dim": 1024 }
 | 2안 | Hugging Face **Text Embeddings Inference(TEI)** 공식 이미지 | 설정이 짧고 성능 최적화됨 | 이 PC는 Intel(amd64)이라 일반 이미지를 쓸 수 있어 호환 부담은 작지만 KURE(BGE-M3 계열) 지원은 **확인 필요**, 내부 동작이 블랙박스 |
 
 → 1안으로 시작, 지연·메모리를 측정한 뒤 필요하면 2안과 비교한다.
-- **코드 위치 (확정): `inote-ai` 레포의 `embedder/` 폴더** — 새 레포를 만들지 않고 기존 파이썬 스택·문서·이력을 같이 쓰되, **배포는 별개**다.
-  - ⚠️ **`.vercelignore`에 `embedder/`를 반드시 추가한다.** Vercel의 Python 함수는 프로젝트 파일을 전부 번들에 넣는다(이미 `venv/`·`.env`·문서를 제외하는 이유). 빼지 않으면 임베딩 코드·의존성 목록이 번들에 섞인다.
-  - **루트 `requirements.txt`는 건드리지 않는다.** 무거운 의존성(`torch`, `sentence-transformers` 등)은 `embedder/requirements.txt`에만 둔다. 기존 앱(`app/`)에 `/embed` 라우터를 합치지 않는다 — Vercel 번들 크기 제한(비압축 500MB)·모델 로드 지연·기존 채팅·요약의 배포 속도 때문.
-  - 인증(`x-internal-secret` 검사)은 몇 줄이라 `embedder/`에 따로 둔다. 나중에 호스팅할 때 이 폴더만 컨테이너로 올리고, 필요하면 그때 새 레포로 분리한다.
+- **코드 위치 (2026-10-12 변경): 임시 별도 레포 `inote-embedder`에서 먼저 실험한다.** 서비스 레포(`inote-ai`의 Vercel 배포 등)에 영향을 주지 않고, 결과를 보고 **합칠지·어디에 둘지 다시 정한다.**
+  - 합치게 될 때의 후보: ① `inote-ai`의 하위 폴더(이 경우 **`.vercelignore`에 해당 폴더 추가 필수** — Vercel의 Python 함수는 프로젝트 파일을 전부 번들에 넣고, 루트 `requirements.txt`에 무거운 의존성을 넣으면 안 된다) ② 이 레포를 그대로 독립 서비스로 유지. 기존 FastAPI 앱(`app/`)에 `/embed`를 합치는 것은 번들 크기(비압축 500MB)·모델 로드 지연 때문에 불가.
+  - 인증(`x-internal-secret`)은 BE·AI와 같은 이름·방식이지만, 이 로컬 실험에서는 **따로 만든 값**을 쓰고 운영 값은 넣지 않는다.
 - 예상 성능(가설, A에서 측정): CPU 컨테이너에서 짧은 문장 1개에 수백 ms~수 초, 모델 메모리 약 2~3GB(이 PC의 도커 배정 7.75GB로 충분). **Render 무료(512MB)·Vercel 서버리스에는 올릴 수 없다** (8절).
 
 ### 5.3 저장 — Postgres `pgvector` (BE DB)
@@ -168,7 +167,7 @@ ALTER TABLE "PostEmbedding" ENABLE ROW LEVEL SECURITY;   -- 프로젝트 규칙:
 | # | 작업 | 담당 |
 |---|---|---|
 | A1 | ✅ Docker Desktop 설치·확인 (2026-10-12: 4.94.0, Intel Mac, 배정 CPU 12·메모리 7.75GB) | 사용자·Claude |
-| A2 | 임베딩 서비스(`inote-ai/embedder/`): 모델 로드, `/embed`·`/health`, Dockerfile, `.vercelignore` 갱신, 로컬 실행. **측정**: 첫 로드 시간, 메모리, 문장당 지연. **눈으로 확인**: 비슷한 문장 쌍 vs 무관한 쌍의 유사도 | Claude |
+| A2 | 임베딩 서비스(**`inote-embedder` 레포**): 모델 로드, `/embed`·`/health`, Dockerfile, 로컬 실행. **측정**: 첫 로드 시간, 메모리, 문장당 지연. **눈으로 확인**: 비슷한 문장 쌍 vs 무관한 쌍의 유사도 | Claude |
 | A3 | 로컬 pgvector Postgres 컨테이너 + 로컬 BE 연결 설정(`.env`, 운영 DB와 분리) + 공개 글 가져오기 | Claude |
 | A4 | 마이그레이션(`PostEmbedding` + RLS) — **로컬에서 먼저 적용** | Claude |
 | A5 | BE `EmbeddingService`(텍스트 만들기·해시·`/embed` 호출·저장) + 발행 훅(fail-open) + `EMBEDDER_URL` | Claude(BE 테스트: 사용자) |
@@ -247,8 +246,8 @@ POST /blog/posts/suggestions         (로그인 필수)
 
 ## 9. 진행 체크리스트
 
-- [x] **0. 방향 승인** + 코드 위치(`inote-ai/embedder/`)·로컬 DB 도커 분리 결정 (2026-10-12)
-- [ ] **A. 기반** — [x] A1 도커 설치 · [ ] A2 임베딩 서비스 · [ ] A3 로컬 DB · [ ] A4 마이그레이션 · [ ] A5 BE 임베딩 · [ ] A6 백필 · [ ] A7 평가 세트 v0
+- [x] **0. 방향 승인** + 실험은 별도 레포 `inote-embedder`·로컬 DB 도커 분리 결정 (2026-10-12)
+- [ ] **A. 기반** — [x] A1 도커 설치 · [x] A2 임베딩 서비스(`inote-embedder`, 결과: 그 레포 `docs/a2-results.md`) · [ ] A3 로컬 DB · [ ] A4 마이그레이션 · [ ] A5 BE 임베딩 · [ ] A6 백필 · [ ] A7 평가 세트 v0
 - [ ] **B. 관련 글 추천** — [ ] 계약 확정 · [ ] FE · [ ] BE · [ ] 통합 확인
 - [ ] **C. 카테고리 제안·유사 글 알림** — [ ] UX 승인 · [ ] 계약 확정 · [ ] FE · [ ] BE · [ ] 통합 확인 · [ ] 기준값 측정
 - [ ] **D. RAG** — [ ] 요청자 검증 과제 해결(또는 공개 글만) · [ ] 청크 설계 확정 · [ ] BE 검색 API · [ ] AI 도구 · [ ] FE 출처 · [ ] 평가
@@ -259,7 +258,7 @@ POST /blog/posts/suggestions         (로그인 필수)
 
 | # | 항목 | 현재 제안 | 결정 시점 |
 |---|---|---|---|
-| 1 | 임베딩 서비스 코드 위치 | ✅ **확정: `inote-ai/embedder/` 폴더** (`.vercelignore`에 `embedder/` 추가 필수) | 2026-10-12 |
+| 1 | 임베딩 서비스 코드 위치 | ✅ **실험은 임시 레포 `inote-embedder`** (2026-10-12). **최종 위치(합치기)는 결과 후 재결정** | 실험 결과 후 |
 | 2 | 임베딩 서비스 구현 | 1안(FastAPI+sentence-transformers), 측정 후 TEI와 비교 | A2 |
 | 3 | 모델 카드 확인 항목(차원·최대 길이·라이선스·접두어·정규화) | 구현 전 확인 | A2 |
 | 4 | 로컬 개발 DB를 도커 Postgres로 분리 | ✅ **확정** (운영 DB 보호, 공개 글만 가져옴) | 2026-10-12 |
@@ -269,6 +268,9 @@ POST /blog/posts/suggestions         (로그인 필수)
 | 8 | τ_min, τ_dup, k | 평가 세트로 정함 | B·C |
 | 9 | 운영 호스팅 | 미정 (8절 후보) | B 완료 후 |
 | 10 | D의 요청자 검증 방식 | 후보: BE 토큰 발급 / AI가 세션 직접 검증 | D 전, **사람 승인** |
+| 11 | **벡터를 어디가 소유하나** — 이 문서는 BE DB(글과 조인으로 공개 범위를 거름)로 제안했지만, `inote-ai/CLAUDE.md`(2026-09-11 설계)는 "임베딩·RAG는 `inote-ai`가 자기 DB(pgvector)에서, 글은 BE API로 조회"로 적혀 있다 | 미정 — 아래 근거 참고, **A3 전에 결정** | A3 전, **사람 승인** |
+
+> **11번 근거**: BE 소유는 글의 `isPrivate`·삭제와 **같은 DB 조인**이라 비공개 글이 새기 어렵다. AI 소유는 원래 설계와 같지만 공개 여부·작성자를 AI DB로 **복제·동기화**하거나 조회마다 BE에 확인해야 하고(어긋나면 유출), 요청자 검증이 약한 AI 서버(D의 선행 과제)에 비공개 검색 경로가 놓인다. 이 레포(`inote-embedder`) 실험은 어느 쪽이든 그대로 쓸 수 있다(서비스는 벡터만 계산).
 
 ## 11. 위험과 대응
 
@@ -280,7 +282,7 @@ POST /blog/posts/suggestions         (로그인 필수)
 | 글이 적어 품질·기준값을 믿기 어려움 | 중 | 평가 세트의 한계를 명시하고 사례 중심으로 본다, 기준값은 보수적으로(정밀도 우선) |
 | 쓰는 중 호출의 지연·비용 | 중 | 디바운스·최소 길이·취소·빈도 제한, 실패 시 조용히 생략 |
 | 모델 교체 시 벡터 혼재 | 낮음 | `model` 컬럼 + 재계산 스크립트 |
-| `embedder/`가 Vercel 번들에 섞임 | 중 (배포 크기·속도) | `.vercelignore`에 `embedder/` 추가, 루트 `requirements.txt` 불변, 배포 후 번들 크기 확인 |
+| 나중에 `inote-ai`에 합칠 때 Vercel 번들에 섞임 | 중 (배포 크기·속도) | 합치기 전 방식 결정(5.2), 하위 폴더로 합치면 `.vercelignore` 추가·루트 `requirements.txt` 불변, 배포 후 번들 크기 확인 |
 
 ---
 
