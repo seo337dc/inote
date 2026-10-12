@@ -172,7 +172,7 @@ alter table post_embedding enable row level security;   -- 프로젝트 규칙: 
 | A1 | ✅ Docker Desktop 설치·확인 (2026-10-12: 4.94.0, Intel Mac, 배정 CPU 12·메모리 7.75GB) | 사용자·Claude |
 | A2 | ✅ 임베딩 서비스(**`inote-embedder` 레포**): `/embed`·`/health`, Dockerfile, 측정 | Claude |
 | A3 | ✅ 로컬 pgvector Postgres + 공개 글 22개 벡터화·가까운 이웃 확인(실험 레포) — 이웃이 납득되고 카테고리 제안 1순위 59%(맞힐 수 있는 글 기준 약 72%) | Claude |
-| A4 | **AI DB 테이블**(`post_embedding`, 확장, RLS)을 `inote-ai/schema.sql`에 추가하고 **로컬 개발 DB에서 먼저 적용·검증**(벡터 저장·조회). `extensions` 스키마·`search_path` 확인 | Claude |
+| A4 | ✅ **AI DB 테이블**(`post_embedding`, 확장, RLS)을 `inote-ai/schema.sql`에 추가하고 **로컬 개발 DB(도커, `docker-compose.dev.yml`)에서 적용·자체 검증** — 구조·저장·코사인 순서·**후보 id 제한**·삭제·잘못된 차원 거절을 확인(2026-10-12). **운영 AI DB 적용은 아직**(Supabase에서 `vector` 확장 사용 가능 여부와 접속 계정의 `search_path` 확인 필요) | Claude |
 | A5 | **AI 서버 임베딩 API**: 글 벡터 저장(`PUT`)·삭제(`DELETE`)·유사 글 조회(`POST`, BE가 넘긴 후보 id 안에서만) + 텍스트 정리(이식) + 임베딩 서비스 호출(`EMBEDDER_URL`) + 단위 테스트 | Claude |
 | A6 | **BE 훅·백필**: 글 저장·삭제 때 AI 호출(fail-open), 후보 id 계산 함수, **백필 스크립트**(모든 발행 글 → AI), 고아 벡터 정리 | Claude(BE 테스트: 사용자) |
 | A7 | **평가 세트 v0**: 질문↔정답 글, 비슷한/무관한 글 쌍을 사람이 표시 (7절) | 사용자 |
@@ -259,7 +259,7 @@ BE → AI   POST /embeddings/similar
 
 - [x] **0. 방향 승인** + 실험은 별도 레포 `inote-embedder`·로컬 DB 도커 분리 결정 (2026-10-12)
 - [x] **0-1. 벡터 소유 결정**: 처음 BE 소유로 확정 → **같은 날 AI DB 소유(공개 여부는 BE 판정)로 변경 확정** (2026-10-12)
-- [ ] **A. 기반** — [x] A1 도커 설치 · [x] A2 임베딩 서비스(`inote-embedder`, 결과: 그 레포 `docs/a2-results.md`) · [x] A3 로컬 DB·공개 글 벡터화(`inote-embedder` `docs/a3-results.md`) · [ ] A4 AI DB 테이블 · [ ] A5 AI 임베딩 API · [ ] A6 BE 훅·백필 · [ ] A7 평가 세트 v0
+- [ ] **A. 기반** — [x] A1 도커 설치 · [x] A2 임베딩 서비스(`inote-embedder`, 결과: 그 레포 `docs/a2-results.md`) · [x] A3 로컬 DB·공개 글 벡터화(`inote-embedder` `docs/a3-results.md`) · [x] A4 AI DB 테이블(`inote-ai`: `schema.sql`·로컬 개발 DB·자체 검증 `scripts/verify_post_embedding.sql`, 운영 적용은 아직) · [ ] A5 AI 임베딩 API · [ ] A6 BE 훅·백필 · [ ] A7 평가 세트 v0
 - [ ] **B. 관련 글 추천** — [ ] 계약 확정 · [ ] FE · [ ] BE · [ ] 통합 확인
 - [ ] **C. 카테고리 제안·유사 글 알림** — [ ] UX 승인 · [ ] 계약 확정 · [ ] FE · [ ] BE · [ ] 통합 확인 · [ ] 기준값 측정
 - [ ] **D. RAG** — [ ] 요청자 검증 과제 해결(또는 공개 글만) · [ ] 청크 설계·조각 텍스트 저장 방식 확정 · [ ] BE visible API · [ ] AI 도구 · [ ] FE 출처 · [ ] 평가
@@ -281,7 +281,7 @@ BE → AI   POST /embeddings/similar
 | 9 | 운영 호스팅 | 미정 (8절 후보) | B 완료 후 |
 | 10 | D의 요청자 검증 방식 | 후보: BE 토큰 발급 / AI가 세션 직접 검증 | D 전, **사람 승인** |
 | 11 | **벡터를 어디가 소유하나** | ✅ **확정(2026-10-12): AI DB(`inote-ai`의 별도 Supabase 프로젝트)가 소유하고, 공개 여부는 BE가 판정한다.** 흐름: 글 저장 → BE가 AI에 제목·본문 전송 → AI가 임베딩 서비스로 벡터를 만들어 AI DB에 저장. 조회 → BE가 **후보 글 id**를 정해 AI에 넘기면 AI는 그 안에서만 순위를 매김. D는 AI가 BE에서 볼 수 있는 글 id를 받아 검색 | 2026-10-12 |
-| 12 | 로컬 개발 DB를 어디에 두나 | `inote-ai` 레포에 `docker-compose.dev.yml`(pgvector 이미지, 이미 받음)을 두고 AI DB 스키마(`schema.sql`)를 적용 — 미정 | A4 시작 전, **사람 승인** |
+| 12 | 로컬 개발 DB를 어디에 두나 | ✅ **확정·구현(2026-10-12): `inote-ai` 레포의 `docker-compose.dev.yml`**(pgvector, localhost:5434, `.env.dev`로 비밀번호 분리) | 2026-10-12 |
 | 13 | D에서 글 조각 텍스트를 AI DB에 저장할까 | 저장하면 출처 표시가 쉽지만 삭제한 글 내용이 남을 수 있음 / 저장하지 않고 필요할 때 BE에서 가져오면 안전하지만 호출이 늘어남 — 미정 | D 시작 전, **사람 승인** |
 | 14 | Vercel 함수 최대 실행 시간 | 글 한 편 임베딩 약 3~8초 + 임베딩 서비스 지연이 한도 안에 들어오는지 확인 | A5 전 |
 
