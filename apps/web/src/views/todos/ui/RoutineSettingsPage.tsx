@@ -9,18 +9,18 @@ import {
   TEMP_ID_PREFIX,
   useCreateRoutine,
   useDeleteRoutine,
+  useImportRoutines,
   useRenameRoutine,
   useRoutines,
   type Routine,
 } from "@/entities/daily";
 import { useSession } from "@/shared/lib/auth-client";
-import { todayKst } from "@/shared/lib/date";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 import { PageLoading } from "@/shared/ui/page-loading";
 
-// 설정 — 고정 리스트(매일 할 일) 관리. 오늘의 할일 탭에서 [오늘 할일 생성]을 누르면 이 목록이 오늘 카드로 들어간다.
+// 설정 — 고정 리스트(매일 할 일) 관리. [오늘 카드에 모두 가져오기]를 누르면 이 목록의 제목이 오늘 카드에 새 항목으로 복사된다.
 export default function RoutineSettingsPage() {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
@@ -45,7 +45,7 @@ export default function RoutineSettingsPage() {
         </Link>
       </div>
       <p className="mb-6 text-sm text-zinc-500">
-        매일 하는 일을 적어 두세요. 오늘의 할일에서 [오늘 할일 생성]을 누르면 이 목록이 오늘 카드로 들어와요.
+        매일 하는 일을 적어 두세요. [오늘 카드에 모두 가져오기]를 누르면 이 목록이 오늘의 할일에 새 항목으로 복사돼요.
       </p>
       <RoutineList />
     </div>
@@ -53,9 +53,21 @@ export default function RoutineSettingsPage() {
 }
 
 function RoutineList() {
+  const router = useRouter();
   const { data: routines, isPending, isError } = useRoutines();
   const createRoutine = useCreateRoutine();
+  const importRoutines = useImportRoutines();
   const [title, setTitle] = useState("");
+
+  function handleImport() {
+    importRoutines.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("오늘 카드에 가져왔어요.");
+        router.push("/todos");
+      },
+      onError: () => toast.error("오늘 카드에 가져오지 못했어요."),
+    });
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,6 +84,15 @@ function RoutineList() {
 
   return (
     <section aria-label="고정 리스트" className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+      <div className="flex items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3">
+        <h2 className="text-sm font-semibold">
+          고정 항목<span className="ml-1.5 font-normal text-zinc-400">{routines.length}</span>
+        </h2>
+        <Button onClick={handleImport} disabled={routines.length === 0 || importRoutines.isPending}>
+          {importRoutines.isPending ? "가져오는 중…" : "오늘 카드에 모두 가져오기"}
+        </Button>
+      </div>
+
       {routines.length > 0 ? (
         <ul className="divide-y divide-zinc-50">
           {routines.map((routine) => (
@@ -96,9 +117,6 @@ function RoutineList() {
         </button>
       </form>
 
-      <p className="border-t border-zinc-100 bg-zinc-50/70 px-4 py-2 text-xs text-zinc-500">
-        {routines.length === 0 ? "고정 항목 0개" : `고정 항목 ${routines.length}개`}
-      </p>
     </section>
   );
 }
@@ -121,7 +139,7 @@ function RoutineRow({ routine }: { routine: Routine }) {
       return;
     }
     renameRoutine.mutate(
-      { routineId: routine.id, title: next, today: todayKst() },
+      { routineId: routine.id, title: next },
       { onError: () => toast.error("이름을 바꾸지 못했어요.") },
     );
   }
@@ -129,7 +147,7 @@ function RoutineRow({ routine }: { routine: Routine }) {
   function confirmDelete() {
     setConfirmingDelete(false);
     deleteRoutine.mutate(
-      { routineId: routine.id, today: todayKst() },
+      { routineId: routine.id },
       { onError: () => toast.error("고정 항목을 삭제하지 못했어요.") },
     );
   }
@@ -184,7 +202,7 @@ function RoutineRow({ routine }: { routine: Routine }) {
           <DialogContent>
             <DialogTitle>고정 항목을 삭제할까요?</DialogTitle>
             <DialogDescription>
-              &apos;{routine.title}&apos;은(는) 오늘부터 오늘 할일 생성에서 빠져요. 지난 기록은 그대로 남아요.
+              &apos;{routine.title}&apos;이(가) 고정 리스트에서 삭제돼요. 이미 오늘의 할일·지난 기록으로 가져온 항목은 그대로 남아요.
             </DialogDescription>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirmingDelete(false)}>

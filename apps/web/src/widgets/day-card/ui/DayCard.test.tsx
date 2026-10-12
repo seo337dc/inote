@@ -7,18 +7,18 @@ import DayCard from "./DayCard";
 const card: DayCardData = {
   date: "2026-10-11",
   entries: [
-    { id: "e1", date: "2026-10-11", title: "독서", done: true, routineId: "r1" },
-    { id: "e2", date: "2026-10-11", title: "이력서 수정", done: false, routineId: null },
+    { id: "e1", date: "2026-10-11", title: "독서", done: true },
+    { id: "e2", date: "2026-10-11", title: "이력서 수정", done: false },
   ],
 };
 
 describe("DayCard (날짜 카드)", () => {
-  it("날짜 헤더와 항목, 루틴 칩, 합계 줄을 보여준다", () => {
+  it("날짜 헤더와 항목, 합계 줄을 보여준다 ('매일' 칩은 없다)", () => {
     renderWithQueryClient(<DayCard card={card} />);
 
     const region = screen.getByRole("region", { name: "10월 11일 (일)" });
     expect(within(region).getByText("독서")).toBeInTheDocument();
-    expect(within(region).getAllByText("매일")).toHaveLength(1); // 루틴에만 칩
+    expect(within(region).queryByText("매일")).not.toBeInTheDocument(); // 가져온 항목도 일반 항목이라 칩이 없다
     expect(within(region).getByText("2개 중 1개 완료")).toBeInTheDocument();
   });
 
@@ -47,11 +47,17 @@ describe("DayCard (날짜 카드)", () => {
 
     expect(screen.getByText("· 오늘")).toBeInTheDocument();
     expect(screen.getByLabelText("할 일 입력")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "독서 메뉴" })).toBeInTheDocument(); // 루틴
-    expect(screen.getByRole("button", { name: "이력서 수정 메뉴" })).toBeInTheDocument(); // 그날 항목
+    expect(screen.getByRole("button", { name: "독서 메뉴" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "이력서 수정 메뉴" })).toBeInTheDocument();
   });
 
-  it("입력줄에는 '매일 반복' 체크가 없다 (루틴은 ⋯ 메뉴에서 만든다)", () => {
+  it("오늘 카드가 비어 있어도 생성 버튼은 없다 (고정 리스트는 설정 화면에서 가져온다)", () => {
+    renderWithQueryClient(<DayCard card={{ date: "2026-10-12", entries: [] }} isToday />);
+
+    expect(screen.queryByRole("button", { name: /생성/ })).not.toBeInTheDocument();
+  });
+
+  it("입력줄에는 '매일 반복' 체크가 없다", () => {
     renderWithQueryClient(<DayCard card={card} isToday />);
 
     expect(screen.queryByLabelText("매일 반복")).not.toBeInTheDocument();

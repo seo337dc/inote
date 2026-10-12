@@ -39,23 +39,16 @@ export function createTodoHandlers(store: TodoStore) {
       return entry ? HttpResponse.json(entry) : notFound("항목을 찾을 수 없습니다.");
     }),
 
-    http.post(`${BASE}/daily/generate`, () => HttpResponse.json(store.generateToday())),
+    // 설정 화면의 [오늘 카드에 모두 가져오기] — 고정 리스트를 오늘 카드로 복사
+    http.post(`${BASE}/daily/from-routines`, () => HttpResponse.json(store.importRoutines())),
 
     http.get(`${BASE}/routines`, () => HttpResponse.json(store.listRoutines())),
 
     http.post(`${BASE}/routines`, async ({ request }) => {
-      const body = (await request.json()) as { entryId?: string; title?: string };
-      // title이면 설정 화면에서 새 고정 항목, entryId면 오늘의 그날 항목을 고정으로 만든다
-      if (body.title !== undefined) {
-        const title = body.title.trim();
-        if (!title) return badRequest("제목을 입력하세요.");
-        return HttpResponse.json(store.createRoutine(title), { status: 201 });
-      }
-      if (!body.entryId) return badRequest("title 또는 entryId가 필요합니다.");
-      const routine = store.makeRoutine(body.entryId);
-      return routine
-        ? HttpResponse.json(routine, { status: 201 })
-        : badRequest("오늘의 그날 항목만 매일 반복으로 만들 수 있습니다.");
+      const body = (await request.json()) as { title?: string };
+      const title = body.title?.trim();
+      if (!title) return badRequest("제목을 입력하세요.");
+      return HttpResponse.json(store.createRoutine(title), { status: 201 });
     }),
 
     http.patch(`${BASE}/routines/:id`, async ({ request, params }) => {

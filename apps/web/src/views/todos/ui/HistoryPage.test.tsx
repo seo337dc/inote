@@ -83,7 +83,7 @@ describe("HistoryPage (지난 기록)", () => {
     const { user } = setup();
     const card = (date: string, title: string) => ({
       date,
-      entries: [{ id: `x-${date}`, date, title, done: false, routineId: null }],
+      entries: [{ id: `x-${date}`, date, title, done: false }],
     });
     server.use(
       http.get("*/api/v1/daily", ({ request }) => {
@@ -121,7 +121,7 @@ describe("HistoryPage (지난 기록)", () => {
     try {
       const card = (date: string, title: string) => ({
         date,
-        entries: [{ id: `x-${date}`, date, title, done: false, routineId: null }],
+        entries: [{ id: `x-${date}`, date, title, done: false }],
       });
       server.use(
         http.get("*/api/v1/daily", ({ request }) => {

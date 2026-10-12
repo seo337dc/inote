@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { toast } from "sonner";
@@ -10,13 +10,13 @@ import { createTodoHandlers } from "@/mocks/todo/handlers";
 import { createTodoStore } from "@/mocks/todo/store";
 import { todayKst } from "@/shared/lib/date";
 
-vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 // 가짜 서버(MSW)에 실제로 요청을 보내는 화면 테스트 — 낙관적 업데이트 뒤 서버 상태까지 확인한다.
-// 기본은 오늘 할일 생성까지 끝난 상태(고정 리스트가 오늘 카드에 들어와 있음). generated: false면 하루 시작 전의 빈 카드.
-function setup(options: { seed?: boolean; generated?: boolean } = { seed: true }) {
+// 기본은 설정 화면에서 고정 리스트를 오늘 카드로 가져온 뒤의 상태(독서·가계부 작성이 일반 항목으로 들어와 있음).
+function setup(options: { seed?: boolean } = { seed: true }) {
   const store = createTodoStore({ seed: options.seed });
-  if (options.seed !== false && options.generated !== false) store.generateToday();
+  if (options.seed !== false) store.importRoutines();
   server.use(...createTodoHandlers(store));
   return { store, user: userEvent.setup() };
 }
@@ -24,65 +24,30 @@ function setup(options: { seed?: boolean; generated?: boolean } = { seed: true }
 describe("DailyTab (오늘의 할일)", () => {
   beforeEach(() => {
     vi.mocked(toast.error).mockClear();
+    vi.mocked(toast.success).mockClear();
   });
 
-  it("오늘 카드 한 장에 루틴(매일 칩)만 보여주고, 작업 일정은 나오지 않는다", async () => {
+  it("오늘 카드 한 장에 항목만 보여주고(매일 칩 없음), 작업 일정은 나오지 않는다", async () => {
     setup();
     renderWithQueryClient(<DailyTab />);
 
     expect(await screen.findByText("독서")).toBeInTheDocument();
     expect(screen.getByText("가계부 작성")).toBeInTheDocument();
-    expect(screen.getAllByText("매일")).toHaveLength(2);
+    expect(screen.queryByText("매일")).not.toBeInTheDocument();
     expect(screen.getByText("· 오늘")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "작업 일정" })).not.toBeInTheDocument();
     expect(screen.getByText("2개 중 0개 완료")).toBeInTheDocument();
   });
 
-  it("오늘 카드가 비어 있으면 [오늘 할일 생성]이 보이고, 누르면 고정 리스트가 오늘 카드로 들어온다", async () => {
-    const { store, user } = setup({ seed: true, generated: false });
+  it("오늘 카드가 비어 있어도 고정 리스트는 저절로 들어오지 않고 생성 버튼도 없다", async () => {
+    const store = createTodoStore({ seed: true }); // 가져오기 전
+    server.use(...createTodoHandlers(store));
     renderWithQueryClient(<DailyTab />);
 
-    expect(await screen.findByText("오늘 할일이 아직 없어요.")).toBeInTheDocument();
-    expect(screen.queryByText("독서")).not.toBeInTheDocument(); // 열기만 해서는 가져오지 않는다
-    await user.click(screen.getByRole("button", { name: "오늘 할일 생성" }));
-
-    expect(await screen.findByText("독서")).toBeInTheDocument();
-    expect(screen.getByText("가계부 작성")).toBeInTheDocument();
-    expect(screen.getAllByText("매일")).toHaveLength(2);
-    expect(screen.queryByRole("button", { name: "오늘 할일 생성" })).not.toBeInTheDocument();
-    expect(store.getDay(todayKst()).entries).toHaveLength(2);
-  });
-
-  it("직접 항목을 하나라도 추가하면 [오늘 할일 생성]은 사라진다", async () => {
-    const { user } = setup({ seed: false });
-    renderWithQueryClient(<DailyTab />);
-
-    await user.type(await screen.findByLabelText("할 일 입력"), "이력서 수정{Enter}");
-
-    expect(await screen.findByText("이력서 수정")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "오늘 할일 생성" })).not.toBeInTheDocument();
-  });
-
-  it("고정 리스트가 비어 있으면 생성 후 설정으로 가는 안내가 나온다", async () => {
-    const { user } = setup({ seed: false });
-    renderWithQueryClient(<DailyTab />);
-
-    await user.click(await screen.findByRole("button", { name: "오늘 할일 생성" }));
-
-    expect(await screen.findByText(/고정 리스트가 비어 있어요/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "설정" })).toHaveAttribute("href", "/todos/settings");
-    expect(screen.getByRole("button", { name: "오늘 할일 생성" })).toBeInTheDocument();
-  });
-
-  it("생성에 실패하면 안내하고 버튼이 그대로 남는다", async () => {
-    const { user } = setup({ seed: true, generated: false });
-    server.use(http.post("*/api/v1/daily/generate", () => HttpResponse.json({ message: "x" }, { status: 500 })));
-    renderWithQueryClient(<DailyTab />);
-
-    await user.click(await screen.findByRole("button", { name: "오늘 할일 생성" }));
-
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("오늘 할일을 만들지 못했어요."));
-    expect(screen.getByRole("button", { name: "오늘 할일 생성" })).toBeEnabled();
+    expect(await screen.findByText("아직 항목이 없어요")).toBeInTheDocument();
+    expect(screen.queryByText("독서")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /생성/ })).not.toBeInTheDocument();
+    expect(store.getDay(todayKst()).entries).toEqual([]);
   });
 
   it("오늘 카드 위에 '지난 기록 보기' 링크가 있고 지난 기록 화면으로 간다", async () => {
@@ -128,40 +93,46 @@ describe("DailyTab (오늘의 할일)", () => {
     expect(screen.getByText("이력서 수정")).toBeInTheDocument();
     expect(input).toHaveValue("");
     await waitFor(() =>
-      expect(store.getDay(todayKst()).entries.some((e) => e.title === "이력서 수정" && e.routineId === null)).toBe(true),
+      expect(store.getDay(todayKst()).entries.some((e) => e.title === "이력서 수정")).toBe(true),
     );
   });
 
-  it("그날 항목의 ⋯ 메뉴에서 '매일 반복으로 만들기'를 누르면 '매일' 칩이 붙고 서버에 루틴이 생긴다", async () => {
+  it("항목의 ⋯ 메뉴에서 '고정 리스트에 추가'를 누르면 그 제목이 고정 리스트에 복사되고, 카드의 항목은 그대로다", async () => {
     const { store, user } = setup({ seed: false });
     renderWithQueryClient(<DailyTab />);
 
     await user.type(await screen.findByLabelText("할 일 입력"), "운동{Enter}");
-    const row = (await screen.findByText("운동")).closest("li")!;
-    expect(within(row).queryByText("매일")).not.toBeInTheDocument();
-
     await waitFor(() => expect(screen.getByRole("button", { name: "운동 메뉴" })).toBeInTheDocument());
     await user.click(screen.getByRole("button", { name: "운동 메뉴" }));
-    await user.click(await screen.findByRole("menuitem", { name: "매일 반복으로 만들기" }));
+    await user.click(await screen.findByRole("menuitem", { name: "고정 리스트에 추가" }));
 
-    expect(within(row).getByText("매일")).toBeInTheDocument();
-    await waitFor(() => expect(store.getDay(todayKst()).entries.find((e) => e.title === "운동")?.routineId).not.toBeNull());
+    await waitFor(() => expect(store.listRoutines().map((r) => r.title)).toEqual(["운동"]));
+    expect(toast.success).toHaveBeenCalledWith("고정 리스트에 추가했어요.");
+    expect(screen.getByText("운동")).toBeInTheDocument();
+    expect(screen.queryByText("매일")).not.toBeInTheDocument();
   });
 
-  it("그날 항목의 메뉴에는 '매일 반복으로 만들기'만 있고, 루틴의 메뉴에는 이름 수정·삭제가 있다", async () => {
+  it("항목 메뉴에는 '고정 리스트에 추가'만 있고, 이름 수정·루틴 삭제는 없다", async () => {
     const { user } = setup();
     renderWithQueryClient(<DailyTab />);
 
-    await user.type(await screen.findByLabelText("할 일 입력"), "이력서 수정{Enter}");
-    await waitFor(() => expect(screen.getByRole("button", { name: "이력서 수정 메뉴" })).toBeInTheDocument());
-    await user.click(screen.getByRole("button", { name: "이력서 수정 메뉴" }));
-    expect(await screen.findAllByRole("menuitem")).toHaveLength(1);
-    expect(screen.getByRole("menuitem", { name: "매일 반복으로 만들기" })).toBeInTheDocument();
-    await user.keyboard("{Escape}");
+    await user.click(await screen.findByRole("button", { name: "독서 메뉴" }));
 
-    await user.click(screen.getByRole("button", { name: "독서 메뉴" }));
-    expect(await screen.findByRole("menuitem", { name: "이름 수정" })).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: "루틴 삭제" })).toBeInTheDocument();
+    expect(await screen.findAllByRole("menuitem")).toHaveLength(1);
+    expect(screen.getByRole("menuitem", { name: "고정 리스트에 추가" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "루틴 삭제" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "이름 수정" })).not.toBeInTheDocument();
+  });
+
+  it("고정 리스트에 추가하지 못하면 안내한다", async () => {
+    const { user } = setup();
+    server.use(http.post("*/api/v1/routines", () => HttpResponse.json({ message: "x" }, { status: 500 })));
+    renderWithQueryClient(<DailyTab />);
+
+    await user.click(await screen.findByRole("button", { name: "독서 메뉴" }));
+    await user.click(await screen.findByRole("menuitem", { name: "고정 리스트에 추가" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("고정 리스트에 추가하지 못했어요."));
   });
 
   it("빈 제목은 추가하지 않는다", async () => {
@@ -171,33 +142,6 @@ describe("DailyTab (오늘의 할일)", () => {
     await user.type(await screen.findByLabelText("할 일 입력"), "   {Enter}");
 
     expect(store.getDay(todayKst()).entries).toEqual([]);
-  });
-
-  it("루틴 메뉴에서 이름을 수정하면 오늘 카드의 이름이 바뀐다", async () => {
-    const { store, user } = setup();
-    renderWithQueryClient(<DailyTab />);
-
-    await user.click(await screen.findByRole("button", { name: "독서 메뉴" }));
-    await user.click(await screen.findByRole("menuitem", { name: "이름 수정" }));
-    const input = screen.getByLabelText("루틴 이름");
-    await user.clear(input);
-    await user.type(input, "책 읽기{Enter}");
-
-    expect(await screen.findByText("책 읽기")).toBeInTheDocument();
-    expect(screen.queryByText("독서")).not.toBeInTheDocument();
-    await waitFor(() => expect(store.getDay(todayKst()).entries.some((e) => e.title === "책 읽기")).toBe(true));
-  });
-
-  it("루틴 삭제를 누르면 오늘 카드에서 사라지고, 어제 기록은 그대로 남는다", async () => {
-    const { store, user } = setup();
-    renderWithQueryClient(<DailyTab />);
-
-    await user.click(await screen.findByRole("button", { name: "독서 메뉴" }));
-    await user.click(await screen.findByRole("menuitem", { name: "루틴 삭제" }));
-
-    await waitFor(() => expect(screen.queryByText("독서")).not.toBeInTheDocument());
-    const yesterday = store.history(null, 1).items[0];
-    expect(yesterday.entries.some((e) => e.title === "독서")).toBe(true);
   });
 
   it("카드를 불러오지 못하면 안내 문구를 보여준다", async () => {

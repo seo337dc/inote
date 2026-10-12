@@ -6,12 +6,10 @@ import type { TaskStatus } from "@/shared/lib/task-status";
 // 할일 API 계약(docs/TODO_FEATURE.md)을 메모리에서 흉내 내는 가짜 서버.
 // 브라우저 개발용 MSW 워커와 테스트가 같은 로직을 쓴다. BE를 만들 때 이 동작이 기준이 된다.
 
+// 고정 리스트의 한 항목 — 오늘 카드로 "복사"해 올 때 쓰는 원본일 뿐, 가져온 기록과는 이어져 있지 않다.
 type Routine = {
   id: string;
   title: string;
-  // 시작한 날(그날부터 나옴)과, 삭제한 날(그날부터 안 나옴 — 어제까지의 기록은 남는다)
-  startedOn: string;
-  endedOn: string | null;
 };
 
 type Group = { id: string; name: string; starred: boolean };
@@ -33,22 +31,7 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
   const groups: Group[] = [];
   const tasks: Task[] = [];
 
-  function isActive(routine: Routine, date: string) {
-    return routine.startedOn <= date && (routine.endedOn === null || routine.endedOn > date);
-  }
-
-  // [오늘 할일 생성] — 활성 루틴(고정 리스트) 중 오늘 기록이 아직 없는 것만 만든다(여러 번 눌러도 중복 안 됨).
-  function ensureRoutineEntries(date: string) {
-    for (const routine of routines) {
-      if (!isActive(routine, date)) continue;
-      const exists = entries.some((e) => e.routineId === routine.id && e.date === date);
-      if (!exists) {
-        entries.push({ id: nextId("e"), date, title: routine.title, done: false, routineId: routine.id });
-      }
-    }
-  }
-
-  // 카드를 여는 것만으로는 아무것도 만들지 않는다 — 고정 리스트는 generateToday로만 가져온다.
+  // 카드를 여는 것만으로는 아무것도 만들지 않는다 — 고정 리스트는 importRoutines(설정 화면의 가져오기)로만 들어온다.
   function getDay(date: string): DayCard {
     return { date, entries: entries.filter((e) => e.date === date).map((e) => ({ ...e })) };
   }
@@ -67,37 +50,32 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
     };
   }
 
-  function generateToday(): DayCard {
-    ensureRoutineEntries(today());
-    return getDay(today());
+  // 고정 리스트 — 만든 순서대로
+  function listRoutines(): Routine[] {
+    return routines.map((r) => ({ ...r }));
   }
 
-  // 고정 리스트(활성 루틴) — 만든 순서대로
-  function listRoutines(): { id: string; title: string }[] {
-    return routines.filter((r) => isActive(r, today())).map((r) => ({ id: r.id, title: r.title }));
-  }
-
-  // 설정 화면에서 직접 추가 — 오늘 카드에는 넣지 않는다(오늘 할일 생성 때 또는 내일부터 가져온다)
-  function createRoutine(title: string): { id: string; title: string } {
-    const routine: Routine = { id: nextId("r"), title, startedOn: today(), endedOn: null };
+  function createRoutine(title: string): Routine {
+    const routine: Routine = { id: nextId("r"), title };
     routines.push(routine);
-    return { id: routine.id, title };
+    return { ...routine };
   }
 
   function addEntry({ title }: AddEntryInput): DailyEntry {
-    const entry: DailyEntry = { id: nextId("e"), date: today(), title, done: false, routineId: null };
+    const entry: DailyEntry = { id: nextId("e"), date: today(), title, done: false };
     entries.push(entry);
     return { ...entry };
   }
 
-  // 오늘의 그날 항목을 "매일 반복"(고정 리스트)으로 만든다 — 그 항목이 오늘 기록이 되고, 내일부터 [오늘 할일 생성]에 들어간다.
-  function makeRoutine(entryId: string): { id: string; title: string } | null {
-    const entry = entries.find((e) => e.id === entryId);
-    if (!entry || entry.date !== today() || entry.routineId !== null) return null;
-    const routine: Routine = { id: nextId("r"), title: entry.title, startedOn: entry.date, endedOn: null };
-    routines.push(routine);
-    entry.routineId = routine.id;
-    return { id: routine.id, title: routine.title };
+  // 고정 리스트를 오늘 카드로 복사한다 — 제목만 베껴 새 그날 항목(체크 해제)을 만들고, 그 뒤로는 서로 상관없다.
+  // 오늘 카드에 이미 같은 제목이 있으면 건너뛴다(여러 번 눌러도 중복 안 됨). 오늘 카드를 돌려준다.
+  function importRoutines(): DayCard {
+    const date = today();
+    for (const routine of routines) {
+      if (entries.some((e) => e.date === date && e.title === routine.title)) continue;
+      entries.push({ id: nextId("e"), date, title: routine.title, done: false });
+    }
+    return getDay(date);
   }
 
   function patchEntry(id: string, patch: { done?: boolean; title?: string }): DailyEntry | null {
@@ -108,25 +86,18 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
     return { ...entry };
   }
 
-  function renameRoutine(id: string, title: string): { id: string; title: string } | null {
+  // 이름을 바꾸거나 지워도 이미 가져온 기록(오늘·지난 카드)은 그대로다.
+  function renameRoutine(id: string, title: string): Routine | null {
     const routine = routines.find((r) => r.id === id);
     if (!routine) return null;
     routine.title = title;
-    // "오늘부터" 적용 — 오늘 기록만 이름을 바꾸고 지난 기록은 그때 이름 그대로 둔다.
-    entries.forEach((e) => {
-      if (e.routineId === id && e.date === today()) e.title = title;
-    });
-    return { id, title };
+    return { ...routine };
   }
 
   function deleteRoutine(id: string): boolean {
-    const routine = routines.find((r) => r.id === id);
-    if (!routine) return false;
-    routine.endedOn = today();
-    // 오늘부터 안 나온다 — 오늘 기록도 지우고, 어제까지는 남긴다.
-    for (let i = entries.length - 1; i >= 0; i -= 1) {
-      if (entries[i].routineId === id && entries[i].date === today()) entries.splice(i, 1);
-    }
+    const index = routines.findIndex((r) => r.id === id);
+    if (index < 0) return false;
+    routines.splice(index, 1);
     return true;
   }
 
@@ -235,18 +206,13 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
 
   if (seed) {
     const t = today();
-    const reading = nextId("r");
-    const ledger = nextId("r");
-    routines.push(
-      { id: reading, title: "독서", startedOn: addDays(t, -20), endedOn: null },
-      { id: ledger, title: "가계부 작성", startedOn: addDays(t, -20), endedOn: null },
-    );
+    routines.push({ id: nextId("r"), title: "독서" }, { id: nextId("r"), title: "가계부 작성" });
     const past = (daysAgo: number, doneFlags: [boolean, boolean], extra: [string, boolean][] = []) => {
       const date = addDays(t, -daysAgo);
       entries.push(
-        { id: nextId("e"), date, title: "독서", done: doneFlags[0], routineId: reading },
-        { id: nextId("e"), date, title: "가계부 작성", done: doneFlags[1], routineId: ledger },
-        ...extra.map(([title, done]) => ({ id: nextId("e"), date, title, done, routineId: null })),
+        { id: nextId("e"), date, title: "독서", done: doneFlags[0] },
+        { id: nextId("e"), date, title: "가계부 작성", done: doneFlags[1] },
+        ...extra.map(([title, done]) => ({ id: nextId("e"), date, title, done })),
       );
     };
     past(1, [true, false], [["이력서 수정", false]]);
@@ -283,11 +249,10 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
   return {
     getDay,
     history,
-    generateToday,
+    importRoutines,
     listRoutines,
     createRoutine,
     addEntry,
-    makeRoutine,
     patchEntry,
     renameRoutine,
     deleteRoutine,

@@ -1,13 +1,11 @@
 // 날짜(date)는 시간 없는 'YYYY-MM-DD' 문자열 (한국 날짜).
 
-// 루틴 체크 기록 + 그날 추가 항목. title은 그날의 스냅샷이라, 루틴 이름을 나중에 바꿔도 지난 카드는 그대로다.
+// 그날 항목 — 직접 추가한 것이든 고정 리스트에서 복사해 온 것이든 같은 종류다(서로 이어져 있지 않다).
 export type DailyEntry = {
   id: string;
   date: string;
   title: string;
   done: boolean;
-  // 루틴에서 생긴 기록이면 루틴 id, 그날 추가 항목이면 null
-  routineId: string | null;
 };
 
 export type DayCard = {
@@ -21,12 +19,12 @@ export type DayCardPage = {
   nextBefore: string | null;
 };
 
-// 그날 항목 추가 — 루틴은 항목을 만든 뒤 "매일 반복으로 만들기"로 따로 등록한다.
+// 그날 항목 추가 — 고정 리스트에 넣고 싶으면 항목의 ⋯ 메뉴에서 "고정 리스트에 추가"를 고른다.
 export type AddEntryInput = {
   title: string;
 };
 
-// 고정 리스트의 한 항목 — [오늘 할일 생성]을 누르면 오늘 카드에 기록으로 들어온다.
+// 고정 리스트의 한 항목 — 설정 화면의 [오늘 카드에 모두 가져오기]를 누르면 제목이 오늘 카드에 새 항목으로 복사된다.
 export type Routine = {
   id: string;
   title: string;

@@ -9,10 +9,12 @@ import { server } from "@/test/msw/server";
 import { createTodoHandlers } from "@/mocks/todo/handlers";
 import { createTodoStore } from "@/mocks/todo/store";
 import { useSession } from "@/shared/lib/auth-client";
+import { todayKst } from "@/shared/lib/date";
 
 const replace = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
-vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, push }) }));
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 
 function setup(options: { seed?: boolean } = { seed: true }) {
@@ -25,7 +27,9 @@ function setup(options: { seed?: boolean } = { seed: true }) {
 describe("RoutineSettingsPage (고정 리스트 설정)", () => {
   beforeEach(() => {
     replace.mockClear();
+    push.mockClear();
     vi.mocked(toast.error).mockClear();
+    vi.mocked(toast.success).mockClear();
   });
 
   it("고정 리스트를 보여주고 할 일로 돌아가는 링크가 있다", async () => {
@@ -35,7 +39,7 @@ describe("RoutineSettingsPage (고정 리스트 설정)", () => {
     expect(screen.getByRole("heading", { name: "고정 리스트", level: 1 })).toBeInTheDocument();
     expect(await screen.findByText("독서")).toBeInTheDocument();
     expect(screen.getByText("가계부 작성")).toBeInTheDocument();
-    expect(screen.getByText("고정 항목 2개")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /고정 항목/, level: 2 })).toHaveTextContent("2");
     expect(screen.getByRole("link", { name: /할 일로/ })).toHaveAttribute("href", "/todos");
   });
 
@@ -100,7 +104,7 @@ describe("RoutineSettingsPage (고정 리스트 설정)", () => {
     await user.click(await screen.findByRole("button", { name: "독서 메뉴" }));
     await user.click(await screen.findByRole("menuitem", { name: "삭제" }));
     let dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText(/지난 기록은 그대로 남아요/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/그대로 남아요/)).toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: "취소" }));
     expect(screen.getByText("독서")).toBeInTheDocument();
 
@@ -126,5 +130,49 @@ describe("RoutineSettingsPage (고정 리스트 설정)", () => {
     renderWithQueryClient(<RoutineSettingsPage />);
 
     expect(replace).toHaveBeenCalledWith("/login");
+  });
+
+  it("[오늘 카드에 모두 가져오기]를 누르면 제목이 오늘 카드에 새 항목으로 복사되고 오늘의 할일로 이동한다", async () => {
+    const { store, user } = setup();
+    renderWithQueryClient(<RoutineSettingsPage />);
+
+    await user.click(await screen.findByRole("button", { name: "오늘 카드에 모두 가져오기" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/todos"));
+    expect(toast.success).toHaveBeenCalledWith("오늘 카드에 가져왔어요.");
+    expect(store.getDay(todayKst()).entries.map((e) => e.title)).toEqual(["독서", "가계부 작성"]);
+    // 고정 리스트는 그대로다(복사이므로)
+    expect(store.listRoutines()).toHaveLength(2);
+  });
+
+  it("고정 항목이 없으면 가져오기 버튼이 비활성이다", async () => {
+    setup({ seed: false });
+    renderWithQueryClient(<RoutineSettingsPage />);
+
+    expect(await screen.findByRole("button", { name: "오늘 카드에 모두 가져오기" })).toBeDisabled();
+  });
+
+  it("가져오기에 실패하면 안내하고 이동하지 않는다", async () => {
+    const { user } = setup();
+    server.use(http.post("*/api/v1/daily/from-routines", () => HttpResponse.json({ message: "x" }, { status: 500 })));
+    renderWithQueryClient(<RoutineSettingsPage />);
+
+    await user.click(await screen.findByRole("button", { name: "오늘 카드에 모두 가져오기" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("오늘 카드에 가져오지 못했어요."));
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("이름 수정·삭제는 이미 가져온 오늘 카드의 항목에 영향을 주지 않는다", async () => {
+    const { store, user } = setup();
+    store.importRoutines();
+    renderWithQueryClient(<RoutineSettingsPage />);
+
+    await user.click(await screen.findByRole("button", { name: "독서 메뉴" }));
+    await user.click(await screen.findByRole("menuitem", { name: "삭제" }));
+    await user.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "삭제" }));
+
+    await waitFor(() => expect(store.listRoutines().some((r) => r.title === "독서")).toBe(false));
+    expect(store.getDay(todayKst()).entries.some((e) => e.title === "독서")).toBe(true);
   });
 });

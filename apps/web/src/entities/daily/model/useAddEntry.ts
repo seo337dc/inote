@@ -27,7 +27,6 @@ export function useAddEntry() {
           date,
           title,
           done: false,
-          routineId: null,
         };
         queryClient.setQueryData(dayCardKey(date), appendEntry(previous, temp));
       }
