@@ -41,6 +41,9 @@ export const api = {
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
 
+  put: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
+
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 
   // 파일 업로드 전용 — FormData를 쓰므로 Content-Type을 강제로 json으로 덮어쓰면 안 됨

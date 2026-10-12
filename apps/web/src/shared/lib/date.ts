@@ -45,3 +45,27 @@ export function formatDayHeader(date: string): string {
   const weekday = WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
   return `${m}월 ${d}일 (${weekday})`;
 }
+
+// "2026-10-20" → "10.20." (연도 없이 월.일.)
+export function formatShortDate(date: string): string {
+  const [, m, d] = date.split("-").map(Number);
+  return `${m}.${d}.`;
+}
+
+// 시작일 하나면 "10.20.", 기간이면 "10.20. ~ 10.25."
+export function formatDateRange(startDate: string, endDate: string | null): string {
+  return endDate ? `${formatShortDate(startDate)} ~ ${formatShortDate(endDate)}` : formatShortDate(startDate);
+}
+
+// 달력 라이브러리(Date)와 'YYYY-MM-DD' 문자열 사이 변환 — 시간대 계산 없이 그 컴퓨터의 달력 날짜 그대로 쓴다.
+export function toDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function fromDateString(date: string): Date {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}

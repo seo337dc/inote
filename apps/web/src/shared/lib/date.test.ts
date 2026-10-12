@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { addDays, formatDateTime, formatDayHeader, todayKst } from "./date";
+import {
+  addDays,
+  formatDateRange,
+  formatDateTime,
+  formatDayHeader,
+  formatShortDate,
+  fromDateString,
+  toDateString,
+  todayKst,
+} from "./date";
 
 describe("todayKst", () => {
   it("UTC로는 전날이어도 한국 날짜를 준다 (UTC 10/11 16:00 → 한국 10/12 01:00)", () => {
@@ -19,6 +28,28 @@ describe("addDays", () => {
 
   it("0을 더하면 그대로다", () => {
     expect(addDays("2026-10-12", 0)).toBe("2026-10-12");
+  });
+});
+
+describe("formatShortDate", () => {
+  it("연도 없이 '월.일.'로 보여주고 앞자리 0은 뗀다", () => {
+    expect(formatShortDate("2026-10-20")).toBe("10.20.");
+    expect(formatShortDate("2026-01-05")).toBe("1.5.");
+  });
+});
+
+describe("formatDateRange", () => {
+  it("종료일이 없으면 시작일만, 있으면 '시작 ~ 종료'로 보여준다", () => {
+    expect(formatDateRange("2026-10-20", null)).toBe("10.20.");
+    expect(formatDateRange("2026-10-20", "2026-11-05")).toBe("10.20. ~ 11.5.");
+  });
+});
+
+describe("toDateString / fromDateString", () => {
+  it("Date ↔ 'YYYY-MM-DD'를 시간대 계산 없이 오간다 (달력 날짜 그대로)", () => {
+    expect(toDateString(new Date(2026, 9, 5, 23, 59))).toBe("2026-10-05");
+    expect(toDateString(fromDateString("2026-01-09"))).toBe("2026-01-09");
+    expect(fromDateString("2026-10-05").getDate()).toBe(5);
   });
 });
 
