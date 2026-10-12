@@ -134,12 +134,15 @@
 
 ### H. 할일 기능 재기획·FE (2026-10-12, 브랜치 `feat/todo-redesign` — **main에 머지 금지, BE 필요**)
 
-- **상세 기획·결정 12개·승인된 API 계약은 [`docs/TODO_FEATURE.md`](../TODO_FEATURE.md)** (여기엔 요약만). 구조: `/todos`에 `[오늘의 할일 | 할 일]` 탭. 오늘의 할일 = 루틴(매일 자동)+그날 항목(날짜 카드), 할 일 = 묶음>작업(상태 뱃지·별·시작/종료일·끌어서 순서 변경·접힘).
+- **상세 기획·결정 14개·승인된 API 계약은 [`docs/TODO_FEATURE.md`](../TODO_FEATURE.md)** (여기엔 요약만). 구조: `/todos`에 `[오늘의 할일 | 할 일]` 탭. 오늘의 할일 = 루틴(매일 자동)+그날 항목(날짜 카드), 할 일 = 묶음>작업(상태 뱃지·별·시작/종료일·끌어서 순서 변경·접힘).
 - **FE는 BE 없이 MSW 가짜 서버로만 동작**한다: `NEXT_PUBLIC_API_MOCKING=true pnpm dev`(개발 전용, 운영 빌드에서는 무시). 가짜 서버 규칙(`apps/web/src/mocks/todo/store.ts`)이 곧 BE가 지켜야 할 계약이다. 로그인은 실제 BE로 하고 할일 데이터만 가짜.
 - ⚠️ **이 브랜치를 main에 머지하면 Vercel이 배포해서 운영 `/todos`가 깨진다**(BE에 `/daily`·`/routines`·`/task-groups`·`/tasks`가 없음). BE 구현 뒤에 머지한다. 옛 `/todos` 평면 API·`entities/todo`는 그때 함께 정리한다.
 - **사람이 화면에서 확인할 것**(자동 테스트로 못 봄): 작업을 **끌어서 순서 바꾸기**(jsdom에서 재현 불가), **달력 팝업의 모양·위치**(좁은 화면에서 잘리는지), 뱃지·달력 색.
 - 지난 기록 화면(`/todos/history`)·"지난 기록 보기 →" 링크까지 FE 완료. 사람이 브라우저로 확인할 것에 지난 기록의 [전체|주차별|월별] 탭·[더 보기]·달 이동·지난 카드 체크도 포함.
 - **다음(BE)**: `CLAUDE.md` 작업 순서대로 **계약 → FE → BE(사용자가 테스트 작성) → 통합**. FE·계약은 끝났으니 BE부터. 새 모델: 고정 리스트(템플릿, 오늘 카드와 연결 없음), 날짜별 항목(복사본 — 루틴 연결 없음), 묶음, 작업(순서·별·시작/종료일). 기존 `Todo` 데이터는 "기존 할일" 묶음으로 이전(마감일 → 시작일, 이전 때 사용자 확인). `inote-server`는 로컬·운영이 같은 Supabase DB이므로 **새 마이그레이션(추가만)**으로, `db push` 금지.
+- **다른 PC에서 이어가기**: `git fetch` → `git checkout feat/todo-redesign` → `git pull` → `cd apps/web && pnpm install`(의존성이 늘었음) → `NEXT_PUBLIC_API_MOCKING=true pnpm dev`. 로그인은 실제 BE(`inote-server`)가 필요하다(할일 데이터만 가짜). 전체 테스트는 `pnpm vitest run`(약 70초, 2026-10-12 기준 761개 통과).
+- **푸시하지 않은 것**: `docs/kure/PLAN.md`(다른 채팅의 임베딩 작업 변경)와 개인 노트 `backend-interview-notes.*`는 이 브랜치에 없다 — 해당 작업은 원래 PC에서 따로 챙길 것.
+- **마지막으로 한 일(2026-10-12)**: 고정 리스트를 "오늘 카드로 복사해 오는 방식"으로 바꿈(결정 14), 모바일 작업 줄 두 줄화·무한 스크롤(결정 13), 지난 기록 화면(전체 리스트/달력·주차별·월별). 화면에서 직접 확인이 안 된 것: 모바일 줄 모양, 달력 보기, 설정 화면, 가져오기 버튼 흐름.
 - 이 작업 때 새로 설치한 의존성: `@dnd-kit/sortable`, `@dnd-kit/utilities`, `react-day-picker`, 그리고 `msw init`이 만든 `public/mockServiceWorker.js`.
 
 ### G. 그 뒤 / 보류
