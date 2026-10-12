@@ -1,5 +1,36 @@
 import { describe, expect, it } from "vitest";
-import { formatDateTime } from "./date";
+import { addDays, formatDateTime, formatDayHeader, todayKst } from "./date";
+
+describe("todayKst", () => {
+  it("UTC로는 전날이어도 한국 날짜를 준다 (UTC 10/11 16:00 → 한국 10/12 01:00)", () => {
+    expect(todayKst(new Date("2026-10-11T16:00:00Z"))).toBe("2026-10-12");
+  });
+
+  it("한국 자정 직전까지는 아직 그날이다 (UTC 10/11 14:59 → 한국 10/11 23:59)", () => {
+    expect(todayKst(new Date("2026-10-11T14:59:00Z"))).toBe("2026-10-11");
+  });
+});
+
+describe("addDays", () => {
+  it("월·연을 넘겨도 날짜가 맞다", () => {
+    expect(addDays("2026-10-31", 1)).toBe("2026-11-01");
+    expect(addDays("2026-01-01", -1)).toBe("2025-12-31");
+  });
+
+  it("0을 더하면 그대로다", () => {
+    expect(addDays("2026-10-12", 0)).toBe("2026-10-12");
+  });
+});
+
+describe("formatDayHeader", () => {
+  it("'월 일 (요일)'로 보여준다", () => {
+    expect(formatDayHeader("2026-10-12")).toBe("10월 12일 (월)");
+  });
+
+  it("한 자리 월·일은 0을 채우지 않는다", () => {
+    expect(formatDayHeader("2026-01-05")).toBe("1월 5일 (월)");
+  });
+});
 
 describe("formatDateTime", () => {
   it("'년.월.일 시:분' 형식으로, 한 자리 숫자는 0을 채워 보여준다", () => {
