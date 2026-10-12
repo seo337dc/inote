@@ -53,12 +53,13 @@ export function createTodoStore({ today = todayKst, seed = true }: StoreOptions 
     return { date, entries: entries.filter((e) => e.date === date).map((e) => ({ ...e })) };
   }
 
-  // 기록이 있는 날(항목이 있는 날)만, 최신순. before 이전 날짜부터.
-  function history(before: string | null, limit: number): DayCardPage {
-    const upper = before ?? today();
+  // 기록이 있는 날(항목이 있는 날)만, 최신순. before(미포함) 이전 날짜부터, from(포함)이 있으면 그 날짜 이후만.
+  // 오늘 이후는 항상 뺀다 — 오늘은 getDay로 본다.
+  function history(before: string | null, limit: number, from: string | null = null): DayCardPage {
+    const upper = before && before < today() ? before : today();
     const dates = new Set<string>();
     entries.forEach((e) => dates.add(e.date));
-    const sorted = [...dates].filter((d) => d < upper).sort().reverse();
+    const sorted = [...dates].filter((d) => d < upper && (from === null || d >= from)).sort().reverse();
     const page = sorted.slice(0, limit);
     return {
       items: page.map(getDay),

@@ -1,10 +1,12 @@
 export type { DailyEntry, DayCard, DayCardPage, AddEntryInput } from "./model/types";
-export { DAILY_KEY, DAILY_HISTORY_KEY, dayCardKey, TEMP_ID_PREFIX } from "./model/keys";
+export { DAILY_KEY, DAILY_HISTORY_KEY, DAILY_MONTH_KEY, dayCardKey, TEMP_ID_PREFIX } from "./model/keys";
 export { useDayCard } from "./model/useDayCard";
 export { useDayHistory, HISTORY_PAGE_SIZE } from "./model/useDayHistory";
+export { useDayMonth } from "./model/useDayMonth";
 export { useToggleEntry } from "./model/useToggleEntry";
 export { useAddEntry } from "./model/useAddEntry";
 export { useMakeRoutine } from "./model/useMakeRoutine";
 export { useRenameRoutine } from "./model/useRenameRoutine";
 export { useDeleteRoutine } from "./model/useDeleteRoutine";
 export { countDone } from "./lib/dayCard";
+export { groupByWeek, weekOfMonth, type WeekGroup } from "./lib/weeks";

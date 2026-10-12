@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  formatMonth,
+  monthRange,
+  shiftMonth,
   formatDateRange,
   formatDateTime,
   formatDayHeader,
@@ -74,5 +77,22 @@ describe("formatDateTime", () => {
 
   it("UTC로는 전날이어도 한국 날짜로 넘어간다 (UTC 9/30 20:00 → 10/1 05:00)", () => {
     expect(formatDateTime("2026-09-30T20:00:00.000Z")).toBe("2026.10.01 05:00");
+  });
+});
+
+describe("shiftMonth / monthRange / formatMonth", () => {
+  it("달을 연 경계를 넘어 옮긴다", () => {
+    expect(shiftMonth("2026-10", -1)).toBe("2026-09");
+    expect(shiftMonth("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonth("2026-12", 1)).toBe("2027-01");
+  });
+
+  it("그 달 첫날부터 다음 달 첫날 전까지를 준다", () => {
+    expect(monthRange("2026-10")).toEqual({ from: "2026-10-01", before: "2026-11-01" });
+    expect(monthRange("2026-12")).toEqual({ from: "2026-12-01", before: "2027-01-01" });
+  });
+
+  it("'년 월'로 보여준다", () => {
+    expect(formatMonth("2026-01")).toBe("2026년 1월");
   });
 });

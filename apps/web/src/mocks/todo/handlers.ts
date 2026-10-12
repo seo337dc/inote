@@ -23,7 +23,7 @@ export function createTodoHandlers(store: TodoStore) {
     http.get(`${BASE}/daily`, ({ request }) => {
       const url = new URL(request.url);
       const limit = Number(url.searchParams.get("limit") ?? 10);
-      return HttpResponse.json(store.history(url.searchParams.get("before"), limit));
+      return HttpResponse.json(store.history(url.searchParams.get("before"), limit, url.searchParams.get("from")));
     }),
 
     http.post(`${BASE}/daily/entries`, async ({ request }) => {

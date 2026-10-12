@@ -122,6 +122,19 @@ describe("지난 기록 목록", () => {
     expect(second.items.map((c) => c.date)).toEqual(["2026-10-09", "2026-10-07"]);
     expect(second.nextBefore).toBeNull();
   });
+
+  it("from(포함)과 before(미포함)로 한 달 같은 구간만 줄 수 있다", () => {
+    const { store } = setup({ seed: true });
+
+    expect(store.history("2026-10-11", 31, "2026-10-08").items.map((c) => c.date)).toEqual(["2026-10-10", "2026-10-09"]);
+    expect(store.history("2026-11-01", 31, "2026-10-01").items.map((c) => c.date)).toEqual([
+      "2026-10-11",
+      "2026-10-10",
+      "2026-10-09",
+      "2026-10-07",
+    ]);
+    expect(store.history("2026-10-01", 31, "2026-09-01").items).toEqual([]);
+  });
 });
 
 // 할 일 탭 테스트에서 작업을 쉽게 만들기 위한 도우미 (실패하면 바로 터지게 한다)

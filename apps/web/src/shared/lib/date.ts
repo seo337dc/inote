@@ -69,3 +69,21 @@ export function fromDateString(date: string): Date {
   const [y, m, d] = date.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
+
+// 'YYYY-MM' 달 문자열 — 지난 기록의 달 이동용. 시간대 계산 없이 숫자로만 다룬다.
+export function shiftMonth(month: string, delta: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const index = y * 12 + (m - 1) + delta;
+  return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
+}
+
+// 그 달의 첫날(포함)과 다음 달 첫날(미포함) — `GET /daily?from=&before=`에 그대로 쓴다.
+export function monthRange(month: string): { from: string; before: string } {
+  return { from: `${month}-01`, before: `${shiftMonth(month, 1)}-01` };
+}
+
+// "2026-10" → "2026년 10월"
+export function formatMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  return `${y}년 ${m}월`;
+}
