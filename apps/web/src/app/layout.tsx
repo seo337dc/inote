@@ -6,6 +6,7 @@ import { Nav } from "@/widgets/nav";
 import { ChatWorkspace } from "@/widgets/chat-dock";
 import { MarkInoteUsed } from "@/features/mark-inote-used";
 import { ReactQueryProvider } from "@/shared/lib/query-client";
+import { MockProvider } from "./MockProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex h-full bg-white text-zinc-900">
+        <MockProvider>
         <ReactQueryProvider>
           <Suspense>
             <ChatWorkspace
@@ -45,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Toaster position="top-center" richColors />
           <MarkInoteUsed />
         </ReactQueryProvider>
+        </MockProvider>
       </body>
     </html>
   );
