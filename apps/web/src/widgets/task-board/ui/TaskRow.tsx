@@ -99,9 +99,19 @@ export default function TaskRow({ task, groupName, onGroupClick, handle, liRef, 
           className="min-w-0 flex-1 rounded border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500"
         />
       ) : (
-        <span className={`min-w-0 flex-1 truncate text-sm ${done ? "text-zinc-400 line-through" : "text-zinc-900"}`}>
-          {task.title}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center gap-1">
+          <span className={`min-w-0 truncate text-sm ${done ? "text-zinc-400 line-through" : "text-zinc-900"}`}>
+            {task.title}
+          </span>
+          <StarButton
+            starred={task.starred}
+            label={task.title}
+            disabled={pending}
+            onToggle={() =>
+              updateTask.mutate({ id: task.id, starred: !task.starred }, { onError: () => toast.error("중요 표시를 바꾸지 못했어요.") })
+            }
+          />
+        </div>
       )}
 
       <span ref={dateAnchorRef} className="shrink-0">
@@ -129,13 +139,6 @@ export default function TaskRow({ task, groupName, onGroupClick, handle, liRef, 
           />
         </PopoverContent>
       </Popover>
-
-      <StarButton
-        starred={task.starred}
-        label={task.title}
-        disabled={pending}
-        onToggle={() => updateTask.mutate({ id: task.id, starred: !task.starred }, { onError: () => toast.error("중요 표시를 바꾸지 못했어요.") })}
-      />
 
       {!pending && editing === null && (
         <DropdownMenu>
