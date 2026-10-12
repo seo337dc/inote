@@ -647,3 +647,51 @@ describe("TasksTab (할 일 탭)", () => {
     });
   });
 });
+
+describe("TasksTab 묶음 목록 무한 스크롤", () => {
+  // 묶음 12개 — 처음엔 10개만 그리고 나머지는 아래로 내릴 때 이어서 그린다(jsdom에는 IntersectionObserver가 없어 [더 보기] 버튼으로 대신한다)
+  function manyGroups(withTodayTaskInLast = false) {
+    const store = createTodoStore({ seed: false });
+    for (let i = 1; i <= 12; i += 1) {
+      const group = store.createGroup(`묶음${i}`);
+      if (withTodayTaskInLast && i === 12) store.createTask(group.id, { title: "오늘 할 일", startDate: TODAY, endDate: null });
+    }
+    server.use(...createTodoHandlers(store));
+    return userEvent.setup();
+  }
+
+  it("처음엔 10개 묶음만 그리고, 이어서 불러오면 나머지가 나온다", async () => {
+    const user = manyGroups();
+    renderWithQueryClient(<TasksTab />);
+    await screen.findByRole("button", { name: "새 묶음" });
+
+    expect(screen.getByRole("region", { name: "묶음10" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "묶음11" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "더 보기" }));
+
+    expect(screen.getByRole("region", { name: "묶음12" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "더 보기" })).not.toBeInTheDocument();
+  });
+
+  it("아직 안 그린 묶음의 작업이 '오늘 일정'에 있어도 나오고, 묶음 이름을 누르면 그 묶음까지 그려서 펼친다", async () => {
+    const user = manyGroups(true);
+    renderWithQueryClient(<TasksTab />);
+    await screen.findByRole("button", { name: "새 묶음" });
+    expect(screen.queryByRole("region", { name: "묶음12" })).not.toBeInTheDocument();
+
+    await user.click(within(screen.getByRole("region", { name: "오늘 일정" })).getByRole("button", { name: "묶음12 묶음으로 이동" }));
+
+    const card = await screen.findByRole("region", { name: "묶음12" });
+    expect(within(card).getByRole("button", { name: "묶음12", expanded: true })).toBeInTheDocument();
+  });
+
+  it("묶음이 10개 이하면 [더 보기]가 없다", async () => {
+    setup();
+    renderWithQueryClient(<TasksTab />);
+    await screen.findByRole("button", { name: "새 묶음" });
+
+    expect(screen.queryByRole("button", { name: "더 보기" })).not.toBeInTheDocument();
+  });
+});
+

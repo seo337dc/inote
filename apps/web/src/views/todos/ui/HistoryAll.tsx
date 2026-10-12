@@ -1,10 +1,10 @@
 "use client";
 
 import { useDayHistory } from "@/entities/daily";
-import { Button } from "@/shared/ui/button";
+import { LoadMoreSentinel } from "@/shared/ui/load-more-sentinel";
 import { DayCard } from "@/widgets/day-card";
 
-// 전체 — 기록이 있는 날의 카드를 최신순으로 쌓고, [더 보기]로 이어서 불러온다.
+// 전체 리스트 — 기록이 있는 날의 카드를 최신순으로 쌓고, 아래로 내리면 7일씩 이어서 불러온다(무한 스크롤).
 export default function HistoryAll() {
   const { data, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = useDayHistory();
   const cards = data?.pages.flatMap((page) => page.items) ?? [];
@@ -19,11 +19,7 @@ export default function HistoryAll() {
         <DayCard key={card.date} card={card} />
       ))}
       {hasNextPage && (
-        <div className="flex justify-center pt-2">
-          <Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-            {isFetchingNextPage ? "불러오는 중…" : "더 보기"}
-          </Button>
-        </div>
+        <LoadMoreSentinel onLoadMore={() => !isFetchingNextPage && fetchNextPage()} loading={isFetchingNextPage} watch={cards.length} />
       )}
     </div>
   );

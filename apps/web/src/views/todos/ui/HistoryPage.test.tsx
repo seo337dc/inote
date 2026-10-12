@@ -105,6 +105,47 @@ describe("HistoryPage (지난 기록)", () => {
     expect(screen.queryByRole("button", { name: "더 보기" })).not.toBeInTheDocument();
   });
 
+  it("IntersectionObserver가 있으면 끝에 닿을 때 다음 쪽을 자동으로 불러온다(버튼 없이)", async () => {
+    setup();
+    const callbacks: ((entries: { isIntersecting: boolean }[]) => void)[] = [];
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        observe = vi.fn();
+        disconnect = vi.fn();
+        constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
+          callbacks.push(cb);
+        }
+      },
+    );
+    try {
+      const card = (date: string, title: string) => ({
+        date,
+        entries: [{ id: `x-${date}`, date, title, done: false, routineId: null }],
+      });
+      server.use(
+        http.get("*/api/v1/daily", ({ request }) => {
+          const before = new URL(request.url).searchParams.get("before");
+          return HttpResponse.json(
+            before
+              ? { items: [card("2026-09-01", "오래된 일")], nextBefore: null }
+              : { items: [card("2026-10-01", "최근 일")], nextBefore: "2026-10-01" },
+          );
+        }),
+      );
+      renderWithQueryClient(<HistoryPage />);
+
+      expect(await screen.findByText("최근 일")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "더 보기" })).not.toBeInTheDocument();
+      await waitFor(() => expect(callbacks.length).toBeGreaterThan(0));
+      callbacks[callbacks.length - 1]([{ isIntersecting: true }]);
+
+      expect(await screen.findByText("오래된 일")).toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("한 쪽으로 끝나면 [더 보기]가 없다", async () => {
     setup();
     renderWithQueryClient(<HistoryPage />);

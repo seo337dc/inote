@@ -30,9 +30,9 @@ export default function TaskRow({ task, groupName, onGroupClick, handle, liRef, 
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const [editing, setEditing] = useState<Editing>(null);
-  // 일정을 고르는 달력 팝업 — 날짜 칩을 누르거나 ⋯ 메뉴의 '일정 변경'으로 연다(일정이 없는 작업은 메뉴로만 들어간다)
+  // 일정을 고르는 달력 팝업(제목·칩 영역에 붙는다) — 날짜 칩을 누르거나 ⋯ 메뉴의 '일정 변경'으로 연다(일정이 없는 작업은 메뉴로만 들어간다)
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const dateAnchorRef = useRef<HTMLSpanElement>(null);
+  const dateAnchorRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState(task.title);
 
   // 서버가 진짜 id를 주기 전(낙관적으로 먼저 보여준 작업)에는 조작할 수 없다
@@ -58,7 +58,7 @@ export default function TaskRow({ task, groupName, onGroupClick, handle, liRef, 
     <li
       ref={liRef}
       style={liStyle}
-      className={`group flex items-center gap-3 py-2.5 pr-4 ${handle ? "pl-2" : "pl-4"} ${dragging ? "relative z-10 bg-white shadow-md" : ""}`}
+      className={`group flex items-start gap-3 py-2.5 pr-4 sm:items-center ${handle ? "pl-2" : "pl-4"} ${dragging ? "relative z-10 bg-white shadow-md" : ""}`}
     >
       {handle}
       <TaskStatusMenu
@@ -70,65 +70,66 @@ export default function TaskRow({ task, groupName, onGroupClick, handle, liRef, 
         }
       />
 
-      {groupName && (
-        <button
-          type="button"
-          onClick={onGroupClick}
-          aria-label={`${groupName} 묶음으로 이동`}
-          className="max-w-32 shrink-0 truncate rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900"
-        >
-          {groupName}
-        </button>
-      )}
+      {/* 모바일(좁은 화면)은 두 줄 — 윗줄에 제목(길면 줄바꿈), 아랫줄에 묶음 칩·날짜 칩. sm 이상은 한 줄(칩 · 제목 · 날짜) */}
+      <div ref={dateAnchorRef} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1.5 sm:flex-nowrap">
+        {groupName && (
+          <button
+            type="button"
+            onClick={onGroupClick}
+            aria-label={`${groupName} 묶음으로 이동`}
+            className="order-2 max-w-40 shrink-0 truncate rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900 sm:order-1 sm:max-w-32"
+          >
+            {groupName}
+          </button>
+        )}
 
-      {editing === "title" ? (
-        <input
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commitTitle}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commitTitle();
-            if (e.key === "Escape") {
-              setEditing(null);
-              setDraft(task.title);
-            }
-          }}
-          maxLength={200}
-          aria-label="작업 이름"
-          className="min-w-0 flex-1 rounded border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500"
-        />
-      ) : (
-        <div className="flex min-w-0 flex-1 items-center gap-1">
-          <span className={`min-w-0 truncate text-sm ${done ? "text-zinc-400 line-through" : "text-zinc-900"}`}>
-            {task.title}
-          </span>
-          <StarButton
-            starred={task.starred}
-            label={task.title}
-            disabled={pending}
-            onToggle={() =>
-              updateTask.mutate({ id: task.id, starred: !task.starred }, { onError: () => toast.error("중요 표시를 바꾸지 못했어요.") })
-            }
+        {editing === "title" ? (
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitTitle}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitTitle();
+              if (e.key === "Escape") {
+                setEditing(null);
+                setDraft(task.title);
+              }
+            }}
+            maxLength={200}
+            aria-label="작업 이름"
+            className="order-1 w-full min-w-0 rounded border border-zinc-300 px-2 py-1 text-sm outline-none focus:border-zinc-500 sm:order-2 sm:w-auto sm:flex-1"
           />
-        </div>
-      )}
+        ) : (
+          <div className="order-1 flex w-full min-w-0 items-start gap-1 sm:order-2 sm:w-auto sm:flex-1 sm:items-center">
+            <span className={`min-w-0 break-words text-sm leading-6 sm:truncate ${done ? "text-zinc-400 line-through" : "text-zinc-900"}`}>
+              {task.title}
+            </span>
+            <StarButton
+              starred={task.starred}
+              label={task.title}
+              disabled={pending}
+              onToggle={() =>
+                updateTask.mutate({ id: task.id, starred: !task.starred }, { onError: () => toast.error("중요 표시를 바꾸지 못했어요.") })
+              }
+            />
+          </div>
+        )}
 
-      <span ref={dateAnchorRef} className="shrink-0">
         {task.startDate && (
           <button
             type="button"
             disabled={pending}
             onClick={() => setCalendarOpen(true)}
             aria-label={`${task.title} 일정 변경 (${formatDateRange(task.startDate, task.endDate)})`}
-            className={`rounded px-1.5 py-0.5 text-xs disabled:cursor-default ${
+            className={`order-3 shrink-0 rounded px-1.5 py-0.5 text-xs disabled:cursor-default sm:ml-auto ${
               overdue ? "bg-red-50 text-red-700 hover:bg-red-100" : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900"
             }`}
           >
             {formatDateRange(task.startDate, task.endDate)}
           </button>
         )}
-      </span>
+      </div>
       <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
         <PopoverContent anchor={dateAnchorRef} aria-label={`${task.title} 일정 선택`}>
           <ScheduleCalendar
