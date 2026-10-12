@@ -6,6 +6,7 @@ import { PageLoading } from "@/shared/ui/page-loading";
 import { Tabs } from "@/shared/ui/tabs";
 import { useSession } from "@/shared/lib/auth-client";
 import DailyTab from "./DailyTab";
+import TasksTab from "./TasksTab";
 
 const TABS = [
   { id: "daily", label: "오늘의 할일" },
@@ -42,11 +43,7 @@ export default function TodosPage() {
         aria-labelledby={`todos-tab-${tab}`}
         className="pt-6"
       >
-        {tab === "daily" ? (
-          <DailyTab />
-        ) : (
-          <p className="py-10 text-center text-sm text-zinc-400">묶음과 작업 화면은 다음 단계에서 만들어요.</p>
-        )}
+        {tab === "daily" ? <DailyTab /> : <TasksTab />}
       </div>
     </div>
   );

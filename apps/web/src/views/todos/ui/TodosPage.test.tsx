@@ -43,6 +43,8 @@ describe("TodosPage (할 일 페이지)", () => {
 
     expect(screen.queryByText("· 오늘")).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "할 일" })).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByRole("region", { name: "오늘 일정" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "새 묶음" })).toBeInTheDocument();
   });
 
   it("로그인하지 않았으면 /login으로 보낸다", () => {
