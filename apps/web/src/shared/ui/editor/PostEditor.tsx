@@ -76,7 +76,7 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={Boolean(active)}
-      className={`rounded px-2 py-1 text-sm disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent ${
+      className={`shrink-0 whitespace-nowrap rounded px-2 py-1 text-sm disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent ${
         active ? "bg-zinc-900 font-medium text-white hover:bg-zinc-800" : "hover:bg-zinc-100"
       }`}
     >
@@ -233,7 +233,9 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
 
   return (
     <div ref={wrapperRef} className="relative rounded border border-zinc-200">
-      <div className="flex flex-wrap gap-1 border-b border-zinc-200 px-2 py-1.5">
+      {/* 글이 길어져 스크롤해도 서식 버튼이 항상 보이도록 위에 고정한다 (스크롤 컨테이너는 main).
+          좁은 화면에서는 여러 줄로 줄바꿈하면 고정 영역이 커지므로 한 줄 가로 스크롤로 둔다 */}
+      <div className="hide-scrollbar sticky top-0 z-20 flex gap-1 overflow-x-auto rounded-t border-b border-zinc-200 bg-white px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
         <ToolbarButton
           onClick={() => toggleHeading(1)}
           active={active.h1}
@@ -317,7 +319,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         >
           콜아웃
         </ToolbarButton>
-        <span className="ml-auto self-center text-xs text-zinc-400">
+        <span className="ml-auto shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400">
           &apos;/&apos;로 블록 삽입
         </span>
       </div>
