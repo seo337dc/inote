@@ -21,6 +21,7 @@ import {
 } from "./link-popover";
 import { toggleHeadingOnLine } from "./line-heading";
 import { TableToolbar } from "./TableToolbar";
+import { SelectionBubbleMenu } from "./SelectionBubbleMenu";
 import { Callout } from "./CalloutView";
 import { DEFAULT_TABLE, TABLE_OPTIONS } from "./table-commands";
 
@@ -223,6 +224,13 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
 
   const active = activeState ?? NO_ACTIVE;
 
+  // 링크 글자 위(또는 링크를 포함한 선택)면 그 링크를 고치는 팝업, 아니면 새 링크 팝업 — 툴바와 선택 메뉴가 같이 쓴다
+  const openLinkPopup = () => {
+    if (!wrapperRef.current) return;
+    const state = computeLinkPopup(editor.view, wrapperRef.current);
+    if (state) setLinkPopup({ id: ++popupIdRef.current, state });
+  };
+
   // 줄바꿈(<br>)으로 이어진 문단에선 누른 줄만 제목으로, 그 외에는 블록 전체를 토글
   const toggleHeading = (level: 1 | 2 | 3 | 4) => {
     editor.chain().focus().run();
@@ -285,12 +293,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           인용
         </ToolbarButton>
         <ToolbarButton
-          onClick={() => {
-            // 링크 글자 위(또는 링크를 포함한 선택)면 그 링크를 고치는 팝업, 아니면 새 링크 팝업
-            if (!wrapperRef.current) return;
-            const state = computeLinkPopup(editor.view, wrapperRef.current);
-            if (state) setLinkPopup({ id: ++popupIdRef.current, state });
-          }}
+          onClick={openLinkPopup}
           active={active.link}
         >
           링크
@@ -324,6 +327,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         </span>
       </div>
       <EditorContent editor={editor} className="px-4 py-3" />
+      <SelectionBubbleMenu editor={editor} onLink={openLinkPopup} />
       <TableToolbar editor={editor} wrapperRef={wrapperRef} />
       {linkHover && !linkPopup && (
         <LinkEditButton
