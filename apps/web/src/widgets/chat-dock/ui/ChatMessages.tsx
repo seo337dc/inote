@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -12,6 +12,9 @@ type Props = {
   // 출처 카드를 눌러 글로 이동할 때 (모바일 채팅 시트를 닫는 데 쓴다)
   onNavigate?: () => void;
 };
+
+// 바닥에서 이만큼 안쪽이면 "최신을 보고 있는 것"으로 본다
+const FOLLOW_THRESHOLD_PX = 80;
 
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
@@ -107,8 +110,29 @@ export default function ChatMessages({ messages, onNavigate }: Props) {
   const last = messages[messages.length - 1];
   const waitingId = last?.role === "assistant" && last.text === "" ? last.id : null;
 
+  // 최신 메시지가 보이도록 아래로 따라간다. 사용자가 위로 올려 읽는 중이면(바닥에서 멀어지면) 답변이 이어져도 끌어내리지 않고,
+  // 새로 질문을 보내면 다시 따라간다.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const followRef = useRef(true);
+  // 질문을 보내면 사용자 메시지와 빈 답변이 한꺼번에 붙으므로, "마지막 사용자 메시지"가 바뀌었는지로 새 질문을 알아챈다
+  const lastUserId = messages.findLast((m) => m.role === "user")?.id;
+
+  useEffect(() => {
+    followRef.current = true;
+  }, [lastUserId]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el && followRef.current) el.scrollTop = el.scrollHeight;
+  }, [messages]);
+
+  function handleScroll() {
+    const el = scrollRef.current;
+    if (el) followRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < FOLLOW_THRESHOLD_PX;
+  }
+
   return (
-    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+    <div ref={scrollRef} onScroll={handleScroll} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
       {messages.map((m) => (
         <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
           {m.role === "user" ? (

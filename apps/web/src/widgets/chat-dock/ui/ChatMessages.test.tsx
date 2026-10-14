@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ChatMessages from "./ChatMessages";
 import type { ChatMessage } from "../model/types";
@@ -100,5 +100,65 @@ describe("ChatMessages 조회 중 표시", () => {
   it("마지막이 사용자 메시지면 표시하지 않는다", () => {
     render(<ChatMessages messages={[user("질문")]} />);
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+});
+
+describe("ChatMessages 자동 스크롤", () => {
+  // jsdom은 레이아웃이 없어 높이가 0이다 — 대화창(overflow-y-auto)의 크기를 정해 주고 scrollTop을 직접 다룬다
+  const SCROLL_HEIGHT = 1000;
+  const CLIENT_HEIGHT = 300;
+  let scrollTops: WeakMap<HTMLElement, number>;
+
+  beforeEach(() => {
+    scrollTops = new WeakMap();
+    vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(SCROLL_HEIGHT);
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(CLIENT_HEIGHT);
+    vi.spyOn(HTMLElement.prototype, "scrollTop", "get").mockImplementation(function (this: HTMLElement) {
+      return scrollTops.get(this) ?? 0;
+    });
+    vi.spyOn(HTMLElement.prototype, "scrollTop", "set").mockImplementation(function (this: HTMLElement, v: number) {
+      scrollTops.set(this, v);
+    });
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const box = (container: HTMLElement) => container.querySelector<HTMLElement>(".overflow-y-auto")!;
+
+  it("처음 열리면 맨 아래(최신)로 간다", () => {
+    const { container } = render(<ChatMessages messages={[user("질문"), assistant("답")]} />);
+    expect(box(container).scrollTop).toBe(SCROLL_HEIGHT);
+  });
+
+  it("답변이 이어서 채워질 때마다 맨 아래를 따라간다", () => {
+    const { container, rerender } = render(<ChatMessages messages={[user("질문"), assistant("", "a1")]} />);
+    scrollTops.set(box(container), 0);
+    rerender(<ChatMessages messages={[user("질문"), assistant("긴 답변 일부", "a1")]} />);
+    expect(box(container).scrollTop).toBe(SCROLL_HEIGHT);
+  });
+
+  it("사용자가 위로 올려 읽는 중이면 답변이 이어져도 끌어내리지 않는다", () => {
+    const { container, rerender } = render(<ChatMessages messages={[user("질문"), assistant("앞부분", "a1")]} />);
+    scrollTops.set(box(container), 100); // 바닥(700)에서 멀리 올라감
+    fireEvent.scroll(box(container));
+    rerender(<ChatMessages messages={[user("질문"), assistant("앞부분 + 더", "a1")]} />);
+    expect(box(container).scrollTop).toBe(100);
+  });
+
+  it("올려서 읽다가 새 질문을 보내면 다시 맨 아래로 간다", () => {
+    const { container, rerender } = render(<ChatMessages messages={[user("질문"), assistant("답", "a1")]} />);
+    scrollTops.set(box(container), 100);
+    fireEvent.scroll(box(container));
+    rerender(<ChatMessages messages={[user("질문"), assistant("답", "a1"), user("새 질문", "u2"), assistant("", "a2")]} />);
+    expect(box(container).scrollTop).toBe(SCROLL_HEIGHT);
+  });
+
+  it("바닥 근처로 돌아오면 다시 따라간다", () => {
+    const { container, rerender } = render(<ChatMessages messages={[user("질문"), assistant("앞", "a1")]} />);
+    scrollTops.set(box(container), 100);
+    fireEvent.scroll(box(container));
+    scrollTops.set(box(container), SCROLL_HEIGHT - CLIENT_HEIGHT - 20); // 바닥에서 20px
+    fireEvent.scroll(box(container));
+    rerender(<ChatMessages messages={[user("질문"), assistant("앞 + 뒤", "a1")]} />);
+    expect(box(container).scrollTop).toBe(SCROLL_HEIGHT);
   });
 });
