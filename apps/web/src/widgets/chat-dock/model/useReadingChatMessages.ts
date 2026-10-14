@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { ChatMessage } from "./types";
+import { askSuggestion } from "./suggestions";
+import type { ChatMessage, ChatSuggestion } from "./types";
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
-const READING_SUGGESTIONS = ["이번 달 베스트셀러 알려줘", "책 추천해줘", "이 책 가격이 궁금해"];
+const READING_SUGGESTIONS = ["이번 달 베스트셀러 알려줘", "책 추천해줘", "이 책 가격이 궁금해"].map((l) => askSuggestion(l));
 
 // 독서 상담 채팅 — inote-ai의 /reading-chat/stream을 씀. 대화를 DB에 저장하지 않고
 // (세션 목록·검색 없음), 그때그때 휘발성으로 주고받는 훨씬 단순한 버전.
@@ -88,6 +89,10 @@ export function useReadingChatMessages() {
     void sendMessage(text);
   }
 
+  function selectSuggestion(suggestion: ChatSuggestion) {
+    if (suggestion.action.type === "ask") sendPreset(suggestion.action.text);
+  }
+
   function startNewSession() {
     setMessages([]);
     setInput("");
@@ -102,6 +107,7 @@ export function useReadingChatMessages() {
     setInput,
     handleSend,
     sendPreset,
+    selectSuggestion,
     sessions: [],
     activeSessionId: null,
     activeSessionTitle: firstUserMessage || null,

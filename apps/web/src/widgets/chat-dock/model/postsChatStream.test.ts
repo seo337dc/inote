@@ -168,3 +168,14 @@ describe("toRequestMessages", () => {
     expect(Object.keys(toRequestMessages([withSources])[0]).sort()).toEqual(["content", "role"]);
   });
 });
+
+describe("toRequestMessages — 화면이 직접 채운 말풍선", () => {
+  it("local 메시지는 서버로 보내지 않는다", () => {
+    const history = [
+      { id: "1", role: "user" as const, text: "글을 찾아줘", local: true },
+      { id: "2", role: "assistant" as const, text: "어떤 내용을 찾으신가요?", local: true },
+      { id: "3", role: "user" as const, text: "도커 볼륨" },
+    ];
+    expect(toRequestMessages(history)).toEqual([{ role: "user", content: "도커 볼륨" }]);
+  });
+});

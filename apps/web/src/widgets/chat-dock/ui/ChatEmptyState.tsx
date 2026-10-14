@@ -1,10 +1,11 @@
 "use client";
 
 import { useSession } from "@/shared/lib/auth-client";
+import type { ChatSuggestion } from "../model/types";
 
 type Props = {
-  onSelect: (text: string) => void;
-  suggestions: string[];
+  onSelect: (suggestion: ChatSuggestion) => void;
+  suggestions: ChatSuggestion[];
 };
 
 export default function ChatEmptyState({ onSelect, suggestions }: Props) {
@@ -21,12 +22,12 @@ export default function ChatEmptyState({ onSelect, suggestions }: Props) {
       <div className="flex w-full max-w-xs flex-col gap-2">
         {suggestions.map((s) => (
           <button
-            key={s}
+            key={s.label}
             type="button"
             onClick={() => onSelect(s)}
             className="rounded-full bg-zinc-100 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-200"
           >
-            {s}
+            {s.label}
           </button>
         ))}
       </div>

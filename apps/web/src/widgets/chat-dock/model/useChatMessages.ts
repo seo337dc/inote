@@ -6,11 +6,12 @@ import { useSession } from "@/shared/lib/auth-client";
 import { api } from "@/shared/lib/api";
 import type { Post } from "@/entities/post";
 import { getRoutePostIds } from "./routePost";
-import type { ChatMessage, ChatSession } from "./types";
+import { askSuggestion } from "./suggestions";
+import type { ChatMessage, ChatSession, ChatSuggestion } from "./types";
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
-const WRITE_SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"];
+const WRITE_SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"].map((l) => askSuggestion(l));
 
 export function useChatMessages() {
   const { data: authSession, isPending: isSessionPending } = useSession();
@@ -247,6 +248,10 @@ export function useChatMessages() {
     void sendMessage(text);
   }
 
+  function selectSuggestion(suggestion: ChatSuggestion) {
+    if (suggestion.action.type === "ask") sendPreset(suggestion.action.text);
+  }
+
   // 상단 헤더에 보여줄 현재 세션 제목. 세션 목록에 아직 없는(방금 시작한) 대화는
   // 첫 사용자 메시지로 대신 보여준다 — 응답을 기다리지 않고 바로 제목이 잡히도록.
   const currentSession = sessions.find((s) => s.id === sessionId) ?? null;
@@ -264,6 +269,7 @@ export function useChatMessages() {
     setInput,
     handleSend,
     sendPreset,
+    selectSuggestion,
     sessions,
     activeSessionId: sessionId,
     activeSessionTitle,

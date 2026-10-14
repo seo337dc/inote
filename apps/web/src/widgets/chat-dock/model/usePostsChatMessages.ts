@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { ChatMessage } from "./types";
+import { askSuggestion, replySuggestion } from "./suggestions";
+import type { ChatMessage, ChatSuggestion } from "./types";
 import {
   MAX_QUERY_CHARS,
   readPostsChatStream,
@@ -10,7 +11,11 @@ import {
 } from "./postsChatStream";
 
 // 글 목록 화면 채팅의 시작 버튼. 버튼별 동작(되묻기·작성 중인 글 안내)은 뒤 단계에서 붙인다.
-const POSTS_SUGGESTIONS = ["글을 쓰고 싶어", "글을 찾아줘", "과제나 업무 도와줘"];
+const POSTS_SUGGESTIONS = [
+  askSuggestion("글을 쓰고 싶어"),
+  replySuggestion("글을 찾아줘", "어떤 내용을 찾으신가요?\n찾고 싶은 주제나 키워드를 입력해 주세요."),
+  askSuggestion("과제나 업무 도와줘"),
+];
 
 const MESSAGES = {
   network: "AI 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.",
@@ -121,6 +126,21 @@ export function usePostsChatMessages() {
     void sendMessage(text);
   }
 
+  function selectSuggestion(suggestion: ChatSuggestion) {
+    if (suggestion.action.type === "ask") sendPreset(suggestion.action.text);
+    else replyLocally(suggestion.label, suggestion.action.text);
+  }
+
+  // 서버를 부르지 않고 안내를 바로 보여준다 (답변이 오는 도중에는 대화가 섞이지 않게 무시)
+  function replyLocally(userText: string, assistantText: string) {
+    if (abortRef.current) return;
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: "user", text: userText, local: true },
+      { id: crypto.randomUUID(), role: "assistant", text: assistantText, local: true },
+    ]);
+  }
+
   function startNewSession() {
     abortRef.current?.abort();
     abortRef.current = null;
@@ -137,6 +157,7 @@ export function usePostsChatMessages() {
     setInput,
     handleSend,
     sendPreset,
+    selectSuggestion,
     sessions: [],
     activeSessionId: null,
     activeSessionTitle: firstUserMessage || null,

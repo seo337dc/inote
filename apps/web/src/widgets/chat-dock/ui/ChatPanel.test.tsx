@@ -22,6 +22,7 @@ const chat = {
   isSessionPanelOpen: false,
   suggestions: [],
   sendPreset: () => {},
+  selectSuggestion: () => {},
 } as never;
 
 // jsdom은 링크를 누르면 실제 페이지 이동을 시도하며 경고를 낸다 — 이동만 막는다(클릭 이벤트는 그대로 전달된다)

@@ -9,7 +9,7 @@ type Props = {
 
 export default function ChatBody({ chat, onNavigate }: Props) {
   if (chat.messages.length === 0) {
-    return <ChatEmptyState onSelect={chat.sendPreset} suggestions={chat.suggestions} />;
+    return <ChatEmptyState onSelect={chat.selectSuggestion} suggestions={chat.suggestions} />;
   }
   return <ChatMessages messages={chat.messages} onNavigate={onNavigate} />;
 }

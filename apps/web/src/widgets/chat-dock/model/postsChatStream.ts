@@ -86,10 +86,10 @@ export async function* readPostsChatStream(
   if (last) yield last;
 }
 
-// 서버로 보낼 대화: 비어 있는 메시지(실패한 답변 등)는 빼고, 최근 MAX_HISTORY개만, 한 메시지는 MAX_MESSAGE_CHARS자까지.
+// 서버로 보낼 대화: 화면이 직접 채운 말풍선(local)과 비어 있는 메시지(실패한 답변 등)는 빼고, 최근 MAX_HISTORY개만, 한 메시지는 MAX_MESSAGE_CHARS자까지.
 export function toRequestMessages(history: ChatMessage[]): { role: ChatMessage["role"]; content: string }[] {
   return history
-    .filter((m) => m.text.trim() !== "")
+    .filter((m) => !m.local && m.text.trim() !== "")
     .slice(-MAX_HISTORY)
     .map((m) => ({ role: m.role, content: m.text.slice(0, MAX_MESSAGE_CHARS) }));
 }

@@ -242,7 +242,53 @@ describe("usePostsChatMessages", () => {
 
   it("글 목록 화면의 시작 버튼 3개를 돌려준다", () => {
     const { result } = renderHook(() => usePostsChatMessages());
-    expect(result.current.suggestions).toEqual(["글을 쓰고 싶어", "글을 찾아줘", "과제나 업무 도와줘"]);
+    expect(result.current.suggestions.map((s) => s.label)).toEqual(["글을 쓰고 싶어", "글을 찾아줘", "과제나 업무 도와줘"]);
+  });
+
+  it("시작 버튼을 고르면 action의 text를 질문으로 보낸다 (버튼 글자와 달라도 된다)", async () => {
+    fetchMock.mockResolvedValue(okResponse(sse({ text: "답" }) + "data: [DONE]\n\n"));
+    const { result } = renderHook(() => usePostsChatMessages());
+    act(() => result.current.selectSuggestion({ label: "글을 찾아줘", action: { type: "ask", text: "내 글에서 찾아줘" } }));
+    await waitFor(() => expect(result.current.messages[1]?.text).toBe("답"));
+    expect(result.current.messages[0].text).toBe("내 글에서 찾아줘");
+    expect(lastRequest(fetchMock).body.messages[0].content).toBe("내 글에서 찾아줘");
+  });
+
+  describe("'글을 찾아줘' 시작 버튼 — 서버를 부르지 않고 안내만 보여준다", () => {
+    const findButton = (result: { current: ReturnType<typeof usePostsChatMessages> }) =>
+      result.current.suggestions.find((s) => s.label === "글을 찾아줘")!;
+
+    it("버튼 글자가 사용자 말, 안내 문구가 답변으로 들어가고 요청은 보내지 않는다", () => {
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(findButton(result)));
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(result.current.messages.map((m) => [m.role, m.local])).toEqual([["user", true], ["assistant", true]]);
+      expect(result.current.messages[0].text).toBe("글을 찾아줘");
+      expect(result.current.messages[1].text).toContain("어떤 내용을 찾으신가요?");
+    });
+
+    it("이어서 입력한 질문을 보낼 때 안내 대화는 서버로 보내지 않는다", async () => {
+      fetchMock.mockResolvedValue(okResponse(sse({ text: "답" }) + "data: [DONE]\n\n"));
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(findButton(result)));
+      await ask(result, "도커 볼륨");
+      await waitFor(() => expect(result.current.messages[3]?.text).toBe("답"));
+      expect(lastRequest(fetchMock).body).toEqual({ messages: [{ role: "user", content: "도커 볼륨" }] });
+      expect(result.current.messages).toHaveLength(4); // 안내 2개 + 질문·답변은 화면에 그대로 남는다
+    });
+
+    it("답변이 오는 도중에는 안내를 끼워 넣지 않는다", async () => {
+      const s = openStream();
+      fetchMock.mockResolvedValue(s.response);
+      const { result } = renderHook(() => usePostsChatMessages());
+      await ask(result, "질문");
+      await waitFor(() => expect(result.current.messages).toHaveLength(2));
+      act(() => result.current.selectSuggestion(findButton(result)));
+      expect(result.current.messages).toHaveLength(2);
+      await act(async () => {
+        s.close();
+      });
+    });
   });
 
   it("기존 채팅 UI가 그대로 쓸 수 있게 독서 모드 훅과 같은 항목을 돌려준다", () => {
