@@ -45,7 +45,7 @@ export default function ChatPanel({ open, onClose, chat }: Props) {
 
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col">
-            <ChatBody chat={chat} />
+            <ChatBody chat={chat} onNavigate={onClose} />
             <ChatComposer chat={chat} />
           </div>
           <div
