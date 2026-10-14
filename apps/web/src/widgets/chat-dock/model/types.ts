@@ -27,11 +27,17 @@ export type ChatMessage = {
   local?: boolean;
 };
 
+// 대화가 시작된 화면의 종류 — 한 히스토리에 모아 보여주되 뱃지로 구분한다 (AI 서버 conversation_sessions.kind)
+export type ChatSessionKind = "write" | "posts" | "reading" | "todo";
+
 export type ChatSession = {
   id: string;
+  kind: ChatSessionKind;
   post_id: string | null;
   post_title: string | null;
   post_category: string | null;
   updated_at: string;
   last_message: string | null;
+  // 첫 사용자 질문 — 목록 제목으로 쓴다 (AI 서버가 아직 안 주는 옛 배포에서는 없을 수 있다)
+  first_question?: string | null;
 };

@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/shared/lib/auth-client";
 import { api } from "@/shared/lib/api";
 import type { Post } from "@/entities/post";
 import { getRoutePostIds } from "./routePost";
+import { fetchSessionHistory, useChatSessionList } from "./chatSessions";
+import { sessionTitle } from "./sessionLabel";
 import { askSuggestion } from "./suggestions";
 import type { ChatMessage, ChatSession, ChatSuggestion } from "./types";
 
@@ -23,9 +25,15 @@ export function useChatMessages() {
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionPostId, setSessionPostId] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [isSessionPanelOpen, setSessionPanelOpen] = useState(false);
-  const [sessionSearch, setSessionSearch] = useState("");
+  const {
+    sessions,
+    loadSessions,
+    isSessionPanelOpen,
+    toggleSessionPanel,
+    closeSessionPanel,
+    sessionSearch,
+    setSessionSearch,
+  } = useChatSessionList({ userId, isSessionPending });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
 
@@ -66,42 +74,6 @@ export function useChatMessages() {
     setSessionPostId(null);
   }, [isSessionPending, userId, sessionId]);
 
-  // 세션 목록(대화 패널용) 로드 — 로그인 상태에서만. query가 있으면 제목/대화 내용 검색.
-  const loadSessions = useCallback(
-    async (query?: string) => {
-      if (!userId) {
-        setSessions([]);
-        return;
-      }
-      try {
-        const qParam = query ? `&q=${encodeURIComponent(query)}` : "";
-        const res = await fetch(
-          `${AI_API_URL}/sessions?user_id=${encodeURIComponent(userId)}${qParam}`,
-        );
-        if (!res.ok) return;
-        setSessions((await res.json()) as ChatSession[]);
-      } catch {
-        // 목록 로드 실패는 조용히 무시 — 채팅 자체는 계속 동작해야 함
-      }
-    },
-    [userId],
-  );
-
-  useEffect(() => {
-    if (isSessionPending) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 로그인 상태 변화에 대한 동기화
-    void loadSessions();
-  }, [isSessionPending, loadSessions]);
-
-  // 검색어가 바뀌면 잠시(300ms) 기다렸다가 다시 검색 — 패널이 열려 있을 때만.
-  useEffect(() => {
-    if (!isSessionPanelOpen) return;
-    const timer = setTimeout(() => {
-      void loadSessions(sessionSearch || undefined);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [sessionSearch, isSessionPanelOpen, loadSessions]);
-
   // 활성 세션이 바뀌면 그 대화 이력을 불러옴.
   const loadedSessionId = useRef<string | null>(null);
   useEffect(() => {
@@ -115,42 +87,20 @@ export function useChatMessages() {
       return;
     }
 
-    (async () => {
-      try {
-        const res = await fetch(
-          `${AI_API_URL}/conversations/${sessionId}?user_id=${encodeURIComponent(userId)}`,
-        );
-        if (!res.ok) {
-          setMessages([]);
-          return;
-        }
-        const history = (await res.json()) as { role: "user" | "assistant"; content: string }[];
-        setMessages(
-          history.map((m) => ({ id: crypto.randomUUID(), role: m.role, text: m.content })),
-        );
-      } catch {
-        setMessages([]);
-      }
-    })();
+    void fetchSessionHistory(userId, sessionId).then((history) => setMessages(history ?? []));
   }, [sessionId, isSessionPending, userId]);
 
   function startNewSession() {
     setSessionId(crypto.randomUUID());
     setSessionPostId(null);
     setMessages([]);
-    setSessionPanelOpen(false);
-    setSessionSearch("");
+    closeSessionPanel();
   }
 
   function selectSession(target: ChatSession) {
     setSessionId(target.id);
     setSessionPostId(target.post_id);
-    setSessionPanelOpen(false);
-    setSessionSearch("");
-  }
-
-  function toggleSessionPanel() {
-    setSessionPanelOpen((v) => !v);
+    closeSessionPanel();
   }
 
   async function sendMessage(text: string) {
@@ -256,12 +206,7 @@ export function useChatMessages() {
   // 첫 사용자 메시지로 대신 보여준다 — 응답을 기다리지 않고 바로 제목이 잡히도록.
   const currentSession = sessions.find((s) => s.id === sessionId) ?? null;
   const firstUserMessage = messages.find((m) => m.role === "user")?.text.trim();
-  const activeSessionTitle =
-    (currentSession?.post_id
-      ? currentSession.post_title?.trim()
-      : currentSession?.last_message?.trim()) ||
-    firstUserMessage ||
-    null;
+  const activeSessionTitle = (currentSession ? sessionTitle(currentSession) : "") || firstUserMessage || null;
 
   return {
     messages,

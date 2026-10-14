@@ -1,8 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useSession } from "@/shared/lib/auth-client";
+import { fetchSessionHistory, useChatSessionList } from "./chatSessions";
+import { sessionTitle } from "./sessionLabel";
 import { askSuggestion, replySuggestion } from "./suggestions";
-import type { ChatMessage, ChatSuggestion } from "./types";
+import type { ChatMessage, ChatSession, ChatSuggestion } from "./types";
 import {
   MAX_QUERY_CHARS,
   readPostsChatStream,
@@ -27,12 +30,27 @@ const MESSAGES = {
 };
 
 // 글 목록 채팅 — inote-ai의 /posts-chat/stream을 씀. 공개 글을 먼저 검색하고 찾은 글을 근거로 답하며(출처를 함께 받음),
-// 대화를 DB에 저장하지 않는다(세션 목록·검색 없음). 설계: inote 레포 docs/kure/PLAN.md 6절 D 1차(결정 17).
-// useChatMessages()와 "같은 모양"의 객체를 반환해서 ChatComposer/ChatBody/DesktopChatPanel 등 기존 UI를
-// 그대로 재사용한다 (useReadingChatMessages와 같은 방식) — 세션 관련 필드는 빈 값/no-op.
+// 로그인했으면 대화를 저장해서(kind="posts") 다른 화면의 대화와 한 히스토리에서 보인다. 게스트는 저장 없이 휘발성.
+// 설계: inote 레포 docs/kure/PLAN.md 6절 D 1차(결정 17).
+// useChatMessages()와 "같은 모양"의 객체를 반환해서 ChatComposer/ChatBody/DesktopChatPanel 등 기존 UI를 그대로 재사용한다.
 export function usePostsChatMessages() {
+  const { data: authSession, isPending: isSessionPending } = useSession();
+  const userId = authSession?.user.id;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  // 저장되는 대화의 id — 첫 질문을 보낼 때 만들고(로그인했을 때만), 새 대화를 시작하면 비운다
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const {
+    sessions,
+    loadSessions,
+    isSessionPanelOpen,
+    toggleSessionPanel,
+    closeSessionPanel,
+    sessionSearch,
+    setSessionSearch,
+  } = useChatSessionList({ userId, isSessionPending });
+  // 대화를 빠르게 갈아타도 늦게 도착한 이전 대화의 이력이 덮어쓰지 않게 하는 표식
+  const historyRequestRef = useRef(0);
   // 진행 중인 요청 — 새 대화를 시작하면 끊고, 답변이 오는 도중에 또 보내는 것은 막는다
   const abortRef = useRef<AbortController | null>(null);
 
@@ -45,6 +63,10 @@ export function usePostsChatMessages() {
     const history = [...messages, userMessage];
     setInput("");
 
+    // 로그인했으면 대화를 저장한다(서버가 user_id·session_id가 둘 다 있을 때만 저장). 게스트는 저장 없음.
+    const activeSessionId = userId ? (sessionId ?? crypto.randomUUID()) : null;
+    if (activeSessionId && activeSessionId !== sessionId) setSessionId(activeSessionId);
+
     // 서버가 거절할 길이는 보내지 않고 바로 알려준다
     if (trimmed.length > MAX_QUERY_CHARS) {
       setMessages([...history, { id: assistantId, role: "assistant", text: MESSAGES.tooLong }]);
@@ -55,19 +77,29 @@ export function usePostsChatMessages() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      await streamAnswer(history, assistantId, controller.signal);
+      await streamAnswer(history, assistantId, controller.signal, activeSessionId);
     } finally {
       if (abortRef.current === controller) abortRef.current = null;
+      // 방금 나눈 대화가 목록에 바로 나타나도록 (저장은 답변이 끝날 때 된다)
+      if (activeSessionId) void loadSessions();
     }
   }
 
-  async function streamAnswer(history: ChatMessage[], assistantId: string, signal: AbortSignal) {
+  async function streamAnswer(
+    history: ChatMessage[],
+    assistantId: string,
+    signal: AbortSignal,
+    activeSessionId: string | null,
+  ) {
     let res: Response;
     try {
       res = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/posts-chat/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: toRequestMessages(history) }),
+        body: JSON.stringify({
+          messages: toRequestMessages(history),
+          ...(activeSessionId && userId ? { user_id: userId, session_id: activeSessionId } : {}),
+        }),
         signal,
       });
     } catch {
@@ -141,14 +173,35 @@ export function usePostsChatMessages() {
     ]);
   }
 
-  function startNewSession() {
+  // 진행 중인 답변을 끊고 대화를 비운다 (새 대화·다른 대화로 갈아탈 때)
+  function resetConversation() {
     abortRef.current?.abort();
     abortRef.current = null;
+    historyRequestRef.current++;
     setMessages([]);
     setInput("");
   }
 
-  // 세션 저장이 없으니, 첫 사용자 메시지로 헤더 제목만 흉내낸다 (없으면 기본 타이틀 유지).
+  function startNewSession() {
+    resetConversation();
+    setSessionId(null);
+    closeSessionPanel();
+  }
+
+  // 목록에서 고른 대화(어느 화면에서 나눈 것이든)의 저장된 이력을 불러와서 이 화면의 채팅에서 이어간다
+  function selectSession(target: ChatSession) {
+    resetConversation();
+    setSessionId(target.id);
+    closeSessionPanel();
+    if (!userId) return;
+    const request = historyRequestRef.current;
+    void fetchSessionHistory(userId, target.id).then((history) => {
+      if (historyRequestRef.current === request) setMessages(history ?? []);
+    });
+  }
+
+  // 헤더 제목 — 목록에 있는 대화는 그 제목, 방금 시작해 아직 목록에 없으면 첫 사용자 메시지
+  const currentSession = sessions.find((s) => s.id === sessionId) ?? null;
   const firstUserMessage = messages.find((m) => m.role === "user")?.text.trim();
 
   return {
@@ -158,17 +211,16 @@ export function usePostsChatMessages() {
     handleSend,
     sendPreset,
     selectSuggestion,
-    sessions: [],
-    activeSessionId: null,
-    activeSessionTitle: firstUserMessage || null,
+    sessions,
+    activeSessionId: sessionId,
+    activeSessionTitle: (currentSession ? sessionTitle(currentSession) : "") || firstUserMessage || null,
     startNewSession,
-    selectSession: () => {},
-    isSessionPanelOpen: false,
-    toggleSessionPanel: () => {},
-    sessionSearch: "",
-    setSessionSearch: () => {},
-    // 세션 히스토리가 없는 모드라 isLoggedIn을 항상 false로 둬서 "대화 목록" 버튼을 숨긴다 — 실제 로그인 여부와는 무관.
-    isLoggedIn: false,
+    selectSession,
+    isSessionPanelOpen,
+    toggleSessionPanel,
+    sessionSearch,
+    setSessionSearch,
+    isLoggedIn: !!userId,
     suggestions: POSTS_SUGGESTIONS,
   };
 }

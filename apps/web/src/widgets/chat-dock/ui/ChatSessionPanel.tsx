@@ -1,24 +1,11 @@
 import Link from "next/link";
 import { ArrowUpRight, Search, SquarePen, X } from "lucide-react";
 import type { useChatMessages } from "../model/useChatMessages";
-import type { ChatSession } from "../model/types";
+import { sessionLabel } from "../model/sessionLabel";
 
 type Props = {
   chat: ReturnType<typeof useChatMessages>;
 };
-
-function sessionLabel(session: ChatSession) {
-  if (session.post_id) {
-    return {
-      kicker: `글쓰기 · ${session.post_category || "카테고리 없음"}`,
-      title: session.post_title?.trim() || "제목 없음",
-    };
-  }
-  return {
-    kicker: "일반 대화",
-    title: session.last_message?.trim() || "새 대화",
-  };
-}
 
 export default function ChatSessionPanel({ chat }: Props) {
   return (
