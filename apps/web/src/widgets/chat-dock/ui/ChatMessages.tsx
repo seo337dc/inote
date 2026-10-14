@@ -4,6 +4,7 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { remarkBreakTags } from "@/shared/lib/remark-break-tags";
 import type { ChatMessage } from "../model/types";
+import ChatLinks from "./ChatLinks";
 import PendingBubble from "./PendingBubble";
 import SourceCards from "./SourceCards";
 
@@ -143,6 +144,7 @@ export default function ChatMessages({ messages, onNavigate }: Props) {
             <div className="flex w-full flex-col items-start">
               {m.id === waitingId ? <PendingBubble /> : <AssistantBubble text={m.text} />}
               {m.sources && <SourceCards sources={m.sources} onNavigate={onNavigate} />}
+              {m.links && <ChatLinks links={m.links} onNavigate={onNavigate} />}
             </div>
           )}
         </div>

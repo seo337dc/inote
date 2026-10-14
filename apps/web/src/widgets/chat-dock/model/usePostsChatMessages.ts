@@ -2,10 +2,13 @@
 
 import { useRef, useState } from "react";
 import { useSession } from "@/shared/lib/auth-client";
+import { api } from "@/shared/lib/api";
+import type { Post } from "@/entities/post";
+import { loadWriteGuide } from "./writeGuide";
 import { fetchSessionHistory, useChatSessionList } from "./chatSessions";
 import { sessionTitle } from "./sessionLabel";
-import { askSuggestion, replySuggestion } from "./suggestions";
-import type { ChatMessage, ChatSession, ChatSuggestion } from "./types";
+import { replySuggestion } from "./suggestions";
+import type { ChatMessage, ChatReply, ChatSession, ChatSuggestion } from "./types";
 import {
   MAX_QUERY_CHARS,
   readPostsChatStream,
@@ -13,12 +16,11 @@ import {
   type PostsChatEvent,
 } from "./postsChatStream";
 
-// 글 목록 화면 채팅의 시작 버튼. 버튼별 동작(되묻기·작성 중인 글 안내)은 뒤 단계에서 붙인다.
-const POSTS_SUGGESTIONS = [
-  askSuggestion("글을 쓰고 싶어"),
-  replySuggestion("글을 찾아줘", "어떤 내용을 찾으신가요?\n찾고 싶은 주제나 키워드를 입력해 주세요."),
-  askSuggestion("과제나 업무 도와줘"),
-];
+// 글 목록 화면 채팅의 시작 버튼은 모두 서버(AI)를 부르지 않고 안내로 먼저 답한다 (설계 결정 17).
+// 글을 쓰고 싶어 → 작성 중인 글·새 글 링크 / 글을 찾아줘 → 되묻기(다음 입력이 검색) / 과제나 업무 도와줘 → 되묻기(이후 일반 답변)
+const FIND_PROMPT = "어떤 내용을 찾으신가요?\n찾고 싶은 주제나 키워드를 입력해 주세요.";
+const TASK_PROMPT = "어떤 과제나 업무인가요?\n자세히 알려주시면 도와드릴게요.";
+const fetchMyDrafts = () => api.get<Post[]>("/blog/posts/mine/drafts");
 
 const MESSAGES = {
   network: "AI 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.",
@@ -49,6 +51,8 @@ export function usePostsChatMessages() {
     sessionSearch,
     setSessionSearch,
   } = useChatSessionList({ userId, isSessionPending });
+  // true면 이 대화는 내 글을 검색하지 않고 일반 답변으로 이어간다 ("과제나 업무 도와줘"를 고른 경우) — 새 대화·다른 대화를 열면 풀린다
+  const [searchOff, setSearchOff] = useState(false);
   // 대화를 빠르게 갈아타도 늦게 도착한 이전 대화의 이력이 덮어쓰지 않게 하는 표식
   const historyRequestRef = useRef(0);
   // 진행 중인 요청 — 새 대화를 시작하면 끊고, 답변이 오는 도중에 또 보내는 것은 막는다
@@ -99,6 +103,7 @@ export function usePostsChatMessages() {
         body: JSON.stringify({
           messages: toRequestMessages(history),
           ...(activeSessionId && userId ? { user_id: userId, session_id: activeSessionId } : {}),
+          ...(searchOff ? { use_search: false } : {}),
         }),
         signal,
       });
@@ -160,17 +165,43 @@ export function usePostsChatMessages() {
 
   function selectSuggestion(suggestion: ChatSuggestion) {
     if (suggestion.action.type === "ask") sendPreset(suggestion.action.text);
-    else replyLocally(suggestion.label, suggestion.action.text);
+    else void replyLocally(suggestion.label, suggestion.action.reply, !!suggestion.action.searchOff);
   }
 
-  // 서버를 부르지 않고 안내를 바로 보여준다 (답변이 오는 도중에는 대화가 섞이지 않게 무시)
-  function replyLocally(userText: string, assistantText: string) {
+  // 서버를 부르지 않고 안내를 바로 보여준다 (답변이 오는 도중에는 대화가 섞이지 않게 무시).
+  // 안내를 만드는 데 시간이 걸리면(함수) 그동안 빈 말풍선 = "조회 중"으로 두었다가 채운다.
+  async function replyLocally(
+    userText: string,
+    reply: ChatReply | (() => Promise<ChatReply>),
+    turnSearchOff: boolean,
+  ) {
     if (abortRef.current) return;
+    const assistantId = crypto.randomUUID();
+    const immediate = typeof reply === "function" ? null : reply;
     setMessages((prev) => [
       ...prev,
       { id: crypto.randomUUID(), role: "user", text: userText, local: true },
-      { id: crypto.randomUUID(), role: "assistant", text: assistantText, local: true },
+      {
+        id: assistantId,
+        role: "assistant",
+        text: immediate?.text ?? "",
+        ...(immediate?.links ? { links: immediate.links } : {}),
+        local: true,
+      },
     ]);
+    if (turnSearchOff) setSearchOff(true);
+    if (typeof reply !== "function") return;
+
+    let result: ChatReply;
+    try {
+      result = await reply();
+    } catch {
+      result = { text: MESSAGES.failed };
+    }
+    // 그 사이 새 대화를 시작했으면 그 말풍선은 이미 없다 — 아무 일도 일어나지 않는다
+    setMessages((prev) =>
+      prev.map((m) => (m.id === assistantId ? { ...m, text: result.text, ...(result.links ? { links: result.links } : {}) } : m)),
+    );
   }
 
   // 진행 중인 답변을 끊고 대화를 비운다 (새 대화·다른 대화로 갈아탈 때)
@@ -180,6 +211,7 @@ export function usePostsChatMessages() {
     historyRequestRef.current++;
     setMessages([]);
     setInput("");
+    setSearchOff(false);
   }
 
   function startNewSession() {
@@ -204,6 +236,13 @@ export function usePostsChatMessages() {
   const currentSession = sessions.find((s) => s.id === sessionId) ?? null;
   const firstUserMessage = messages.find((m) => m.role === "user")?.text.trim();
 
+  // 글 목록 화면의 시작 버튼 — "글을 쓰고 싶어"는 로그인 여부에 따라 안내가 달라서 훅 안에서 만든다
+  const suggestions = [
+    replySuggestion("글을 쓰고 싶어", () => loadWriteGuide(!!userId, fetchMyDrafts)),
+    replySuggestion("글을 찾아줘", FIND_PROMPT),
+    replySuggestion("과제나 업무 도와줘", TASK_PROMPT, { searchOff: true }),
+  ];
+
   return {
     messages,
     input,
@@ -221,6 +260,6 @@ export function usePostsChatMessages() {
     sessionSearch,
     setSessionSearch,
     isLoggedIn: !!userId,
-    suggestions: POSTS_SUGGESTIONS,
+    suggestions,
   };
 }

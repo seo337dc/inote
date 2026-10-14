@@ -5,6 +5,9 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 let authState: { data: { user: { id: string } } | null; isPending: boolean } = { data: null, isPending: false };
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: () => authState }));
 
+const apiGet = vi.fn();
+vi.mock("@/shared/lib/api", () => ({ api: { get: (...a: unknown[]) => apiGet(...a) } }));
+
 import { usePostsChatMessages } from "./usePostsChatMessages";
 import type { ChatSession } from "./types";
 
@@ -189,5 +192,84 @@ describe("usePostsChatMessages 대화 저장·히스토리", () => {
     await waitFor(() => expect(result.current.sessions).toHaveLength(1), { timeout: 2000 });
     rerender();
     expect(result.current.activeSessionTitle).toBe("관련 글이 있어요");
+  });
+
+  describe("홈 시작 버튼", () => {
+    const button = (result: { current: ReturnType<typeof usePostsChatMessages> }, label: string) =>
+      result.current.suggestions.find((b) => b.label === label)!;
+
+    beforeEach(() => {
+      apiGet.mockReset();
+    });
+
+    it("글을 쓰고 싶어: 작성 중인 글을 불러오는 동안 '조회 중', 끝나면 목록과 새 글 쓰기 링크를 보여준다", async () => {
+      let release!: (v: unknown) => void;
+      apiGet.mockImplementation(() => new Promise((r) => (release = r)));
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(button(result, "글을 쓰고 싶어")));
+      expect(result.current.messages.map((m) => [m.role, m.text, m.local])).toEqual([["user", "글을 쓰고 싶어", true], ["assistant", "", true]]);
+      await act(async () => release([{ id: "d1", title: "도커 정리", category: "DevOps" }]));
+      expect(apiGet).toHaveBeenCalledWith("/blog/posts/mine/drafts");
+      expect(result.current.messages[1].text).toContain("작성 중인 글이 1개");
+      expect(result.current.messages[1].links!.map((l) => l.href)).toEqual(["/write/d1", "/write"]);
+      expect(streamCalls()).toHaveLength(0); // AI 서버는 부르지 않는다
+    });
+
+    it("글을 쓰고 싶어: 게스트는 임시저장을 조회하지 않고 로그인 안내를 받는다", async () => {
+      authState = { data: null, isPending: false };
+      const { result } = renderHook(() => usePostsChatMessages());
+      await act(async () => result.current.selectSuggestion(button(result, "글을 쓰고 싶어")));
+      expect(apiGet).not.toHaveBeenCalled();
+      expect(result.current.messages[1].links).toEqual([{ href: "/login", label: "로그인하기" }]);
+    });
+
+    it("글을 쓰고 싶어: 조회가 실패해도 안내가 남는다(영원히 '조회 중'이 아니다)", async () => {
+      apiGet.mockRejectedValue(new Error("500"));
+      const { result } = renderHook(() => usePostsChatMessages());
+      await act(async () => result.current.selectSuggestion(button(result, "글을 쓰고 싶어")));
+      expect(result.current.messages[1].text).toContain("불러오지 못했어요");
+      expect(result.current.messages[1].links).toEqual([{ href: "/write", label: "새 글 쓰기" }]);
+    });
+
+    it("안내를 만드는 도중에 새 대화를 시작하면 늦게 온 안내가 새 대화에 끼어들지 않는다", async () => {
+      let release!: (v: unknown) => void;
+      apiGet.mockImplementation(() => new Promise((r) => (release = r)));
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(button(result, "글을 쓰고 싶어")));
+      act(() => result.current.startNewSession());
+      await act(async () => release([]));
+      expect(result.current.messages).toEqual([]);
+    });
+
+    it("글을 찾아줘: 되묻기만 하고, 이어지는 질문은 글 검색으로 간다(use_search 없음)", async () => {
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(button(result, "글을 찾아줘")));
+      act(() => result.current.sendPreset("도커 볼륨"));
+      await waitFor(() => expect(result.current.messages[3]?.text).toBe("답"));
+      expect(streamBody()).not.toHaveProperty("use_search");
+    });
+
+    it("과제나 업무 도와줘: 되묻고, 이후 질문은 내 글 검색 없이 일반 답변으로(use_search=false) 간다", async () => {
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(button(result, "과제나 업무 도와줘")));
+      expect(streamCalls()).toHaveLength(0);
+      expect(result.current.messages[1].text).toContain("어떤 과제나 업무");
+      act(() => result.current.sendPreset("보고서 목차 짜줘"));
+      await waitFor(() => expect(result.current.messages[3]?.text).toBe("답"));
+      expect(streamBody().use_search).toBe(false);
+      expect(streamBody().messages).toEqual([{ role: "user", content: "보고서 목차 짜줘" }]); // 안내 대화는 보내지 않는다
+      act(() => result.current.sendPreset("두 번째 질문"));
+      await waitFor(() => expect(result.current.messages[5]?.text).toBe("답"));
+      expect(streamBody().use_search).toBe(false); // 같은 대화에서는 계속 일반 답변
+    });
+
+    it("새 대화를 시작하면 다시 글 검색으로 돌아간다", async () => {
+      const { result } = renderHook(() => usePostsChatMessages());
+      act(() => result.current.selectSuggestion(button(result, "과제나 업무 도와줘")));
+      act(() => result.current.startNewSession());
+      act(() => result.current.sendPreset("도커 볼륨"));
+      await waitFor(() => expect(result.current.messages[1]?.text).toBe("답"));
+      expect(streamBody()).not.toHaveProperty("use_search");
+    });
   });
 });
