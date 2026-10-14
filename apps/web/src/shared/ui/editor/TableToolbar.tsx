@@ -53,37 +53,62 @@ const GROUPS: ToolbarGroup[] = [
 
 const ACTIONS = GROUPS.flatMap((g) => g.items.map((i) => i.action));
 
-// 커서가 들어 있는 표의 DOM 요소 (표 밖이면 null)
-function findTableElement(view: EditorView): HTMLElement | null {
+// 커서가 들어 있는 표와 그 안의 행(tr) DOM 요소 (표 밖이면 null)
+function findTableParts(view: EditorView): { table: HTMLElement; row: HTMLElement | null } | null {
   const { $from } = view.state.selection;
+  let row: HTMLElement | null = null;
   for (let depth = $from.depth; depth > 0; depth--) {
-    if ($from.node(depth).type.name !== "table") continue;
+    const name = $from.node(depth).type.name;
+    if (name === "tableRow" && !row) {
+      const dom = view.nodeDOM($from.before(depth));
+      if (dom instanceof HTMLElement) row = dom;
+    }
+    if (name !== "table") continue;
     const dom = view.nodeDOM($from.before(depth));
     if (!(dom instanceof HTMLElement)) return null;
-    return dom.tagName === "TABLE" ? dom : dom.querySelector("table");
+    const table = dom.tagName === "TABLE" ? dom : dom.querySelector<HTMLElement>("table");
+    return table ? { table, row } : null;
   }
   return null;
 }
 
-// 툴바를 표 바로 위에 붙인다. 표가 글 맨 위라 위쪽 공간이 모자라면 표 아래로 내린다.
+type Rect = { top: number; bottom: number; left: number };
+
+// 툴바를 커서가 있는 행 바로 위에 붙인다 — 표가 길어도 툴바가 표 맨 위로 가버리지 않고 커서를 따라다닌다.
+// 행 위쪽(에디터 본문 맨 위까지)에 자리가 모자라면 그 행 아래로 내린다. 좌우는 표의 왼쪽 끝에 맞춘다.
+// 모두 화면 좌표(getBoundingClientRect)이고, wrapper는 툴바가 기대는 position: relative 상자다.
+export function placeTableToolbar(args: {
+  row: Rect;
+  table: Rect;
+  wrapper: Rect;
+  contentTop: number;
+}): TableToolbarPosition {
+  const { row, table, wrapper, contentTop } = args;
+  const roomAbove = row.top - contentTop;
+  const top =
+    roomAbove >= TOOLBAR_HEIGHT + GAP
+      ? row.top - wrapper.top - TOOLBAR_HEIGHT - GAP
+      : row.bottom - wrapper.top + GAP;
+  const left = Math.max(table.left - wrapper.left, 0);
+  return { top, left };
+}
+
 // 레이아웃이 없는 환경(jsdom)에선 좌표가 0으로 나오는데, 위치 검증이 아니라 표시 여부만 보면 되므로 그대로 둔다.
 export function computeTableToolbarPosition(
   view: EditorView,
   wrapper: HTMLElement,
 ): TableToolbarPosition | null {
-  const table = findTableElement(view);
-  if (!table) return null;
+  const parts = findTableParts(view);
+  if (!parts) return null;
 
-  const box = wrapper.getBoundingClientRect();
-  const rect = table.getBoundingClientRect();
-  const contentTop = view.dom.getBoundingClientRect().top;
-  const roomAbove = rect.top - contentTop;
-  const top =
-    roomAbove >= TOOLBAR_HEIGHT + GAP
-      ? rect.top - box.top - TOOLBAR_HEIGHT - GAP
-      : rect.bottom - box.top + GAP;
-  const left = Math.max(rect.left - box.left, 0);
-  return { top, left };
+  const tableRect = parts.table.getBoundingClientRect();
+  const rowRect = (parts.row ?? parts.table).getBoundingClientRect();
+  return placeTableToolbar({
+    row: rowRect,
+    table: tableRect,
+    wrapper: wrapper.getBoundingClientRect(),
+    contentTop: view.dom.getBoundingClientRect().top,
+  });
 }
 
 type ToolbarState = {
