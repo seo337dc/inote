@@ -5,7 +5,7 @@
 
 | 항목 | 값 |
 |---|---|
-| 날짜 | 2026-10-12 |
+| 날짜 | 2026-10-14 (2026-10-12 내용에 운영 확인·D 1차 결정 추가) |
 | 작성자 | Claude Code |
 | 다음 수신자 | 사람(내일 이어서) |
 | 이 문서의 위치 | `inote` 레포 브랜치 **`docs/kure-handoff`**(`origin/main`에서 땀). `main`에는 아직 병합 전 — 3절 참고 |
@@ -80,6 +80,27 @@
 | `blog.controller.ts` | `GET :id/similar` — `Cache-Control: private, no-store`, `res.vary('Cookie')` |
 
 ---
+
+## 2-1. 운영 연동 확인 (2026-10-14) — 지금 운영은 "켜진" 상태
+
+로컬 KURE를 **ngrok 터널**로 인터넷에 열어 운영에서 처음 끝까지 확인했다.
+
+| 구성 | 상태 |
+|---|---|
+| 운영 AI DB(Supabase `inote-ai`) | ✅ `vector` 확장(v0.8.2, `extensions` 스키마)·`post_embedding`·RLS 적용. 무료 플랜에서 확장이 켜짐(결정 5 해소). `search_path`는 `"$user", public, extensions` |
+| 운영 AI 서버(Vercel) | ✅ 환경변수 `EMBEDDER_URL`(터널 주소)·`EMBEDDER_SECRET`·`EMBEDDER_MODEL` 설정 + 재배포. 코드 변경 없음 |
+| 운영 BE(Render) | ✅ `EMBEDDINGS_ENABLED=true`·`INOTE_AI_URL` 설정 + 재배포. **이 때문에 운영에서 저장되는 모든 글이 터널을 거쳐 이 맥의 KURE로 간다(비공개 글 포함)** |
+| 터널 | ngrok 무료 고정 도메인으로 `127.0.0.1:8100`(KURE) 연결. 맥이 꺼지면 벡터만 안 만들어지고 글 저장은 정상 |
+
+- **확인**: 운영 사이트에서 글을 저장하면 약 2초 안에 운영 AI DB에 벡터 생성(터널에 `python-httpx` 호출 기록). 저장 전 텍스트 검색·`unchanged` 재저장·후보 밖 id 제외 확인. 글 3개(테스트 1 + 로그 모니터링 1·2편)로 비슷한 글 API 확인: 1편↔2편 0.816(기준 0.6 통과), 테스트 글은 0.45~0.46이라 빈 목록.
+- **삭제 동기화 확인 ✅**: 운영 사이트에서 테스트 글을 삭제하자 운영 AI DB의 벡터가 3→2개로 줄었고(해당 글의 벡터 없음, 운영 BE는 그 글 404), 남은 2개는 모니터링 글 1·2편이다.
+- **아직 안 한 것**: ① 공개 글 약 30개 백필(공개 API로 가져온 공개 글만, 제안만 됨) ② 비공개 글이 비로그인에게 안 나오는지 운영 확인.
+- **정리할 것**: 테스트가 끝나면 ① 터널(ngrok) 끄기 ② Vercel `EMBEDDER_*`·Render `EMBEDDINGS_ENABLED` 정리(또는 끄기) ③ **ngrok 인증 토큰 재발급**(대시보드 스크린샷에 노출됨) ④ 임베딩 서비스 호스팅 결정(결정 9) 후 `EMBEDDER_URL`만 교체.
+- **주의**: 운영 AI DB 접속은 DataGrip 연결을 만들어 `select`·시험만 했다. 세션 풀러(5432)·`postgres.<프로젝트ref>` 사용자·SSL `require`. 운영 `inote-ai`의 실제 배포는 **Vercel**(`inote-ai/CLAUDE.md`의 "Render 예정"은 낡음).
+
+## 2-2. D 1차 결정 (2026-10-14)
+
+글 목록 화면 채팅을 **공개 글 검색 먼저 → 글을 근거로 Groq 답변**으로 시작한다(PLAN 6절 D의 "1차 범위", 결정 17). 웹 조회·할 일 모드는 제외. **AI 서버 구현을 로컬에서 시작**했고(`inote-ai`), FE는 `inote`의 다른 작업이 끝난 뒤.
 
 ## 3. 이 문서가 `main`이 아닌 브랜치에 있는 이유
 
@@ -167,6 +188,8 @@ bc.serializeSignedCookie('better-auth.session_token', process.argv[2], process.a
 4. **운영 선행 작업(결정 필요)** — 운영 AI DB(Supabase) `vector` 확장 사용 가능 여부와 `search_path` 확인(결정 5), **임베딩 서비스 호스팅**(결정 9: Hugging Face Spaces / Cloud Run / Fly.io 등 — **무료 조건은 공식 가격 페이지로 먼저 확인**). 이게 정해져야 PLAN 8절 순서대로 운영에 켤 수 있다.
 5. **C 설계** — UX(칩 위치·알림 모양·자동/수동 호출) **사람 승인**(결정 7)이 먼저. 그 전에 계약 확정.
 6. **D 선행 과제** — AI 서버가 FE의 `user_id`를 그대로 믿는 문제(결정 10): 본인 비공개 글을 검색하기 전에 요청자 검증 방식을 정한다(**사람 승인**). 풀기 전에는 공개 글만 검색.
+
+7. **D 1차(글 목록 채팅)** — PLAN 결정 17. AI 서버 `글 찾기` 엔드포인트와 BE `GET /blog/posts/public-ids`를 로컬에서 구현·검증한 뒤, FE(모드 줄·화면별 시작 버튼·추천 글 링크·작성 중인 글 안내)는 `inote` 작업 후. 운영에 열려면 KURE 호스팅이 먼저.
 
 **이월 사항**: 두 `findOutline` 테스트 담당 · 고아 벡터 정리(뒤로 미룸, 후보 id로 제한돼 노출 안 됨) · 포트폴리오 문구는 별도 AI에게 전달할 프롬프트를 이미 사용자에게 드렸다(`portfolio-site`는 건드리지 않음).
 
