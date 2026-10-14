@@ -205,6 +205,7 @@ export function useChatMessages() {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let receivedText = false;
 
     for (;;) {
       const { done, value } = await reader.read();
@@ -218,9 +219,13 @@ export function useChatMessages() {
         const payload = chunk.replace(/^data: /, "");
         if (!payload || payload === "[DONE]") continue;
         const { text } = JSON.parse(payload) as { text: string };
+        if (text) receivedText = true;
         appendAssistantText(assistantId, text);
       }
     }
+
+    // 끝났는데 글자가 하나도 없으면(모델이 빈 답을 준 경우) "조회 중"으로 남지 않게 알려준다
+    if (!receivedText) setAssistantText(assistantId, "답변이 비어 있어요. 질문을 바꿔서 다시 시도해주세요.");
 
     if (userId) void loadSessions();
   }
