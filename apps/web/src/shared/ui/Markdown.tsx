@@ -1,5 +1,6 @@
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { remarkBreakTags } from "@/shared/lib/remark-break-tags";
 
 const components: Components = {
   p: ({ children }) => <p className="mb-3 leading-relaxed last:mb-0">{children}</p>,
@@ -46,7 +47,7 @@ type Props = {
 // 테이블/복사버튼 등 채팅 전용 UI는 없음).
 export default function Markdown({ text }: Props) {
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+    <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreakTags]} components={components}>
       {text}
     </ReactMarkdown>
   );
