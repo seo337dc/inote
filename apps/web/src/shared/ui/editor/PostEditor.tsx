@@ -39,6 +39,7 @@ type ActiveFormats = {
   h4: boolean;
   bold: boolean;
   italic: boolean;
+  strike: boolean;
   bulletList: boolean;
   blockquote: boolean;
   code: boolean;
@@ -53,6 +54,7 @@ const NO_ACTIVE: ActiveFormats = {
   h4: false,
   bold: false,
   italic: false,
+  strike: false,
   bulletList: false,
   blockquote: false,
   code: false,
@@ -188,6 +190,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         h4: editor.isActive("heading", { level: 4 }),
         bold: editor.isActive("bold"),
         italic: editor.isActive("italic"),
+        strike: editor.isActive("strike"),
         bulletList: editor.isActive("bulletList"),
         blockquote: editor.isActive("blockquote"),
         code: editor.isActive("code"),
@@ -279,6 +282,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           active={active.italic}
         >
           I
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          active={active.strike}
+        >
+          취소선
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}

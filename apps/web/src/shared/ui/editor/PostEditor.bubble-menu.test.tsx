@@ -57,6 +57,17 @@ describe("선택 영역 서식 메뉴 (버블 메뉴)", () => {
     expect(el.editor.getHTML()).toContain("<code>셋</code>");
   });
 
+  it("선택한 글자를 취소선으로 바꾸고, 다시 누르면 풀린다", async () => {
+    const { el, select, click } = await setup("<p>하나 둘 셋</p>");
+
+    select("둘");
+    await click("선택 영역 취소선");
+    expect(el.editor.getHTML()).toBe("<p>하나 <s>둘</s> 셋</p>");
+    select("둘");
+    await click("선택 영역 취소선");
+    expect(el.editor.getHTML()).toBe("<p>하나 둘 셋</p>");
+  });
+
   it("현재 서식이 켜진 글자를 선택하면 해당 버튼이 눌린 상태로 보인다", async () => {
     const { select, pressed } = await setup("<p>하나 <strong>둘</strong> 셋</p>");
 

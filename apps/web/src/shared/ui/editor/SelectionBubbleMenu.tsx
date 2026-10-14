@@ -12,13 +12,14 @@ type Props = {
 };
 
 // 글자를 드래그해 선택하면 그 위에 뜨는 서식 메뉴 (노션처럼, 위쪽 툴바로 시선을 옮기지 않고 바로 고친다).
-// 글자 서식(굵게·기울임·인라인 코드·링크)만 담는다 — 제목·목록 같은 블록 서식은 툴바와 '/' 메뉴가 맡는다.
+// 글자 서식(굵게·기울임·취소선·인라인 코드·링크)만 담는다 — 제목·목록 같은 블록 서식은 툴바와 '/' 메뉴가 맡는다.
 export function SelectionBubbleMenu({ editor, onLink }: Props) {
   const active = useEditorState({
     editor,
     selector: ({ editor }) => ({
       bold: editor.isActive("bold"),
       italic: editor.isActive("italic"),
+      strike: editor.isActive("strike"),
       code: editor.isActive("code"),
       link: findLinkRange(editor.state) !== null,
     }),
@@ -50,6 +51,13 @@ export function SelectionBubbleMenu({ editor, onLink }: Props) {
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
         <span className="italic">I</span>
+      </BubbleButton>
+      <BubbleButton
+        label="선택 영역 취소선"
+        active={active.strike}
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+      >
+        <span className="line-through">S</span>
       </BubbleButton>
       <BubbleButton
         label="선택 영역 인라인 코드"
