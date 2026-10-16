@@ -3,25 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Lock, Minus, Plus } from "lucide-react";
-import { CATEGORIES, useCategories, type Category } from "@/entities/category";
+import { useCategories } from "@/entities/category";
 import { usePostOutline, useUserOutline } from "@/entities/post";
 import { useSession } from "@/shared/lib/auth-client";
 import { revealInContainer } from "@/shared/lib/scroll";
 import { cn } from "@/shared/lib/utils";
 import { buildOutline, findActiveFolderKeys, type OutlineFolder } from "../lib/buildOutline";
 import { toCategories } from "../lib/publicCategories";
-
-// 로그인 전이거나 카테고리를 아직 못 불러왔을 때 쓰는 기본 카테고리(최상위 5개)
-const DEFAULT_CATEGORIES: Category[] = CATEGORIES.map((name, position) => ({
-  id: `default:${name}`,
-  userId: "",
-  name,
-  parentId: null,
-  depth: 1,
-  position,
-  createdAt: "",
-  updatedAt: "",
-}));
 
 type Props = {
   currentPostId: string;
@@ -44,11 +32,14 @@ export default function PostOutline({ currentPostId, authorId = null, headerClas
   const categoriesQuery = useCategories();
   const outlineData = viewingOthers ? userOutlineQuery.data?.posts : ownOutlineQuery.data;
   const author = viewingOthers ? userOutlineQuery.data?.author : null;
-  // 각 폴더 줄의 목록 링크: 다른 사람의 글이면 그 사람의 목록(/users/[id]?category=, 로그인 여부와 무관),
-  // 내 글이면 로그인했을 때만 나의 글 목록(/my-posts?category=) — 카테고리별 목록은 나의 글에만 있어서
-  const listHref = (name: string): string | null => {
-    if (viewingOthers) return `/users/${encodeURIComponent(authorId as string)}?category=${encodeURIComponent(name)}`;
-    return session ? `/my-posts?category=${encodeURIComponent(name)}` : null;
+  // 각 폴더 줄의 목록 링크(카테고리 id로 건다 — 같은 이름이 여러 곳에 있어도 그 폴더만 열린다):
+  // 다른 사람의 글이면 그 사람의 목록(/users/[id]?categoryId=, 로그인 여부와 무관),
+  // 내 글이면 로그인했을 때만 나의 글 목록(/my-posts?categoryId=) — 카테고리별 목록은 나의 글에만 있어서.
+  // 카테고리에 연결되지 않은 글의 폴더(key가 name:으로 시작)는 목록이 없어 링크도 없다
+  const listHref = (folderKey: string): string | null => {
+    if (folderKey.startsWith("name:") || folderKey.startsWith("default:")) return null;
+    if (viewingOthers) return `/users/${encodeURIComponent(authorId as string)}?categoryId=${encodeURIComponent(folderKey)}`;
+    return session ? `/my-posts?categoryId=${encodeURIComponent(folderKey)}` : null;
   };
   // 사용자가 직접 펼치거나 접은 폴더. 값이 없는 폴더는 "지금 글이 들어 있는지"로 정한다
   // — 다른 글로 이동해도 새 글이 있는 폴더가 자동으로 펼쳐지게 하려고 상태 대신 계산으로 둠.
@@ -58,7 +49,8 @@ export default function PostOutline({ currentPostId, authorId = null, headerClas
     if (viewingOthers) {
       return buildOutline(toCategories(authorId as string, userOutlineQuery.data?.categories ?? []), outlineData ?? []);
     }
-    return buildOutline(categoriesQuery.data ?? DEFAULT_CATEGORIES, outlineData ?? []);
+    // 내 카테고리를 아직 못 불렀거나 로그인 전이면 트리 없이 글의 카테고리 이름별 폴더로만 그린다(진짜 id가 없는 기본 목록은 쓰지 않는다)
+    return buildOutline(categoriesQuery.data ?? [], outlineData ?? []);
   }, [viewingOthers, authorId, userOutlineQuery.data?.categories, categoriesQuery.data, outlineData]);
   const activeKeys = useMemo(
     () => findActiveFolderKeys(folders, currentPostId),
@@ -119,7 +111,7 @@ type ListProps = {
   onToggle: (key: string) => void;
   // 각 폴더 줄 오른쪽의 "그 카테고리 나의 글 목록" 링크를 보일지 (로그인했을 때만)
   // 폴더 이름 → 그 카테고리 글 목록 주소. null이면 링크를 보이지 않는다
-  listHref: (name: string) => string | null;
+  listHref: (folderKey: string) => string | null;
   depth: number;
 };
 
@@ -145,9 +137,9 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                 <span className="truncate">{folder.name}</span>
                 <span className="shrink-0 text-xs font-normal text-zinc-400">{folder.total}</span>
               </button>
-              {listHref(folder.name) && (
+              {listHref(folder.key) && (
                 <Link
-                  href={listHref(folder.name) as string}
+                  href={listHref(folder.key) as string}
                   aria-label={`${folder.name} 목록 보기`}
                   title={`${folder.name} 목록 보기`}
                   // 마우스를 쓸 수 있는 환경에선 줄에 올렸을 때(또는 키보드로 줄 안에 포커스가 있을 때)만 보이고, 터치 기기에선 항상 보인다.

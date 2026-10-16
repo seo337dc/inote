@@ -25,7 +25,8 @@ type Props = {
 
 type PostBody = {
   title: string;
-  category: string;
+  // 카테고리 id — 아직 고르지 않은 글(옛 글 등)은 키를 빼서 보내지 않는다(서버가 기존 값을 그대로 둔다)
+  categoryId?: string;
   content: string;
   isPrivate: boolean;
   pinned: boolean;
@@ -94,7 +95,7 @@ export default function WritePostForm({ id }: Props) {
   const flatCategories = flattenCategoryTree(categoryTree);
 
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [pinned, setPinned] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState("");
@@ -116,7 +117,8 @@ export default function WritePostForm({ id }: Props) {
     loadedPostId.current = post.id;
     skipNextAutosave.current = true;
     setTitle(post.title);
-    setCategory(post.category || flatCategories[0]?.name || "");
+    // 새 글(카테고리가 비어 있음)은 첫 카테고리를 기본으로. 이름은 있는데 id가 아직 없는 옛 글은 비워 두고 직접 고르게 한다
+    setCategoryId(post.categoryId ?? (post.category ? "" : (flatCategories[0]?.id ?? "")));
     setIsPrivate(post.isPrivate);
     setPinned(post.pinned);
     setThumbnailUrl(post.thumbnailUrl ?? "");
@@ -126,7 +128,7 @@ export default function WritePostForm({ id }: Props) {
 
   const buildBody = (): PostBody => ({
     title,
-    category,
+    ...(categoryId ? { categoryId } : {}),
     content,
     isPrivate,
     pinned,
@@ -153,7 +155,7 @@ export default function WritePostForm({ id }: Props) {
     }, 1500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content, isPrivate, pinned, thumbnailUrl, post]);
+  }, [title, categoryId, content, isPrivate, pinned, thumbnailUrl, post]);
 
   const saveMutation = useMutation({
     mutationFn: (body: PostBody) => api.patch(`/blog/posts/${id}`, { ...body, publish: true }),
@@ -223,9 +225,9 @@ export default function WritePostForm({ id }: Props) {
       {/* 왼쪽 글 설정 영역 (카테고리, 이후 공개 설정·즐겨찾기). 좁은 화면에서는 아직 숨김 */}
       <WriteSidePanel
         categories={categoryTree}
-        category={category}
-        onCategoryChange={(name) => {
-          setCategory(name);
+        categoryId={categoryId}
+        onCategoryChange={(id) => {
+          setCategoryId(id);
           setIsDirty(true);
         }}
         isPrivate={isPrivate}
@@ -310,9 +312,9 @@ export default function WritePostForm({ id }: Props) {
           setThumbnailUrl(url);
           setIsDirty(true);
         }}
-        category={category}
-        onCategoryChange={(name) => {
-          setCategory(name);
+        categoryId={categoryId}
+        onCategoryChange={(id) => {
+          setCategoryId(id);
           setIsDirty(true);
         }}
         categories={flatCategories}

@@ -16,13 +16,13 @@ export default async function HomePage({ page, pinnedPage, q }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 lg:px-6 lg:py-10">
-      <PostListHeader title="전체 글" count={data.total} basePath="/" category={null} q={q} />
+      <PostListHeader title="전체 글" count={data.total} basePath="/" categoryId={null} q={q} />
       <p className="mb-6 text-sm text-zinc-500">로그인 없이 누구나 볼 수 있는 공개 피드입니다.</p>
 
       <PostFeed
         data={data}
         basePath="/"
-        category={null}
+        categoryId={null}
         q={q}
       />
     </div>

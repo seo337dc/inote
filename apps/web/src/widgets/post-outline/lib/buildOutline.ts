@@ -26,24 +26,28 @@ function sumTotal(folder: OutlineFolder): number {
   return folder.total;
 }
 
-// 카테고리 트리 위에 글을 얹는다. 글의 category는 이름 문자열이라 이름으로 폴더를 찾고,
-// 내 트리에 없는 카테고리(다른 사람이 쓴 글의 카테고리 등)는 맨 아래에 이름만 있는 폴더로 붙인다.
+// 카테고리 트리 위에 글을 얹는다. 글은 카테고리 id로 폴더를 찾는다 — 같은 이름이 다른 부모 아래에 있어도 섞이지 않는다.
+// 카테고리 id가 없거나(아직 지정 안 된 글) 이 트리에 없는 글(다른 사람 글의 카테고리 등)은 맨 아래에 이름만 있는 폴더로 붙인다.
 export function buildOutline(categories: Category[], posts: PostOutlineItem[]): OutlineFolder[] {
   const roots = buildCategoryTree(categories).map(toFolder);
 
-  const byName = new Map<string, OutlineFolder>();
-  walk(roots, (folder) => {
-    if (!byName.has(folder.name)) byName.set(folder.name, folder);
-  });
+  const byId = new Map<string, OutlineFolder>();
+  walk(roots, (folder) => byId.set(folder.key, folder));
+  const orphanByName = new Map<string, OutlineFolder>();
 
   posts.forEach((post) => {
-    let folder = byName.get(post.category);
-    if (!folder) {
-      folder = { key: `name:${post.category}`, name: post.category, folders: [], posts: [], total: 0 };
-      byName.set(post.category, folder);
-      roots.push(folder);
+    const folder = post.categoryId ? byId.get(post.categoryId) : undefined;
+    if (folder) {
+      folder.posts.push(post);
+      return;
     }
-    folder.posts.push(post);
+    let orphan = orphanByName.get(post.category);
+    if (!orphan) {
+      orphan = { key: `name:${post.category}`, name: post.category, folders: [], posts: [], total: 0 };
+      orphanByName.set(post.category, orphan);
+      roots.push(orphan);
+    }
+    orphan.posts.push(post);
   });
 
   roots.forEach(sumTotal);

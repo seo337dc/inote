@@ -14,7 +14,9 @@ function loginAs(userId: string | null) {
   } as unknown as ReturnType<typeof useSession>);
 }
 
-const AI_POST = { category: "AI", categoryPath: ["학습", "AI"], userId: "u1" };
+const STUDY = { id: "c1", name: "학습" };
+const AI = { id: "c2", name: "AI" };
+const AI_POST = { category: "AI", categoryId: "c2", categoryPath: [STUDY, AI], userId: "u1" };
 
 describe("CategoryBreadcrumb", () => {
   beforeEach(() => loginAs("u1"));
@@ -30,41 +32,61 @@ describe("CategoryBreadcrumb", () => {
     it("각 이름은 그 카테고리의 '나의 글' 목록으로 가는 링크다 (상위 카테고리도 따로 눌러 갈 수 있다)", () => {
       render(<CategoryBreadcrumb post={AI_POST} />);
 
-      expect(screen.getByRole("link", { name: "학습" })).toHaveAttribute(
-        "href",
-        `/my-posts?category=${encodeURIComponent("학습")}`,
-      );
-      expect(screen.getByRole("link", { name: "AI" })).toHaveAttribute("href", "/my-posts?category=AI");
+      expect(screen.getByRole("link", { name: "학습" })).toHaveAttribute("href", "/my-posts?categoryId=c1");
+      expect(screen.getByRole("link", { name: "AI" })).toHaveAttribute("href", "/my-posts?categoryId=c2");
     });
 
-    it("공백·특수문자가 있는 이름도 주소에 안전하게 담는다", () => {
-      render(<CategoryBreadcrumb post={{ category: "C&C 기록", categoryPath: ["C&C 기록"], userId: "u1" }} />);
-
-      expect(screen.getByRole("link", { name: "C&C 기록" })).toHaveAttribute(
-        "href",
-        "/my-posts?category=C%26C%20%EA%B8%B0%EB%A1%9D",
+    it("링크는 이름이 아니라 id로 건다 — 이름에 특수문자가 있어도 주소가 깨지지 않는다", () => {
+      render(
+        <CategoryBreadcrumb
+          post={{ category: "C&C 기록", categoryId: "c&c 1", categoryPath: [{ id: "c&c 1", name: "C&C 기록" }], userId: "u1" }}
+        />,
       );
+
+      expect(screen.getByRole("link", { name: "C&C 기록" })).toHaveAttribute("href", "/my-posts?categoryId=c%26c%201");
     });
 
     it("경로 단계가 3개여도 모두 순서대로 링크가 된다", () => {
-      render(<CategoryBreadcrumb post={{ category: "RAG", categoryPath: ["학습", "AI", "RAG"], userId: "u1" }} />);
+      render(<CategoryBreadcrumb post={{ category: "RAG", categoryId: "c3", categoryPath: [STUDY, AI, { id: "c3", name: "RAG" }], userId: "u1" }} />);
 
       expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["학습", "AI", "RAG"]);
     });
 
     it("경로를 못 받으면(없음·빈 배열) 카테고리 이름 하나만 링크로 보여준다", () => {
-      const { unmount } = render(<CategoryBreadcrumb post={{ category: "학습", userId: "u1" }} />);
+      const { unmount } = render(<CategoryBreadcrumb post={{ category: "학습", categoryId: "c1", userId: "u1" }} />);
       expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["학습"]);
       unmount();
 
-      render(<CategoryBreadcrumb post={{ category: "학습", categoryPath: [], userId: "u1" }} />);
+      render(<CategoryBreadcrumb post={{ category: "학습", categoryId: "c1", categoryPath: [], userId: "u1" }} />);
       expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["학습"]);
     });
 
-    it("같은 이름이 경로에 두 번 나와도(다른 부모 아래) 둘 다 그린다", () => {
-      render(<CategoryBreadcrumb post={{ category: "AI", categoryPath: ["AI", "AI"], userId: "u1" }} />);
+    it("같은 이름이 경로에 두 번 나와도(다른 부모 아래) 둘 다 그리고, 각각 자기 id로 간다", () => {
+      render(
+        <CategoryBreadcrumb
+          post={{
+            category: "AI",
+            categoryId: "inner",
+            categoryPath: [
+              { id: "outer", name: "AI" },
+              { id: "inner", name: "AI" },
+            ],
+            userId: "u1",
+          }}
+        />,
+      );
 
-      expect(screen.getAllByRole("link")).toHaveLength(2);
+      expect(screen.getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual([
+        "/my-posts?categoryId=outer",
+        "/my-posts?categoryId=inner",
+      ]);
+    });
+
+    it("아직 카테고리가 지정되지 않은 글(id 없음)은 이름만 글자로 보여주고 링크는 없다", () => {
+      render(<CategoryBreadcrumb post={{ category: "AI", categoryId: null, userId: "u1" }} />);
+
+      expect(screen.queryByRole("link")).toBeNull();
+      expect(screen.getByText("AI")).toBeInTheDocument();
     });
   });
 
@@ -88,14 +110,14 @@ describe("CategoryBreadcrumb", () => {
     });
 
     it("작성자가 없는 글(탈퇴)은 로그인해도 링크가 없다", () => {
-      render(<CategoryBreadcrumb post={{ category: "AI", categoryPath: ["학습", "AI"], userId: null }} />);
+      render(<CategoryBreadcrumb post={{ category: "AI", categoryId: "c2", categoryPath: [STUDY, AI], userId: null }} />);
 
       expect(screen.queryByRole("link")).toBeNull();
     });
   });
 
   it("카테고리가 비어 있고 경로도 없으면 아무것도 그리지 않는다", () => {
-    const { container } = render(<CategoryBreadcrumb post={{ category: "", userId: "u1" }} />);
+    const { container } = render(<CategoryBreadcrumb post={{ category: "", categoryId: null, userId: "u1" }} />);
 
     expect(container).toBeEmptyDOMElement();
   });

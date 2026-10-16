@@ -2,14 +2,14 @@ import { buildCategoryTree, type Category, type CategoryNode } from "@/entities/
 import type { MyPostOutlineItem } from "@/entities/post";
 
 export type PostFolder = {
-  // 카테고리 id. 내 카테고리 트리에 없는 이름의 글을 모아 둔 폴더는 `name:<이름>`
+  // 카테고리 id. 카테고리가 아직 지정되지 않은 글(categoryId가 null)을 이름별로 모아 둔 폴더는 `name:<이름>`
   key: string;
   name: string;
   folders: PostFolder[];
   posts: MyPostOutlineItem[];
   // 하위 폴더까지 합친 글 수
   total: number;
-  // 카테고리 트리에는 없는데 글만 그 이름을 가진 경우 (이름 수정·삭제 뒤 남은 글 등)
+  // 카테고리 트리에 연결되지 않은 글의 폴더 — 같은 이름이 두 곳이라 자동으로 못 이은 옛 글 등. 여기 글을 진짜 카테고리 폴더로 끌어다 놓아 지정한다
   isOrphan: boolean;
 };
 
@@ -36,20 +36,25 @@ function sumTotal(folder: PostFolder): number {
   return folder.total;
 }
 
-// 카테고리 트리(순서 반영) 위에 내 글을 얹는다. 글의 category는 이름 문자열이라 이름으로 폴더를 찾는다.
+// 카테고리 트리(순서 반영) 위에 내 글을 얹는다. 글은 카테고리 id로 폴더를 찾는다 — 같은 이름이 다른 부모 아래에 있어도 섞이지 않는다.
+// 카테고리 id가 없거나 트리에 없는 글은 이름별 "연결 안 된 폴더"(isOrphan)에 모은다.
 // 글의 순서는 받은 순서(최신순)를 그대로 유지한다.
 export function buildPostFolders(categories: Category[], posts: MyPostOutlineItem[]): PostFolder[] {
   const roots = buildCategoryTree(categories).map(toFolder);
 
-  const byName = new Map<string, PostFolder>();
-  walk(roots, (folder) => {
-    if (!byName.has(folder.name)) byName.set(folder.name, folder);
-  });
+  const byId = new Map<string, PostFolder>();
+  walk(roots, (folder) => byId.set(folder.key, folder));
+  const orphanByName = new Map<string, PostFolder>();
 
   posts.forEach((post) => {
-    let folder = byName.get(post.category);
-    if (!folder) {
-      folder = {
+    const folder = post.categoryId ? byId.get(post.categoryId) : undefined;
+    if (folder) {
+      folder.posts.push(post);
+      return;
+    }
+    let orphan = orphanByName.get(post.category);
+    if (!orphan) {
+      orphan = {
         key: `name:${post.category}`,
         name: post.category,
         folders: [],
@@ -57,10 +62,10 @@ export function buildPostFolders(categories: Category[], posts: MyPostOutlineIte
         total: 0,
         isOrphan: true,
       };
-      byName.set(post.category, folder);
-      roots.push(folder);
+      orphanByName.set(post.category, orphan);
+      roots.push(orphan);
     }
-    folder.posts.push(post);
+    orphan.posts.push(post);
   });
 
   roots.forEach(sumTotal);
@@ -98,11 +103,12 @@ export function findPost(
   return null;
 }
 
-export type PostDrop = { id: string; from: string; to: string };
+// from은 옮기기 전 카테고리 id(아직 지정 안 된 글이면 null), to는 옮길 카테고리
+export type PostDrop = { id: string; from: string | null; to: { id: string; name: string } };
 
 // 글을 폴더에 놓았을 때 실제로 옮길 수 있는지 판단한다.
-// - 카테고리 트리에 없는 폴더(목록에 없는 카테고리)로는 옮길 수 없고
-// - 이미 그 카테고리에 있는 글은 옮길 필요가 없다
+// - 카테고리 트리에 연결되지 않은 폴더(연결 안 된 글 모음)로는 옮길 수 없고
+// - 이미 그 카테고리(id)에 있는 글은 옮길 필요가 없다
 export function resolvePostDrop(
   folders: PostFolder[],
   postId: string,
@@ -112,6 +118,6 @@ export function resolvePostDrop(
   const target = findFolder(folders, targetFolderKey);
   if (!source || !target) return null;
   if (target.isOrphan) return null;
-  if (target.name === source.post.category) return null;
-  return { id: postId, from: source.post.category, to: target.name };
+  if (target.key === source.post.categoryId) return null;
+  return { id: postId, from: source.post.categoryId, to: { id: target.key, name: target.name } };
 }

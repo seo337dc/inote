@@ -31,18 +31,19 @@ function setup() {
   client.setQueryData(CATEGORIES_QUERY_KEY, [cat("a", "학습"), cat("b", "이직")]);
   client.setQueryData(MY_POSTS, {
     ...makePostListPage({
-      pinned: [makePost("p1", { category: "학습", pinned: true })],
-      items: [makePost("p2", { category: "이직" })],
+      pinned: [makePost("p1", { category: "학습", categoryId: "a", pinned: true })],
+      // 이름이 같아도 다른 카테고리(id "z")의 글은 이름이 바뀌면 안 된다
+      items: [makePost("p2", { category: "이직", categoryId: "b" }), makePost("p3", { category: "학습", categoryId: "z" })],
     }),
-    categoryCounts: { 학습: 3, 이직: 1 },
+    categoryCounts: { a: 3, b: 1, z: 2 },
   });
   client.setQueryData(OUTLINE, [
-    { id: "p1", title: "a", category: "학습", isPrivate: false, pinned: true },
-    { id: "p2", title: "b", category: "이직", isPrivate: false, pinned: false },
+    { id: "p1", title: "a", category: "학습", categoryId: "a", isPrivate: false, pinned: true },
+    { id: "p2", title: "b", category: "이직", categoryId: "b", isPrivate: false, pinned: false },
   ]);
   client.setQueryData(MY_OUTLINE, [
-    { id: "p1", title: "a", category: "학습", isPrivate: false, publishedAt: null },
-    { id: "p2", title: "b", category: "이직", isPrivate: false, publishedAt: null },
+    { id: "p1", title: "a", category: "학습", categoryId: "a", isPrivate: false, publishedAt: null },
+    { id: "p2", title: "b", category: "이직", categoryId: "b", isPrivate: false, publishedAt: null },
   ]);
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -54,7 +55,7 @@ const names = (client: QueryClient) =>
   (client.getQueryData<Category[]>(CATEGORIES_QUERY_KEY) ?? []).map((c) => c.name);
 
 describe("useRenameCategory (낙관적 업데이트)", () => {
-  it("서버 응답 전에 카테고리 이름과 글 캐시(개수·글의 카테고리)를 함께 바꾼다", async () => {
+  it("서버 응답 전에 카테고리 이름과 글 캐시(글의 이름 사본)를 함께 바꾸고, 개수(id 키)는 그대로 둔다", async () => {
     server.use(
       http.patch(`${TEST_API_URL}/api/v1/categories/a`, async () => {
         await delay(200);
@@ -67,9 +68,14 @@ describe("useRenameCategory (낙관적 업데이트)", () => {
 
     await waitFor(() => expect(names(client)).toEqual(["공부", "이직"]));
     expect(result.current.isSuccess).toBe(false); // 응답은 아직
-    const mine = client.getQueryData<{ pinned: { category: string }[]; categoryCounts: Record<string, number> }>(MY_POSTS);
-    expect(mine?.categoryCounts).toEqual({ 이직: 1, 공부: 3 });
+    const mine = client.getQueryData<{
+      pinned: { category: string }[];
+      items: { category: string }[];
+      categoryCounts: Record<string, number>;
+    }>(MY_POSTS);
+    expect(mine?.categoryCounts).toEqual({ a: 3, b: 1, z: 2 }); // id 키라 이름이 바뀌어도 그대로
     expect(mine?.pinned[0].category).toBe("공부");
+    expect(mine?.items[1].category).toBe("학습"); // 이름만 같은 다른 카테고리 글은 건드리지 않는다
     expect(client.getQueryData<{ category: string }[]>(OUTLINE)?.[0].category).toBe("공부");
     expect(client.getQueryData<{ category: string }[]>(MY_OUTLINE)?.[0].category).toBe("공부");
     // 다른 카테고리 글은 그대로
@@ -104,7 +110,7 @@ describe("useRenameCategory (낙관적 업데이트)", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(names(client)).toEqual(["학습", "이직"]);
     const mine = client.getQueryData<{ categoryCounts: Record<string, number> }>(MY_POSTS);
-    expect(mine?.categoryCounts).toEqual({ 학습: 3, 이직: 1 });
+    expect(mine?.categoryCounts).toEqual({ a: 3, b: 1, z: 2 });
     expect(client.getQueryData<{ category: string }[]>(MY_OUTLINE)?.[0].category).toBe("학습");
     expect(client.getQueryData<{ category: string }[]>(OUTLINE)?.[0].category).toBe("학습");
   });

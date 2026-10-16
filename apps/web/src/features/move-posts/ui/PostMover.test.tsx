@@ -25,20 +25,22 @@ const CATEGORIES = [
   cat("c2", "백엔드", "c1", 2),
   cat("c3", "일기", null, 1, 1),
 ];
-const post = (id: string, title: string, category: string, extra = {}) => ({
+// 글은 카테고리 id로 가리킨다. categoryId가 null이면 아직 지정되지 않은 글(트리에 연결 안 됨)
+const post = (id: string, title: string, category: string, categoryId: string | null, extra = {}) => ({
   id,
   title,
   category,
+  categoryId,
   isPrivate: false,
   publishedAt: "2026-09-01T00:00:00.000Z",
   ...extra,
 });
 const POSTS = [
-  post("p1", "리액트 쿼리", "학습"),
-  post("p2", "NestJS 정리", "백엔드"),
-  post("p3", "비공개 일기", "일기", { isPrivate: true }),
-  post("p4", "쓰다 만 글", "일기", { publishedAt: null }),
-  post("p5", "오늘의 일기", "일기"),
+  post("p1", "리액트 쿼리", "학습", "c1"),
+  post("p2", "NestJS 정리", "백엔드", "c2"),
+  post("p3", "비공개 일기", "일기", "c3", { isPrivate: true }),
+  post("p4", "쓰다 만 글", "일기", "c3", { publishedAt: null }),
+  post("p5", "오늘의 일기", "일기", "c3"),
 ];
 
 function mockApis(posts: object[] = POSTS) {
@@ -113,8 +115,8 @@ describe("PostMover (글 이동 탭)", () => {
     expect(screen.queryByText("리액트 쿼리")).not.toBeInTheDocument();
   });
 
-  it("카테고리 트리에 없는 이름의 글은 '목록에 없는 카테고리' 폴더로 보인다", async () => {
-    mockApis([post("p9", "옛 글", "사라진카테고리")]);
+  it("카테고리가 아직 지정되지 않은 글(트리에 연결 안 됨)은 '목록에 없는 카테고리' 폴더로 보인다", async () => {
+    mockApis([post("p9", "옛 글", "사라진카테고리", null)]);
     const user = userEvent.setup();
     renderWithQueryClient(<PostMover />);
     await user.click(await screen.findByRole("button", { name: "사라진카테고리 펼치기" }));
@@ -212,7 +214,24 @@ describe("PostMover (글 이동 탭)", () => {
       expect(screen.getByRole("button", { name: "추가" })).toBeDisabled();
     });
 
-    it("이미 있는 이름(다른 단계의 폴더 포함)이면 요청을 보내지 않고 안내한다", async () => {
+    it("같은 단계(최상위)에 이미 있는 이름이면 요청을 보내지 않고 안내한다", async () => {
+      const created = mockCreate();
+      const user = userEvent.setup();
+      renderWithQueryClient(<PostMover />);
+      await screen.findByText("학습");
+
+      await user.type(screen.getByRole("textbox", { name: "새 최상위 폴더 이름" }), "학습");
+      await user.click(screen.getByRole("button", { name: "추가" }));
+
+      expect(screen.getByRole("alert")).toHaveTextContent("이미 있는 이름");
+      expect(created).toEqual([]);
+      // 입력값은 그대로 두어 고쳐 쓸 수 있고, 다시 입력하면 안내가 사라진다
+      expect(screen.getByRole("textbox", { name: "새 최상위 폴더 이름" })).toHaveValue("학습");
+      await user.type(screen.getByRole("textbox", { name: "새 최상위 폴더 이름" }), "2");
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("다른 부모 아래에 있는 이름('백엔드')이라도 최상위에는 추가할 수 있다 (글은 id로 가리키므로)", async () => {
       const created = mockCreate();
       const user = userEvent.setup();
       renderWithQueryClient(<PostMover />);
@@ -221,12 +240,8 @@ describe("PostMover (글 이동 탭)", () => {
       await user.type(screen.getByRole("textbox", { name: "새 최상위 폴더 이름" }), "백엔드");
       await user.click(screen.getByRole("button", { name: "추가" }));
 
-      expect(screen.getByRole("alert")).toHaveTextContent("이미 있는 이름");
-      expect(created).toEqual([]);
-      // 입력값은 그대로 두어 고쳐 쓸 수 있고, 다시 입력하면 안내가 사라진다
-      expect(screen.getByRole("textbox", { name: "새 최상위 폴더 이름" })).toHaveValue("백엔드");
-      await user.type(screen.getByRole("textbox", { name: "새 최상위 폴더 이름" }), "2");
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      await vi.waitFor(() => expect(created).toEqual([{ name: "백엔드" }]));
     });
 
     it("50자를 넘는 이름은 요청을 보내지 않고 안내한다", async () => {
@@ -257,18 +272,31 @@ describe("PostMover (글 이동 탭)", () => {
       expect(screen.queryByRole("textbox", { name: "하위 폴더 이름" })).not.toBeInTheDocument();
     });
 
-    it("하위 폴더 이름이 겹치면 그 입력줄 아래에서 안내하고 요청하지 않는다", async () => {
+    it("같은 부모 아래 형제와 하위 폴더 이름이 겹치면 그 입력줄 아래에서 안내하고 요청하지 않는다", async () => {
       const created = mockCreate();
       const user = userEvent.setup();
       renderWithQueryClient(<PostMover />);
-      await user.click(await screen.findByRole("button", { name: "일기의 하위 폴더 추가" }));
+      await user.click(await screen.findByRole("button", { name: "학습의 하위 폴더 추가" }));
 
-      await user.type(screen.getByRole("textbox", { name: "하위 폴더 이름" }), "학습");
+      await user.type(screen.getByRole("textbox", { name: "하위 폴더 이름" }), "백엔드"); // 학습 아래에 이미 있다
       await user.click(screen.getAllByRole("button", { name: "추가" })[1]);
 
       expect(screen.getByRole("alert")).toHaveTextContent("이미 있는 이름");
       expect(created).toEqual([]);
       expect(screen.getByRole("textbox", { name: "하위 폴더 이름" })).toBeInTheDocument(); // 입력줄은 열려 있다
+    });
+
+    it("다른 부모 아래에 같은 이름이 있어도 하위 폴더로 추가할 수 있다 (일기 아래 '백엔드')", async () => {
+      const created = mockCreate();
+      const user = userEvent.setup();
+      renderWithQueryClient(<PostMover />);
+      await user.click(await screen.findByRole("button", { name: "일기의 하위 폴더 추가" }));
+
+      await user.type(screen.getByRole("textbox", { name: "하위 폴더 이름" }), "백엔드");
+      await user.click(screen.getAllByRole("button", { name: "추가" })[1]);
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      await vi.waitFor(() => expect(created).toEqual([{ name: "백엔드", parentId: "c3" }]));
     });
 
     it("같은 버튼을 다시 누르면(취소) 입력줄이 닫히고, 다른 폴더의 '하위 추가'를 누르면 그쪽으로 옮겨 간다", async () => {
@@ -303,7 +331,7 @@ describe("PostMover (글 이동 탭)", () => {
       server.use(
         http.get(`${TEST_API_URL}/api/v1/categories`, () => HttpResponse.json(CATEGORIES)),
         http.get(`${TEST_API_URL}/api/v1/blog/posts/mine/outline`, () =>
-          HttpResponse.json([post("p9", "옛 글", "사라진카테고리")]),
+          HttpResponse.json([post("p9", "옛 글", "사라진카테고리", null)]),
         ),
       );
       renderWithQueryClient(<PostMover />);

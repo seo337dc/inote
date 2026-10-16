@@ -2,9 +2,9 @@ import { buildCategoryTree, flattenCategoryTree, type Category, type CategoryNod
 import type { PublicCategory } from "@/entities/post";
 
 export type UserCategoryFilter = {
-  // 트리 순서대로 펼친 카테고리 (이름, 깊이)
-  options: { name: string; depth: number }[];
-  // 카테고리별 공개 글 수 — 하위 카테고리 글까지 합친 값 (그 카테고리를 눌렀을 때 나오는 글 수와 같다)
+  // 트리 순서대로 펼친 카테고리 (id, 이름, 깊이)
+  options: { id: string; name: string; depth: number }[];
+  // 카테고리별(키 = id) 공개 글 수 — 하위 카테고리 글까지 합친 값 (그 카테고리를 눌렀을 때 나오는 글 수와 같다)
   counts: Record<string, number>;
   // 그 사람의 공개 글 전체 수
   total: number;
@@ -27,14 +27,14 @@ export function buildUserCategoryFilter(
 
   const counts: Record<string, number> = {};
   const sum = (node: CategoryNode): number => {
-    const total = (directCounts[node.name] ?? 0) + node.children.reduce((acc, child) => acc + sum(child), 0);
-    counts[node.name] = total;
+    const total = (directCounts[node.id] ?? 0) + node.children.reduce((acc, child) => acc + sum(child), 0);
+    counts[node.id] = total;
     return total;
   };
   tree.forEach(sum);
 
   return {
-    options: flattenCategoryTree(tree).map((node) => ({ name: node.name, depth: node.depth })),
+    options: flattenCategoryTree(tree).map((node) => ({ id: node.id, name: node.name, depth: node.depth })),
     counts,
     total: Object.values(directCounts).reduce((acc, n) => acc + n, 0),
   };

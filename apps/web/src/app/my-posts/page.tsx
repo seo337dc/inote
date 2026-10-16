@@ -3,12 +3,12 @@ import { MyPostsPage } from "@/views/my-posts";
 
 export default async function Page(props: PageProps<"/my-posts">) {
   const searchParams = await props.searchParams;
-  const category =
-    typeof searchParams.category === "string" ? searchParams.category : null;
+  const categoryId =
+    typeof searchParams.categoryId === "string" && searchParams.categoryId ? searchParams.categoryId : null;
 
   const page = toPageNumber(searchParams.page);
   const pinnedPage = toPageNumber(searchParams.pinnedPage);
   const q = toSearchQuery(searchParams.q);
 
-  return <MyPostsPage category={category} page={page} pinnedPage={pinnedPage} q={q} />;
+  return <MyPostsPage categoryId={categoryId} page={page} pinnedPage={pinnedPage} q={q} />;
 }

@@ -1,25 +1,19 @@
 import Link from "next/link";
-import { CATEGORIES } from "@/entities/category";
 import type { Post } from "@/entities/post";
 import { cn } from "@/shared/lib/utils";
 
-type CategoryOption = { name: string; depth: number };
-
-const DEFAULT_CATEGORY_OPTIONS: CategoryOption[] = CATEGORIES.map((name) => ({
-  name,
-  depth: 1,
-}));
+// 같은 이름이 다른 부모 아래에 또 있을 수 있어서 선택·개수·링크는 전부 id로 한다
+type CategoryOption = { id: string; name: string; depth: number };
 
 type Props = {
   posts: Post[];
-  activeCategory: string | null;
+  activeCategoryId: string | null;
   className?: string;
   onNavigate?: () => void;
   basePath?: string;
-  // 실제 로그인한 유저의 카테고리 트리(평탄화됨). 안 넘기면 기본 5개로 대체
-  // (로그인 없이도 렌더링돼야 하는 곳이 있어 fallback을 남겨둠).
+  // 카테고리 트리(평탄화됨) — 내 카테고리 또는 다른 사람의 공개 카테고리
   categories?: CategoryOption[];
-  // 페이지네이션으로 posts에 전체 글이 없을 때 서버가 준 카테고리별/전체 개수를 쓴다.
+  // 페이지네이션으로 posts에 전체 글이 없을 때 서버가 준 카테고리별(키 = 카테고리 id)/전체 개수를 쓴다.
   counts?: Record<string, number>;
   totalCount?: number;
   // 걸려 있는 검색어 — 카테고리를 바꿔도 검색은 유지한다 (카테고리 안에서 검색)
@@ -28,9 +22,9 @@ type Props = {
   showManage?: boolean;
 };
 
-function hrefFor(basePath: string, category: string | null, q: string | null) {
+function hrefFor(basePath: string, categoryId: string | null, q: string | null) {
   const params = new URLSearchParams();
-  if (category) params.set("category", category);
+  if (categoryId) params.set("categoryId", categoryId);
   if (q) params.set("q", q);
   const qs = params.toString();
   return qs ? `${basePath}?${qs}` : basePath;
@@ -38,11 +32,11 @@ function hrefFor(basePath: string, category: string | null, q: string | null) {
 
 export default function CategoryFilter({
   posts,
-  activeCategory,
+  activeCategoryId,
   className,
   onNavigate,
   basePath = "/",
-  categories = DEFAULT_CATEGORY_OPTIONS,
+  categories = [],
   counts,
   totalCount,
   q = null,
@@ -68,7 +62,7 @@ export default function CategoryFilter({
             href={hrefFor(basePath, null, q)}
             onClick={onNavigate}
             className={`block rounded px-2 py-1 ${
-              !activeCategory
+              !activeCategoryId
                 ? "bg-zinc-900 text-white hover:bg-zinc-800"
                 : "text-zinc-600 hover:bg-zinc-100"
             }`}
@@ -77,18 +71,18 @@ export default function CategoryFilter({
           </Link>
         </li>
         {categories.map((c) => (
-          <li key={c.name}>
+          <li key={c.id}>
             <Link
-              href={hrefFor(basePath, c.name, q)}
+              href={hrefFor(basePath, c.id, q)}
               onClick={onNavigate}
               className={`block rounded px-2 py-1 ${
-                activeCategory === c.name
+                activeCategoryId === c.id
                   ? "bg-zinc-900 text-white hover:bg-zinc-800"
                   : "text-zinc-600 hover:bg-zinc-100"
               }`}
             >
               {"　".repeat(c.depth - 1)}
-              {c.name} ({counts ? (counts[c.name] ?? 0) : posts.filter((post) => post.category === c.name).length})
+              {c.name} ({counts ? (counts[c.id] ?? 0) : posts.filter((post) => post.categoryId === c.id).length})
             </Link>
           </li>
         ))}

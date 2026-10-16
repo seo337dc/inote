@@ -10,7 +10,7 @@ import {
   type MyPostOutlineItem,
   type PostOutlineItem,
 } from "@/entities/post";
-import { renameCategoryInList, renameCountKey, renamePostCategory } from "../lib/rename";
+import { renameCategoryInList, renamePostCategory } from "../lib/rename";
 import type { Category } from "./types";
 import { CATEGORIES_QUERY_KEY } from "./useCategories";
 
@@ -18,8 +18,8 @@ const MUTATION_KEY = ["rename-category"];
 
 type Snapshot = [QueryKey, unknown][];
 
-// 낙관적 업데이트: 서버 응답 전에 화면의 이름을 먼저 바꾸고(로딩 표시 없음), 글 캐시의 카테고리 이름도
-// 함께 옮긴다. 글이 카테고리를 이름 문자열로 가리키기 때문에, 서버가 글의 category도 같이 바꾼다.
+// 낙관적 업데이트: 서버 응답 전에 화면의 이름을 먼저 바꾸고(로딩 표시 없음), 글 캐시의 카테고리 이름 사본도
+// 함께 바꾼다. 글은 카테고리 id로 가리키므로 글 개수 맵(id 키)은 그대로고, 서버가 글의 category(이름 사본)만 갱신한다.
 // 실패하면 바꿨던 캐시를 모두 되돌린다.
 export function useRenameCategory() {
   const queryClient = useQueryClient();
@@ -31,13 +31,11 @@ export function useRenameCategory() {
     onMutate: async ({ id, name }) => {
       await queryClient.cancelQueries({ queryKey: CATEGORIES_QUERY_KEY });
       const previousCategories = queryClient.getQueryData<Category[]>(CATEGORIES_QUERY_KEY);
-      const oldName = previousCategories?.find((c) => c.id === id)?.name;
       const snapshots: Snapshot = [];
 
       if (previousCategories) {
         queryClient.setQueryData(CATEGORIES_QUERY_KEY, renameCategoryInList(previousCategories, id, name));
       }
-      if (!oldName) return { previousCategories, snapshots };
 
       // 나의 글 목록(카테고리별 개수 포함)
       queryClient.getQueriesData<MyPostListPage>({ queryKey: MY_POSTS_KEY }).forEach(([key, data]) => {
@@ -45,21 +43,20 @@ export function useRenameCategory() {
         snapshots.push([key, data]);
         queryClient.setQueryData<MyPostListPage>(key, {
           ...data,
-          pinned: renamePostCategory(data.pinned, oldName, name),
-          items: renamePostCategory(data.items, oldName, name),
-          categoryCounts: renameCountKey(data.categoryCounts, oldName, name),
+          pinned: renamePostCategory(data.pinned, id, name),
+          items: renamePostCategory(data.items, id, name),
         });
       });
       // 글 상세의 카테고리 트리용 목록, 관리 화면의 내 글 목록
       queryClient.getQueriesData<PostOutlineItem[]>({ queryKey: POST_OUTLINE_KEY }).forEach(([key, data]) => {
         if (!data) return;
         snapshots.push([key, data]);
-        queryClient.setQueryData(key, renamePostCategory(data, oldName, name));
+        queryClient.setQueryData(key, renamePostCategory(data, id, name));
       });
       queryClient.getQueriesData<MyPostOutlineItem[]>({ queryKey: MY_POST_OUTLINE_KEY }).forEach(([key, data]) => {
         if (!data) return;
         snapshots.push([key, data]);
-        queryClient.setQueryData(key, renamePostCategory(data, oldName, name));
+        queryClient.setQueryData(key, renamePostCategory(data, id, name));
       });
 
       return { previousCategories, snapshots };

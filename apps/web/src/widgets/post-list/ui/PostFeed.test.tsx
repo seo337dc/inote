@@ -5,11 +5,11 @@ import { makePost, makePostListPage } from "@/test/fixtures/posts";
 
 function renderFeed(
   data = makePostListPage(),
-  category: string | null = null,
+  categoryId: string | null = null,
   q: string | null = null,
 ) {
   return render(
-    <PostFeed data={data} basePath="/" category={category} q={q} emptyMessage="비었어요" />,
+    <PostFeed data={data} basePath="/" categoryId={categoryId} q={q} emptyMessage="비었어요" />,
   );
 }
 
@@ -103,14 +103,14 @@ describe("PostFeed", () => {
   it("검색어는 페이지를 넘겨도 주소에 유지된다 (카테고리와 함께)", () => {
     renderFeed(
       makePostListPage({ items: [makePost("a")], page: 1, totalPages: 3, total: 25 }),
-      "학습",
+      "c1",
       "리액트",
     );
 
     const allNav = screen.getByRole("navigation", { name: "전체 글 페이지 이동" });
     expect(within(allNav).getByRole("link", { name: "다음" })).toHaveAttribute(
       "href",
-      `/?category=${encodeURIComponent("학습")}&q=${encodeURIComponent("리액트")}&page=2`,
+      `/?categoryId=c1&q=${encodeURIComponent("리액트")}&page=2`,
     );
   });
 
@@ -119,7 +119,7 @@ describe("PostFeed", () => {
       <PostFeed
         data={makePostListPage({ total: 0 })}
         basePath="/users/u1"
-        category={null}
+        categoryId={null}
         emptyState={<p>아직 공개된 글이 없어요.</p>}
       />,
     );
@@ -133,7 +133,7 @@ describe("PostFeed", () => {
       <PostFeed
         data={makePostListPage({ total: 0 })}
         basePath="/users/u1"
-        category={null}
+        categoryId={null}
         q="없는말"
         emptyState={<p>아직 공개된 글이 없어요.</p>}
       />,

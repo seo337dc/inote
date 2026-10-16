@@ -4,16 +4,16 @@ import { SEARCH_QUERY_MAX } from "@/shared/lib/pageParam";
 
 type Props = {
   basePath: string;
-  category: string | null;
+  categoryId: string | null;
   q: string | null;
 };
 
-// 제목+본문 검색. 제출하면 basePath?category=…&q=… 로 이동한다 (page는 빠지니 1페이지부터).
+// 제목+본문 검색. 제출하면 basePath?categoryId=…&q=… 로 이동한다 (page는 빠지니 1페이지부터).
 // 선택한 카테고리는 숨은 값으로 같이 보내서 "그 카테고리 안에서" 검색한다.
-export default function PostSearchForm({ basePath, category, q }: Props) {
+export default function PostSearchForm({ basePath, categoryId, q }: Props) {
   return (
     <Form action={basePath} role="search" className="flex items-center gap-1.5">
-      {category && <input type="hidden" name="category" value={category} />}
+      {categoryId && <input type="hidden" name="categoryId" value={categoryId} />}
       <input
         // 주소의 q가 바뀌면(뒤로가기 등) 입력칸도 그 값으로 다시 맞춘다
         key={q ?? ""}

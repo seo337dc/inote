@@ -8,7 +8,7 @@ import { useSession } from "@/shared/lib/auth-client";
 // 글 제목 위의 카테고리 경로 — "학습 > AI"처럼 위치를 보여준다.
 // 카테고리별 목록은 "나의 글"에만 있어서, 작성자 본인이 볼 때만 각 이름이 그 카테고리의 나의 글 목록으로 가는 링크가 되고
 // 다른 사람이 보거나 로그인 전이면 글자로만 보여준다. 경로를 못 받았으면 카테고리 이름 하나만 같은 모양으로 보여준다.
-export default function CategoryBreadcrumb({ post }: { post: Pick<Post, "category" | "categoryPath" | "userId"> }) {
+export default function CategoryBreadcrumb({ post }: { post: Pick<Post, "category" | "categoryId" | "categoryPath" | "userId"> }) {
   const { data: session } = useSession();
   const path = getCategoryPath(post);
   if (path.length === 0) return null;
@@ -20,12 +20,13 @@ export default function CategoryBreadcrumb({ post }: { post: Pick<Post, "categor
       aria-label="카테고리 경로"
       className="flex items-center gap-0.5 rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400"
     >
-      {path.map((name, index) => (
+      {path.map(({ id, name }, index) => (
         // 이름은 중복될 수 있어(다른 부모 아래 같은 이름) 위치까지 붙여 key를 만든다
-        <span key={`${index}:${name}`} className="flex items-center gap-0.5">
+        <span key={`${index}:${id ?? name}`} className="flex items-center gap-0.5">
           {index > 0 && <ChevronRight className="size-3" aria-hidden />}
-          {isAuthor ? (
-            <Link href={`/my-posts?category=${encodeURIComponent(name)}`} className="hover:text-zinc-700 hover:underline">
+          {isAuthor && id ? (
+            // 링크는 이름이 아니라 id로 건다 — 같은 이름이 다른 부모 아래에도 있어도 이 카테고리만 열린다
+            <Link href={`/my-posts?categoryId=${encodeURIComponent(id)}`} className="hover:text-zinc-700 hover:underline">
               {name}
             </Link>
           ) : (

@@ -13,10 +13,23 @@ vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 
 const mockedUseSession = vi.mocked(useSession);
 
+// 글은 카테고리 id로 가리킨다 (category는 표시용 이름 사본)
 const OUTLINE = [
-  { id: "p1", title: "리액트 쿼리", category: "학습", isPrivate: false, pinned: false },
-  { id: "p2", title: "면접 후기", category: "이직", isPrivate: true, pinned: false },
+  { id: "p1", title: "리액트 쿼리", category: "학습", categoryId: "c-study", isPrivate: false, pinned: false },
+  { id: "p2", title: "면접 후기", category: "이직", categoryId: "c-job", isPrivate: true, pinned: false },
 ];
+
+// 로그인했을 때 GET /categories가 주는 내 카테고리 (진짜 id가 있어야 폴더 줄 링크를 id로 걸 수 있다)
+const MY_CATEGORIES = ["c-study", "c-job"].map((id, position) => ({
+  id,
+  userId: "u1",
+  name: id === "c-study" ? "학습" : "이직",
+  parentId: null,
+  depth: 1,
+  position,
+  createdAt: "2026-01-01",
+  updatedAt: "2026-01-01",
+}));
 
 function mockOutline(items = OUTLINE) {
   server.use(http.get(`${TEST_API_URL}/api/v1/blog/posts/outline`, () => HttpResponse.json(items)));
@@ -24,7 +37,7 @@ function mockOutline(items = OUTLINE) {
 
 describe("PostOutline", () => {
   beforeEach(() => {
-    // 비로그인: 카테고리는 기본 5개로 대체된다
+    // 비로그인: 내 카테고리 트리가 없어서 글의 카테고리 이름별 폴더로만 그린다
     mockedUseSession.mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
   });
 
@@ -136,6 +149,7 @@ describe("PostOutline", () => {
         data: { user: { id: "u1" } },
         isPending: false,
       } as unknown as ReturnType<typeof useSession>);
+      server.use(http.get(`${TEST_API_URL}/api/v1/categories`, () => HttpResponse.json(MY_CATEGORIES)));
     }
 
     it("로그인하면 각 카테고리 줄 맨 오른쪽에 그 카테고리의 나의 글 목록으로 가는 링크가 있다", async () => {
@@ -144,11 +158,8 @@ describe("PostOutline", () => {
       renderWithQueryClient(<PostOutline currentPostId="p1" />);
 
       const study = await screen.findByRole("link", { name: "학습 목록 보기" });
-      expect(study).toHaveAttribute("href", `/my-posts?category=${encodeURIComponent("학습")}`);
-      expect(screen.getByRole("link", { name: "이직 목록 보기" })).toHaveAttribute(
-        "href",
-        `/my-posts?category=${encodeURIComponent("이직")}`,
-      );
+      expect(study).toHaveAttribute("href", "/my-posts?categoryId=c-study");
+      expect(screen.getByRole("link", { name: "이직 목록 보기" })).toHaveAttribute("href", "/my-posts?categoryId=c-job");
       // 같은 줄에서 펼침 버튼 다음(오른쪽)에 온다
       const row = screen.getByRole("button", { name: /학습/ }).parentElement!;
       expect(row.lastElementChild).toBe(study);
@@ -206,8 +217,8 @@ describe("PostOutline", () => {
         { id: "k2", name: "제주", parentId: "k1", depth: 2, createdAt: "2026-01-02" },
       ],
       posts: [
-        { id: "x1", title: "제주 맛집", category: "제주", isPrivate: false, pinned: false },
-        { id: "x2", title: "여행 준비물", category: "여행", isPrivate: false, pinned: false },
+        { id: "x1", title: "제주 맛집", category: "제주", categoryId: "k2", isPrivate: false, pinned: false },
+        { id: "x2", title: "여행 준비물", category: "여행", categoryId: "k1", isPrivate: false, pinned: false },
       ],
     };
 
@@ -240,17 +251,14 @@ describe("PostOutline", () => {
       expect(screen.queryByRole("button", { name: /이직/ })).toBeNull();
     });
 
-    it("그 작성자의 목록(/users/[id]?category=)으로 가는 링크를 로그인 여부와 상관없이 보여주고, '관리' 링크는 없다", async () => {
+    it("그 작성자의 목록(/users/[id]?categoryId=)으로 가는 링크를 로그인 여부와 상관없이 보여주고, '관리' 링크는 없다", async () => {
       loginAs(null);
       mockUserOutline();
       renderWithQueryClient(<PostOutline currentPostId="x1" authorId="u9" />);
 
       const link = await screen.findByRole("link", { name: "여행 목록 보기" });
-      expect(link).toHaveAttribute("href", `/users/u9?category=${encodeURIComponent("여행")}`);
-      expect(screen.getByRole("link", { name: "제주 목록 보기" })).toHaveAttribute(
-        "href",
-        `/users/u9?category=${encodeURIComponent("제주")}`,
-      );
+      expect(link).toHaveAttribute("href", "/users/u9?categoryId=k1");
+      expect(screen.getByRole("link", { name: "제주 목록 보기" })).toHaveAttribute("href", "/users/u9?categoryId=k2");
       expect(screen.queryByRole("link", { name: "관리" })).toBeNull();
     });
 

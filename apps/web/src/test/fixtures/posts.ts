@@ -7,6 +7,7 @@ export function makePost(id: string, overrides: Partial<Post> = {}): Post {
     content: "",
     excerpt: null,
     category: "학습",
+    categoryId: null,
     userId: "u1",
     user: { name: "작성자", email: "a@a.com" },
     createdAt: "2026-09-01T00:00:00.000Z",

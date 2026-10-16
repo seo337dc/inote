@@ -6,14 +6,14 @@ type Props = {
   count: number;
   // 검색이 보낼 주소와 지금 걸려 있는 카테고리·검색어 (홈은 전체 공개 글, 나의 글은 내 글만 검색)
   basePath: string;
-  category: string | null;
+  categoryId: string | null;
   q: string | null;
   // 글쓰기 버튼 — 다른 사람의 글 목록에서는 숨긴다
   showWrite?: boolean;
 };
 
 // 왼쪽: 제목·개수·글쓰기 / 오른쪽: 검색. 좁은 화면에서는 검색이 아래 줄로 내려간다.
-export default function PostListHeader({ title, count, basePath, category, q, showWrite = true }: Props) {
+export default function PostListHeader({ title, count, basePath, categoryId, q, showWrite = true }: Props) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3">
       <div className="flex items-center gap-3">
@@ -30,7 +30,7 @@ export default function PostListHeader({ title, count, basePath, category, q, sh
           </Link>
         )}
       </div>
-      <PostSearchForm basePath={basePath} category={category} q={q} />
+      <PostSearchForm basePath={basePath} categoryId={categoryId} q={q} />
     </div>
   );
 }
