@@ -4,12 +4,12 @@ import { UserPostsPage } from "@/views/user-posts";
 export default async function Page(props: PageProps<"/users/[id]">) {
   const { id } = await props.params;
   const searchParams = await props.searchParams;
-  const category = typeof searchParams.category === "string" && searchParams.category ? searchParams.category : null;
+  const categoryId = typeof searchParams.categoryId === "string" && searchParams.categoryId ? searchParams.categoryId : null;
 
   return (
     <UserPostsPage
       userId={id}
-      category={category}
+      categoryId={categoryId}
       page={toPageNumber(searchParams.page)}
       pinnedPage={toPageNumber(searchParams.pinnedPage)}
       q={toSearchQuery(searchParams.q)}

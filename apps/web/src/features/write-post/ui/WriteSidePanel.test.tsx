@@ -29,7 +29,7 @@ function setup(props: Partial<React.ComponentProps<typeof WriteSidePanel>> = {})
   render(
     <WriteSidePanel
       categories={tree}
-      category="학습"
+      categoryId="1"
       onCategoryChange={onCategoryChange}
       isPrivate={false}
       onPrivateChange={onPrivateChange}
@@ -47,10 +47,27 @@ describe("WriteSidePanel", () => {
     expect(screen.getByRole("button", { name: "운동" })).toBeInTheDocument();
   });
 
-  it("카테고리를 누르면 그 이름으로 바꾼다 (하위 카테고리 포함)", async () => {
+  it("카테고리를 누르면 그 id로 바꾼다 (하위 카테고리 포함)", async () => {
     const { onCategoryChange } = setup();
     await userEvent.click(screen.getByRole("button", { name: "AI" }));
-    expect(onCategoryChange).toHaveBeenCalledWith("AI");
+    expect(onCategoryChange).toHaveBeenCalledWith("2");
+  });
+
+  it("같은 이름이 다른 부모 아래에 있어도 고른 것 하나만 선택 상태가 된다", async () => {
+    const twin = buildCategoryTree([
+      category("1", "학습", null, 1),
+      category("2", "AI", "1", 2),
+      category("3", "사이드", null, 1),
+      category("4", "AI", "3", 2),
+    ]);
+    const { onCategoryChange } = setup({ categories: twin, categoryId: "4" });
+
+    const [studyAi, sideAi] = screen.getAllByRole("button", { name: "AI" });
+    expect(studyAi).toHaveAttribute("aria-pressed", "false");
+    expect(sideAi).toHaveAttribute("aria-pressed", "true");
+
+    await userEvent.click(studyAi);
+    expect(onCategoryChange).toHaveBeenCalledWith("2");
   });
 
   it("하위가 있는 폴더는 접고 펼 수 있다", async () => {
@@ -87,7 +104,7 @@ describe("WriteSidePanel", () => {
   });
 
   it("카테고리가 없으면 안내 문구를 보여준다", () => {
-    setup({ categories: [], category: "" });
+    setup({ categories: [], categoryId: "" });
     expect(screen.getByText("카테고리가 없어요.")).toBeInTheDocument();
   });
 });

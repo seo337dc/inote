@@ -34,13 +34,13 @@ import { cn } from "@/shared/lib/utils";
 // 들여쓰기 한 단계 너비(px) — 깊이 2, 3 줄이 부모보다 안쪽에서 시작하도록
 const INDENT_PX = 24;
 
-// 하위 카테고리까지 합친 글 수 (글의 카테고리는 이름 문자열이라 이름으로 센다)
+// 하위 카테고리까지 합친 글 수 (글 수 맵의 키는 카테고리 id — 같은 이름이 여러 곳에 있어도 따로 센다)
 function subtreeCount(
   node: CategoryNode,
   counts: Record<string, number>,
 ): number {
   return (
-    (counts[node.name] ?? 0) +
+    (counts[node.id] ?? 0) +
     node.children.reduce((sum, c) => sum + subtreeCount(c, counts), 0)
   );
 }

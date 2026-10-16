@@ -53,7 +53,7 @@ describe("PostList — 제목·작성자 링크", () => {
 
 describe("PostList — 카테고리 경로", () => {
   it("카드 배지에 카테고리 경로('학습 > AI')를 보여준다", () => {
-    render(<PostList posts={[makePost("a", { category: "AI", categoryPath: ["학습", "AI"] })]} />);
+    render(<PostList posts={[makePost("a", { category: "AI", categoryId: "c2", categoryPath: [{ id: "c1", name: "학습" }, { id: "c2", name: "AI" }] })]} />);
 
     expect(screen.getByText("학습 > AI")).toBeInTheDocument();
   });

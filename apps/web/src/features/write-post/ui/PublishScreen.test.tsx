@@ -20,10 +20,10 @@ function Harness({
 }: {
   open?: boolean;
   onClose?: () => void;
-  initial?: Partial<{ thumbnailUrl: string; category: string; isPrivate: boolean; pinned: boolean }>;
+  initial?: Partial<{ thumbnailUrl: string; categoryId: string; isPrivate: boolean; pinned: boolean }>;
 }) {
   const [thumbnailUrl, setThumbnailUrl] = useState(initial.thumbnailUrl ?? "");
-  const [category, setCategory] = useState(initial.category ?? "학습");
+  const [categoryId, setCategoryId] = useState(initial.categoryId ?? "c1");
   const [isPrivate, setIsPrivate] = useState(initial.isPrivate ?? false);
   const [pinned, setPinned] = useState(initial.pinned ?? false);
   return (
@@ -39,8 +39,8 @@ function Harness({
         title="내 글 제목"
         thumbnailUrl={thumbnailUrl}
         onThumbnailChange={setThumbnailUrl}
-        category={category}
-        onCategoryChange={setCategory}
+        categoryId={categoryId}
+        onCategoryChange={setCategoryId}
         categories={CATEGORIES}
         isPrivate={isPrivate}
         onPrivateChange={setIsPrivate}
@@ -60,7 +60,7 @@ describe("PublishScreen", () => {
     const dialog = screen.getByRole("dialog", { name: "저장 설정" });
     expect(dialog).not.toHaveAttribute("aria-hidden", "true");
     expect(screen.getByText("내 글 제목")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "카테고리" })).toHaveValue("학습");
+    expect(screen.getByRole("combobox", { name: "카테고리" })).toHaveValue("c1");
     expect(screen.getByRole("button", { name: "전체 공개" })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -81,10 +81,24 @@ describe("PublishScreen", () => {
     await user.click(screen.getByRole("button", { name: "비공개" }));
     await user.click(screen.getByRole("button", { name: /즐겨찾기/ }));
 
-    expect(screen.getByRole("combobox", { name: "카테고리" })).toHaveValue("일기");
+    expect(screen.getByRole("combobox", { name: "카테고리" })).toHaveValue("c3");
     expect(screen.getByRole("button", { name: "비공개" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "전체 공개" })).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByRole("button", { name: /즐겨찾기/ })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("카테고리가 아직 지정되지 않은 글은 안내 문구가 선택돼 있고, 고르면 그 id가 된다", async () => {
+    const user = userEvent.setup();
+    renderWithQueryClient(<Harness initial={{ categoryId: "" }} />);
+
+    const select = screen.getByRole("combobox", { name: "카테고리" });
+    expect(select).toHaveValue("");
+    expect(screen.getByRole("option", { name: "카테고리를 선택하세요" })).toBeDisabled();
+
+    await user.selectOptions(select, "학습");
+
+    expect(select).toHaveValue("c1");
+    expect(screen.queryByRole("option", { name: "카테고리를 선택하세요" })).toBeNull();
   });
 
   it("취소 버튼이나 Esc로 닫는다", async () => {

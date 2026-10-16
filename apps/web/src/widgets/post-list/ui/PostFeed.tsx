@@ -8,7 +8,7 @@ import PostPagination from "./PostPagination";
 type Props = {
   data: PostListPage;
   basePath: string;
-  category: string | null;
+  categoryId: string | null;
   // 검색어 — 있으면 페이지를 넘겨도 유지하고, 결과가 없을 때 "검색 결과 없음"으로 안내
   q?: string | null;
   emptyMessage?: string;
@@ -18,11 +18,11 @@ type Props = {
 
 // 위 "고정 글"(3개씩, pinnedPage) + 아래 "전체 글"(page)을 각각 자기 페이지네이션으로 넘긴다.
 // 한쪽을 넘겨도 다른 쪽 페이지는 주소에 남겨 유지한다. 홈과 나의 글이 같이 씀.
-export default function PostFeed({ data, basePath, category, q = null, emptyMessage, emptyState }: Props) {
+export default function PostFeed({ data, basePath, categoryId, q = null, emptyMessage, emptyState }: Props) {
   const { pinned, pinnedPage, pinnedTotal, pinnedTotalPages, items, total, page, totalPages } = data;
 
   // 아무 조건 없이 글이 0개일 때만 "첫 글을 써 보세요" 화면 — 필터·검색 결과가 0개인 건 목록 안에서 안내
-  if (total === 0 && !category && !q) return <>{emptyState ?? <PostListEmpty />}</>;
+  if (total === 0 && !categoryId && !q) return <>{emptyState ?? <PostListEmpty />}</>;
 
   const listEmptyMessage = q ? "검색 결과가 없습니다." : emptyMessage;
 
@@ -46,7 +46,7 @@ export default function PostFeed({ data, basePath, category, q = null, emptyMess
             totalPages={pinnedTotalPages}
             basePath={basePath}
             pageParam="pinnedPage"
-            keep={{ category, q, page }}
+            keep={{ categoryId, q, page }}
             label="고정 글 페이지 이동"
           />
         </section>
@@ -60,7 +60,7 @@ export default function PostFeed({ data, basePath, category, q = null, emptyMess
           totalPages={totalPages}
           basePath={basePath}
           pageParam="page"
-          keep={{ category, q, pinnedPage }}
+          keep={{ categoryId, q, pinnedPage }}
           label="전체 글 페이지 이동"
         />
       </section>

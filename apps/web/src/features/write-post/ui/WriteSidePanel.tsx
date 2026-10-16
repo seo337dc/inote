@@ -19,8 +19,9 @@ type Props = {
   // 카테고리 트리 (buildCategoryTree 결과)
   categories: CategoryNode[];
   // 글의 카테고리는 이름 문자열로 저장된다
-  category: string;
-  onCategoryChange: (name: string) => void;
+  // 고른 카테고리 id (아직 안 골랐으면 빈 문자열)
+  categoryId: string;
+  onCategoryChange: (id: string) => void;
   isPrivate: boolean;
   onPrivateChange: (value: boolean) => void;
 };
@@ -29,7 +30,7 @@ type Props = {
 // 접으면 목록은 가리고 아이콘만 남는다 — 언마운트하지 않아 접어 둔 폴더 같은 상태가 유지된다.
 export default function WriteSidePanel({
   categories,
-  category,
+  categoryId,
   onCategoryChange,
   isPrivate,
   onPrivateChange,
@@ -85,7 +86,7 @@ export default function WriteSidePanel({
                 <CategoryItem
                   key={node.id}
                   node={node}
-                  selected={category}
+                  selected={categoryId}
                   onSelect={onCategoryChange}
                 />
               ))}
@@ -104,11 +105,11 @@ function CategoryItem({
 }: {
   node: CategoryNode;
   selected: string;
-  onSelect: (name: string) => void;
+  onSelect: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = node.children.length > 0;
-  const isSelected = node.name === selected;
+  const isSelected = node.id === selected;
 
   return (
     <li>
@@ -138,7 +139,7 @@ function CategoryItem({
         )}
         <button
           type="button"
-          onClick={() => onSelect(node.name)}
+          onClick={() => onSelect(node.id)}
           aria-pressed={isSelected}
           className="flex min-w-0 flex-1 items-center gap-1.5 py-1 pr-2 text-left"
         >

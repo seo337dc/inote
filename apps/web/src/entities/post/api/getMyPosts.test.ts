@@ -5,7 +5,7 @@ import { server } from "@/test/msw/server";
 import { TEST_API_URL } from "@/test/msw/handlers";
 import { makePost, makePostListPage } from "@/test/fixtures/posts";
 
-// 요청한 쿼리를 그대로 돌려받아 확인하기 위한 핸들러 (BE 계약: page·pinnedPage·category)
+// 요청한 쿼리를 그대로 돌려받아 확인하기 위한 핸들러 (BE 계약: page·pinnedPage·categoryId)
 function captureRequest() {
   const captured: { url?: URL } = {};
   server.use(
@@ -28,15 +28,16 @@ describe("getMyPosts", () => {
 
     expect(captured.url?.searchParams.get("page")).toBe("3");
     expect(captured.url?.searchParams.get("pinnedPage")).toBe("2");
-    expect(captured.url?.searchParams.has("category")).toBe(false);
+    expect(captured.url?.searchParams.has("categoryId")).toBe(false);
   });
 
-  it("카테고리가 있으면 category도 함께 보낸다", async () => {
+  it("카테고리가 있으면 이름이 아니라 categoryId를 보낸다", async () => {
     const captured = captureRequest();
 
-    await getMyPosts(1, 1, "학습");
+    await getMyPosts(1, 1, "c1");
 
-    expect(captured.url?.searchParams.get("category")).toBe("학습");
+    expect(captured.url?.searchParams.get("categoryId")).toBe("c1");
+    expect(captured.url?.searchParams.has("category")).toBe(false);
   });
 
   it("응답의 고정 글 페이지 정보를 그대로 돌려준다", async () => {

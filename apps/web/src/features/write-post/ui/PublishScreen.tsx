@@ -21,8 +21,9 @@ type Props = {
   title: string;
   thumbnailUrl: string;
   onThumbnailChange: (url: string) => void;
-  category: string;
-  onCategoryChange: (name: string) => void;
+  // 고른 카테고리 id (아직 안 골랐으면 빈 문자열)
+  categoryId: string;
+  onCategoryChange: (id: string) => void;
   categories: CategoryOption[];
   isPrivate: boolean;
   onPrivateChange: (value: boolean) => void;
@@ -42,7 +43,7 @@ export default function PublishScreen({
   title,
   thumbnailUrl,
   onThumbnailChange,
-  category,
+  categoryId,
   onCategoryChange,
   categories,
   isPrivate,
@@ -146,13 +147,18 @@ export default function PublishScreen({
           {/* 브라우저 기본 화살표는 오른쪽 끝에 붙어서, 기본 모양을 끄고 안쪽으로 띄운 아이콘을 얹는다 */}
           <div className="relative">
             <select
-              value={category}
+              value={categoryId}
               onChange={(e) => onCategoryChange(e.target.value)}
               aria-label="카테고리"
               className="w-full appearance-none rounded border border-zinc-300 bg-white py-2 pl-3 pr-10 text-sm"
             >
+              {categoryId === "" && (
+                <option value="" disabled>
+                  카테고리를 선택하세요
+                </option>
+              )}
               {categories.map((c) => (
-                <option key={c.id} value={c.name}>
+                <option key={c.id} value={c.id}>
                   {"　".repeat(c.depth - 1)}
                   {c.depth > 1 ? "└ " : ""}
                   {c.name}

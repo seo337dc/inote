@@ -51,7 +51,7 @@ describe("CategoryManager", () => {
   });
 
   it("카테고리를 계층 순서대로 보여주고, 하위 카테고리 글까지 합친 글 수를 붙인다", async () => {
-    mockApis(CATEGORIES, { 학습: 2, 백엔드: 3, NestJS: 1, 이직: 9 });
+    mockApis(CATEGORIES, { c1: 2, c2: 3, c3: 1, c4: 9 }); // 글 수 맵의 키는 카테고리 id
     renderWithQueryClient(<CategoryManager />);
 
     const items = await screen.findAllByRole("listitem");
@@ -199,7 +199,7 @@ describe("CategoryManager: 폴더 접기/펼치기 (+ / −)", () => {
   });
 
   it("접힌 폴더의 글 수는 하위까지 합친 값 그대로 보인다", async () => {
-    mockApis(CATEGORIES, { 학습: 2, 백엔드: 3, NestJS: 1, 이직: 9 });
+    mockApis(CATEGORIES, { c1: 2, c2: 3, c3: 1, c4: 9 }); // 글 수 맵의 키는 카테고리 id
     const user = userEvent.setup();
     renderWithQueryClient(<CategoryManager />);
     await screen.findByText("6");
@@ -327,7 +327,7 @@ describe("CategoryManager: 이름 수정", () => {
     expect(captured.count).toBe(0);
   });
 
-  it("다른 카테고리와 같은 이름이면 오류 문구를 보여주고 입력창을 유지하며 요청하지 않는다", async () => {
+  it("같은 부모 아래 형제와 같은 이름이면 오류 문구를 보여주고 입력창을 유지하며 요청하지 않는다", async () => {
     mockApis();
     const captured = captureRename("c4");
     const { user, input } = await openEditor("이직");
@@ -339,6 +339,18 @@ describe("CategoryManager: 이름 수정", () => {
     expect(screen.getByRole("textbox", { name: "이직 새 이름" })).toBeInTheDocument();
     await new Promise((r) => setTimeout(r, 50));
     expect(captured.count).toBe(0);
+  });
+
+  it("다른 부모 아래에 같은 이름이 있어도 바꿀 수 있다 (글은 id로 가리키므로)", async () => {
+    mockApis();
+    const captured = captureRename("c3");
+    const { user, input } = await openEditor("NestJS");
+
+    await user.clear(input);
+    await user.type(input, "이직{Enter}"); // 최상위 '이직'과 같은 이름이지만 부모가 달라 형제가 아니다
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    await waitFor(() => expect(captured.body).toEqual({ name: "이직" }));
   });
 
   it("50자를 넘는 이름은 오류 문구를 보여주고 요청하지 않는다", async () => {
@@ -393,5 +405,28 @@ describe("CategoryManager: 이름 수정", () => {
     await new Promise((r) => setTimeout(r, 100));
 
     expect(captured.count).toBe(1);
+  });
+});
+
+describe("CategoryManager: 같은 이름의 카테고리가 여러 곳에 있을 때", () => {
+  it("글 수를 id별로 따로 세어, 이름이 같은 두 카테고리가 합쳐지지 않는다", async () => {
+    vi.mocked(useSession).mockReturnValue({
+      data: { user: { id: "u1" } },
+      isPending: false,
+    } as unknown as ReturnType<typeof useSession>);
+    // 학습 > AI, 사이드 > AI
+    const twin = [
+      cat("study", "학습", null, 1),
+      cat("study-ai", "AI", "study", 2),
+      cat("side", "사이드", null, 1),
+      cat("side-ai", "AI", "side", 2),
+    ];
+    mockApis(twin, { "study-ai": 4, "side-ai": 1 });
+    renderWithQueryClient(<CategoryManager />);
+
+    // 학습 4 > AI 4, 사이드 1 > AI 1. 이름으로 세면 두 AI가 합쳐져 5가 나온다
+    expect(await screen.findAllByText("4")).toHaveLength(2);
+    expect(screen.getAllByText("1")).toHaveLength(2);
+    expect(screen.queryByText("5")).toBeNull();
   });
 });

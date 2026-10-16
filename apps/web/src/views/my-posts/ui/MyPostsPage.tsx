@@ -10,16 +10,16 @@ import { useMyPosts } from "@/entities/post";
 import { useCategories, buildCategoryTree, flattenCategoryTree, rollupCategoryCounts } from "@/entities/category";
 
 type Props = {
-  category: string | null;
+  categoryId: string | null;
   page: number;
   pinnedPage: number;
   q: string | null;
 };
 
-export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
+export default function MyPostsPage({ categoryId, page, pinnedPage, q }: Props) {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, category, q);
+  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, categoryId, q);
   const categoriesQuery = useCategories();
   const categoryTree = buildCategoryTree(categoriesQuery.data ?? []);
   const flatCategories = flattenCategoryTree(categoryTree);
@@ -46,7 +46,7 @@ export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
           posts={[]}
           counts={rolledCounts}
           totalCount={allCount}
-          activeCategory={category}
+          activeCategoryId={categoryId}
           basePath="/my-posts"
           q={q}
           categories={flatCategories}
@@ -54,12 +54,12 @@ export default function MyPostsPage({ category, page, pinnedPage, q }: Props) {
       </div>
 
       <div className="flex-1">
-        <PostListHeader title="나의 글" count={data.total} basePath="/my-posts" category={category} q={q} />
+        <PostListHeader title="나의 글" count={data.total} basePath="/my-posts" categoryId={categoryId} q={q} />
 
         <PostFeed
           data={data}
           basePath="/my-posts"
-          category={category}
+          categoryId={categoryId}
           q={q}
           emptyMessage="이 카테고리엔 아직 글이 없습니다."
         />

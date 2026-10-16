@@ -4,15 +4,14 @@ import {
   checkCategoryName,
   checkNewCategoryName,
   renameCategoryInList,
-  renameCountKey,
   renamePostCategory,
 } from "./rename";
 
-const cat = (id: string, name: string): Category => ({
+const cat = (id: string, name: string, parentId: string | null = null): Category => ({
   id,
   userId: "u",
   name,
-  parentId: null,
+  parentId,
   depth: 1,
   position: 0,
   createdAt: "",
@@ -34,8 +33,21 @@ describe("checkCategoryName", () => {
     expect(checkCategoryName(LIST, "a", "가".repeat(50))).toBe("ok");
   });
 
-  it("다른 카테고리와 이름이 같으면 duplicate", () => {
+  it("같은 부모 아래 형제와 이름이 같으면 duplicate", () => {
     expect(checkCategoryName(LIST, "a", "이직")).toBe("duplicate");
+  });
+
+  it("다른 부모 아래에 같은 이름이 있어도 통과한다 (글은 id로 가리키므로)", () => {
+    const list = [cat("a", "학습"), cat("b", "사이드"), cat("a-ai", "AI", "a"), cat("b-x", "이슈", "b")];
+
+    expect(checkCategoryName(list, "b-x", "AI")).toBe("ok");
+    expect(checkCategoryName(list, "a-ai", "이슈")).toBe("ok");
+  });
+
+  it("같은 부모 아래 형제와는 하위 카테고리도 겹치면 duplicate", () => {
+    const list = [cat("a", "학습"), cat("a-ai", "AI", "a"), cat("a-be", "백엔드", "a")];
+
+    expect(checkCategoryName(list, "a-be", "AI")).toBe("duplicate");
   });
 
   it("자기 자신의 지금 이름과 같으면 duplicate가 아니라 unchanged", () => {
@@ -53,31 +65,18 @@ describe("renameCategoryInList", () => {
   });
 });
 
-describe("renameCountKey", () => {
-  it("옛 이름 키를 새 이름으로 옮긴다", () => {
-    expect(renameCountKey({ 학습: 3, 이직: 1 }, "학습", "공부")).toEqual({ 공부: 3, 이직: 1 });
-  });
-
-  it("새 이름 키가 이미 있으면 합산한다", () => {
-    expect(renameCountKey({ 학습: 3, 공부: 2 }, "학습", "공부")).toEqual({ 공부: 5 });
-  });
-
-  it("옛 이름 키가 없으면 그대로 돌려준다", () => {
-    const counts = { 이직: 1 };
-    expect(renameCountKey(counts, "학습", "공부")).toBe(counts);
-  });
-});
-
 describe("renamePostCategory", () => {
-  it("옛 카테고리 이름의 글만 새 이름으로 바꾼다", () => {
+  it("그 카테고리(id)에 속한 글의 이름 사본만 바꾼다 — 같은 이름의 다른 카테고리 글은 그대로", () => {
     const posts = [
-      { id: "1", category: "학습" },
-      { id: "2", category: "이직" },
+      { id: "1", category: "AI", categoryId: "study-ai" },
+      { id: "2", category: "AI", categoryId: "side-ai" },
+      { id: "3", category: "AI", categoryId: null },
     ];
 
-    expect(renamePostCategory(posts, "학습", "공부")).toEqual([
-      { id: "1", category: "공부" },
-      { id: "2", category: "이직" },
+    expect(renamePostCategory(posts, "study-ai", "인공지능")).toEqual([
+      { id: "1", category: "인공지능", categoryId: "study-ai" },
+      { id: "2", category: "AI", categoryId: "side-ai" },
+      { id: "3", category: "AI", categoryId: null },
     ]);
   });
 });
@@ -98,9 +97,19 @@ describe("checkNewCategoryName", () => {
     expect(checkNewCategoryName(list, "가".repeat(50))).toBe("ok");
   });
 
-  it("내 카테고리 중 같은 이름이 있으면 duplicate (다른 단계에 있어도 겹침)", () => {
+  it("같은 부모 아래(최상위끼리 포함)에 같은 이름이 있으면 duplicate", () => {
     expect(checkNewCategoryName(list, "학습")).toBe("duplicate");
     expect(checkNewCategoryName(list, " 일기 ")).toBe("duplicate");
+    const withChild = [...list, cat("3", "AI", "1")];
+    expect(checkNewCategoryName(withChild, "AI", "1")).toBe("duplicate");
+  });
+
+  it("다른 부모 아래(또는 최상위)에 같은 이름이 있어도 ok — 그룹바이를 여러 부모에 둘 수 있다", () => {
+    const withChild = [...list, cat("3", "그룹바이", "1")];
+
+    expect(checkNewCategoryName(withChild, "그룹바이", "2")).toBe("ok");
+    expect(checkNewCategoryName(withChild, "그룹바이")).toBe("ok"); // 최상위
+    expect(checkNewCategoryName(withChild, "학습", "2")).toBe("ok"); // 최상위 이름이 하위에 다시 나와도 형제가 아니다
   });
 
   it("목록이 비어 있으면 어떤 이름이든 ok", () => {

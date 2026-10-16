@@ -10,13 +10,13 @@ import { MY_POSTS_KEY } from "./queryKeys";
 export function useMyPosts(
   page: number,
   pinnedPage: number,
-  category: string | null,
+  categoryId: string | null,
   q: string | null = null,
 ) {
   const { data: session, isPending: isSessionPending } = useSession();
   return useQuery({
-    queryKey: [...MY_POSTS_KEY, page, pinnedPage, category, q],
-    queryFn: () => getMyPosts(page, pinnedPage, category, q),
+    queryKey: [...MY_POSTS_KEY, page, pinnedPage, categoryId, q],
+    queryFn: () => getMyPosts(page, pinnedPage, categoryId, q),
     enabled: !isSessionPending && Boolean(session),
     placeholderData: keepPreviousData,
   });

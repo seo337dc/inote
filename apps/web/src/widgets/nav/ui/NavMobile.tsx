@@ -13,7 +13,8 @@ import {
   SheetTrigger,
 } from "@/shared/ui/sheet";
 import { CategoryFilter } from "@/features/filter-posts-by-category";
-import { MOCK_POSTS } from "@/entities/post";
+import { useMyPosts } from "@/entities/post";
+import { buildCategoryTree, flattenCategoryTree, rollupCategoryCounts, useCategories } from "@/entities/category";
 import { InoteWordmark } from "@/shared/ui/inote-wordmark";
 import { NAV_LINKS } from "../model/links";
 import AuthNavAction from "./AuthNavAction";
@@ -23,7 +24,7 @@ export default function NavMobile() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const activeCategory = searchParams.get("category");
+  const activeCategoryId = searchParams.get("categoryId");
 
   return (
     <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
@@ -72,15 +73,12 @@ export default function NavMobile() {
             />
           </nav>
 
-          {(pathname === "/" || pathname === "/my-posts") && (
+          {pathname === "/my-posts" && (
             <div className="mt-2 border-t border-zinc-200 px-4 pt-4">
-              <CategoryFilter
-                posts={MOCK_POSTS}
-                activeCategory={activeCategory}
-                className="w-full"
-                onNavigate={() => setOpen(false)}
-                basePath={pathname}
+              <MyCategoryFilter
+                activeCategoryId={activeCategoryId}
                 q={searchParams.get("q")}
+                onNavigate={() => setOpen(false)}
               />
             </div>
           )}
@@ -88,5 +86,36 @@ export default function NavMobile() {
         </Sheet>
       </div>
     </header>
+  );
+}
+
+// 좁은 화면의 카테고리 필터 — 내 카테고리 트리와 카테고리(id)별 글 수. "나의 글"에서만 열리므로 로그인한 상태다.
+// (예전에는 고정 기본 5개 이름과 예시 글 개수를 보여줘서 실제 카테고리와 달랐다)
+function MyCategoryFilter({
+  activeCategoryId,
+  q,
+  onNavigate,
+}: {
+  activeCategoryId: string | null;
+  q: string | null;
+  onNavigate: () => void;
+}) {
+  const categoriesQuery = useCategories();
+  const myPosts = useMyPosts(1, 1, null, null);
+  const tree = buildCategoryTree(categoriesQuery.data ?? []);
+  const directCounts = myPosts.data?.categoryCounts ?? {};
+
+  return (
+    <CategoryFilter
+      posts={[]}
+      counts={rollupCategoryCounts(tree, directCounts)}
+      totalCount={Object.values(directCounts).reduce((sum, n) => sum + n, 0)}
+      categories={flattenCategoryTree(tree)}
+      activeCategoryId={activeCategoryId}
+      className="w-full"
+      onNavigate={onNavigate}
+      basePath="/my-posts"
+      q={q}
+    />
   );
 }

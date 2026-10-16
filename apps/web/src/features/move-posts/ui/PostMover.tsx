@@ -76,9 +76,9 @@ export default function PostMover() {
     });
   }
 
-  // 이름 검사를 통과하면 추가하고 true. 겹치는 이름이면 추가하지 않고 그 입력줄 아래에 안내를 띄운다
+  // 이름 검사를 통과하면 추가하고 true. 같은 부모 아래에 겹치는 이름이면 추가하지 않고 그 입력줄 아래에 안내를 띄운다
   function tryCreate(scope: string, rawName: string, parentId?: string): boolean {
-    const check = checkNewCategoryName(categoriesQuery.data ?? [], rawName);
+    const check = checkNewCategoryName(categoriesQuery.data ?? [], rawName, parentId ?? null);
     if (check !== "ok") {
       setNameError({ scope, check });
       return false;

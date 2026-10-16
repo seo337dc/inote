@@ -1,4 +1,5 @@
-export type { Post, PostListPage, PublicCategory, UserOutline, MyPostListPage, PostOutlineItem, MyPostOutlineItem } from "./model/types";
+export type { Post, CategoryPathItem, PostListPage, PublicCategory, UserOutline, MyPostListPage, PostOutlineItem, MyPostOutlineItem } from "./model/types";
+export { UNASSIGNED_CATEGORY_KEY } from "./model/types";
 export { MOCK_POSTS } from "./model/mock";
 export { useMyDrafts } from "./model/useMyDrafts";
 export { useMyPosts } from "./model/useMyPosts";

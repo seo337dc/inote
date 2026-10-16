@@ -80,19 +80,19 @@ describe("PostArticle — 카테고리 경로", () => {
 
   it("제목 위에 카테고리 경로('학습 > AI')를 보여주고, 작성자 본인이면 각 이름이 나의 글 목록 링크다", () => {
     loginAs("u1");
-    render(<PostArticle post={makePost("p1", { userId: "u1", category: "AI", categoryPath: ["학습", "AI"] })} />);
+    render(<PostArticle post={makePost("p1", { userId: "u1", category: "AI", categoryId: "c2", categoryPath: [{ id: "c1", name: "학습" }, { id: "c2", name: "AI" }] })} />);
 
     const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
     expect(within(nav).getByRole("link", { name: "학습" })).toHaveAttribute(
       "href",
-      `/my-posts?category=${encodeURIComponent("학습")}`,
+      "/my-posts?categoryId=c1",
     );
-    expect(within(nav).getByRole("link", { name: "AI" })).toHaveAttribute("href", "/my-posts?category=AI");
+    expect(within(nav).getByRole("link", { name: "AI" })).toHaveAttribute("href", "/my-posts?categoryId=c2");
   });
 
   it("다른 사람이 보면 같은 경로를 링크 없이 글자로만 보여준다", () => {
     loginAs(null);
-    render(<PostArticle post={makePost("p1", { category: "AI", categoryPath: ["학습", "AI"] })} />);
+    render(<PostArticle post={makePost("p1", { category: "AI", categoryId: "c2", categoryPath: [{ id: "c1", name: "학습" }, { id: "c2", name: "AI" }] })} />);
 
     const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
     expect(within(nav).queryByRole("link")).toBeNull();
@@ -101,7 +101,7 @@ describe("PostArticle — 카테고리 경로", () => {
 
   it("BE가 아직 경로를 안 보내면 카테고리 이름 하나만 보여준다", () => {
     loginAs("u1");
-    render(<PostArticle post={makePost("p1", { userId: "u1", category: "학습" })} />);
+    render(<PostArticle post={makePost("p1", { userId: "u1", category: "학습", categoryId: "c1" })} />);
 
     const nav = screen.getByRole("navigation", { name: "카테고리 경로" });
     expect(within(nav).getAllByRole("link")).toHaveLength(1);

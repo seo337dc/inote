@@ -10,17 +10,17 @@ const MUTATION_KEY = ["move-post-category"];
 
 type Snapshot = [QueryKey, unknown][];
 
-// 글 하나의 카테고리를 옮긴다. 기존 글 수정 API(PATCH /blog/posts/:id)에 category만 보낸다
+// 글 하나의 카테고리를 옮긴다. 기존 글 수정 API(PATCH /blog/posts/:id)에 categoryId만 보낸다
 // (publish를 안 보내므로 발행 상태·AI 요약은 그대로).
 // 낙관적 업데이트: 응답 전에 화면의 글 목록·카테고리별 글 수를 먼저 바꾸고(로딩 표시 없음),
-// 실패하면 모두 되돌린다. from은 개수를 줄일 옛 카테고리 이름.
+// 실패하면 모두 되돌린다. from은 개수를 줄일 옛 카테고리 id(아직 지정 안 된 글이면 null), to는 새 카테고리.
 export function useMovePostCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationKey: MUTATION_KEY,
-    mutationFn: ({ id, to }: { id: string; from: string; to: string }) =>
-      api.patch(`/blog/posts/${id}`, { category: to }),
+    mutationFn: ({ id, to }: { id: string; from: string | null; to: { id: string; name: string } }) =>
+      api.patch(`/blog/posts/${id}`, { categoryId: to.id }),
     onMutate: async ({ id, from, to }) => {
       await queryClient.cancelQueries({ queryKey: MY_POST_OUTLINE_KEY });
       const snapshots: Snapshot = [];
@@ -37,7 +37,7 @@ export function useMovePostCategory() {
           ...data,
           pinned: changePostCategory(data.pinned, id, to),
           items: changePostCategory(data.items, id, to),
-          categoryCounts: moveCountKey(data.categoryCounts, from, to),
+          categoryCounts: moveCountKey(data.categoryCounts, from, to.id),
         });
       });
       queryClient.getQueriesData<PostOutlineItem[]>({ queryKey: POST_OUTLINE_KEY }).forEach(([key, data]) => {
