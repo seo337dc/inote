@@ -28,9 +28,21 @@ vi.mock("@/widgets/post-outline", () => ({
 }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 vi.mock("./TogglePinButton", () => ({ default: () => null }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }) }));
 vi.mock("./EditPostLink", () => ({ default: () => null }));
 vi.mock("./DeletePostButton", () => ({ default: () => null }));
 vi.mock("./PostSummarySection", () => ({ default: () => null }));
+
+describe("PostArticle — 목록으로 돌아가기", () => {
+  it("글 맨 위에 '← 목록으로' 버튼이 있고, 카테고리 경로·제목보다 먼저 나온다", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    render(<PostArticle post={makePost("p1")} />);
+
+    const button = screen.getByRole("button", { name: "← 목록으로" });
+    const title = screen.getByRole("heading", { level: 1 });
+    expect(button.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
 
 describe("PostArticle — 작성자", () => {
   function loginAs(userId: string | null) {

@@ -1,6 +1,7 @@
 import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { PostAuthor } from "@/widgets/post-list";
 import { buildToc } from "@/shared/lib/toc";
+import BackToListButton from "./BackToListButton";
 import CategoryBreadcrumb from "./CategoryBreadcrumb";
 import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
@@ -24,6 +25,7 @@ export default function PostArticle({ post }: { post: Post }) {
       outline={<OutlinePanel currentPostId={post.id} authorId={post.userId} headerClassName={OUTLINE_HEADER_CLASS} />}
       toc={items.length > 0 ? <TocPanel items={items} headerClassName={TOC_HEADER_CLASS} /> : null}
     >
+      <BackToListButton />
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CategoryBreadcrumb post={post} />
