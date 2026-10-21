@@ -110,6 +110,13 @@ const COMMAND_ITEMS: SlashCommandItem[] = [
         .insertTable(DEFAULT_TABLE)
         .run(),
   },
+  {
+    title: "이미지",
+    description: "사진 파일을 올려서 삽입",
+    keywords: ["image", "img", "photo", "picture", "사진"],
+    command: ({ editor, range }) =>
+      editor.chain().focus().deleteRange(range).pickImage().run(),
+  },
 ];
 
 // 대소문자와 공백을 무시하고 비교한다 — "TABLE"도 "table"로, "제목1"도 "제목 1"로 찾아지게.

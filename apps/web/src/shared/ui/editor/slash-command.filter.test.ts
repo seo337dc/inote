@@ -66,7 +66,7 @@ describe("슬래시 메뉴 검색 — 한글 검색은 그대로 동작한다", 
 
 describe("슬래시 메뉴 검색 — 경계", () => {
   it("빈 쿼리('/'만 친 상태)는 모든 항목을 돌려준다", () => {
-    expect(titles("")).toHaveLength(12);
+    expect(titles("")).toHaveLength(13);
   });
 
   it("어디에도 없는 글자는 빈 목록이다", () => {
@@ -86,5 +86,13 @@ describe("슬래시 메뉴 검색 — 경계", () => {
 
     expect(filterItems("사용자", custom)).toEqual(custom);
     expect(filterItems("x", custom)).toEqual([]);
+  });
+});
+
+describe("슬래시 메뉴 검색 — 이미지", () => {
+  it("'이미지'·image·사진으로 찾을 수 있다", () => {
+    for (const query of ["이미지", "image", "사진"]) {
+      expect(titles(query)).toContain("이미지");
+    }
   });
 });

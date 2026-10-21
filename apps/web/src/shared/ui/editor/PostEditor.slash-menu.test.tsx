@@ -84,7 +84,7 @@ describe("슬래시(/) 메뉴가 열릴 때", () => {
   it("방향키로 '표'까지 내려가 Enter를 누르면 표가 삽입되고 메뉴가 닫힌다", async () => {
     const { user, container } = await openMenu();
 
-    await user.keyboard("{ArrowUp}{Enter}"); // 위로 한 칸 = 맨 마지막 항목(표)
+    await user.keyboard("{ArrowUp}{ArrowUp}{Enter}"); // 위로 두 칸 = 마지막(이미지) 바로 앞 항목(표)
 
     expect(container.querySelectorAll("tr")).toHaveLength(3);
     await waitFor(() => expect(screen.queryByText("제목 1")).toBeNull());
