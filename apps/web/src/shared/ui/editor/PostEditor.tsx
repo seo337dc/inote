@@ -8,6 +8,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { SlashCommand } from "./slash-command";
 import { MarkdownPaste } from "./markdown-paste";
 import {
@@ -24,6 +25,9 @@ import { TableToolbar } from "./TableToolbar";
 import { SelectionBubbleMenu } from "./SelectionBubbleMenu";
 import { Callout } from "./CalloutView";
 import { DEFAULT_TABLE, TABLE_OPTIONS } from "./table-commands";
+import { ResizableImage } from "./image-extension";
+import { ImageUpload } from "./image-upload-extension";
+import { uploadPostImage } from "./image-upload";
 
 type Props = {
   content?: string;
@@ -118,7 +122,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       // 에디터 안에서는 링크를 클릭해도 이동하지 않고 커서만 들어가게 — 그래야 링크 글자를 골라 해제·수정할 수 있음
       StarterKit.configure({ link: { openOnClick: false } }),
       SlashCommand,
+      ImageUpload.configure({
+        upload: uploadPostImage,
+        onError: (message: string) => toast.error(message),
+      }),
       MarkdownPaste,
+      ResizableImage,
       Table.configure(TABLE_OPTIONS),
       TableRow,
       TableHeader,
@@ -331,6 +340,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         >
           콜아웃
         </ToolbarButton>
+        <ToolbarButton onClick={() => editor.chain().focus().pickImage().run()}>이미지</ToolbarButton>
         <span className="ml-auto shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400">
           &apos;/&apos;로 블록 삽입
         </span>
