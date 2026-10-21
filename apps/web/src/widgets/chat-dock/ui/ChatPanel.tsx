@@ -44,7 +44,8 @@ export default function ChatPanel({ open, onClose, chat }: Props) {
         </div>
 
         <div className="relative flex min-h-0 flex-1 overflow-hidden">
-          <div className="flex min-h-0 flex-1 flex-col">
+          {/* min-w-0: 가로 플렉스 안의 항목은 안쪽 내용(긴 코드 블록 등) 너비만큼 늘어나려 해서, 없으면 패널(overflow-hidden)에서 잘려 스크롤도 안 된다 */}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <ChatBody chat={chat} />
             <ChatComposer chat={chat} />
           </div>
