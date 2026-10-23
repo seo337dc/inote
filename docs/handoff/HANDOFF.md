@@ -6,6 +6,7 @@
 > ⚠️ **2026-10-23 문서 정리: 기존 내용은 고치지 않고, 낡은 곳은 "확인 필요"로 표시했다.** 10/8~23 변경은 2절 끝에 git 이력으로 확인한 것만 추가했다.
 > 독서 기록·할 일 목록처럼 그 이전 시기 변경과 운영 반영 여부는 이 문서에 없다 — 최신 구현 경위는 `docs/devlog/fe.md`, 현재 상태는 `CLAUDE.md`.
 > 문서 경로가 바뀌었다: 호스팅 이전 기록은 `docs/adr/0003-hosting-migration.md`.
+> **진행 중인 작업 (2026-10-23): LLM 채팅 업데이트** — 세 레포(inote · inote-ai · inote-server)에 걸친 작업의 인수인계·프롬프트는 [`docs/handoff/chat-update/README.md`](./chat-update/README.md), 결정·API 계약은 `docs/adr/0006-chat-update.md`.
 
 ---
 
