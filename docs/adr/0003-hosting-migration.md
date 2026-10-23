@@ -3,7 +3,7 @@
 > 공통(전체) 기록: 배경·원인·선택지·결정·진행 상황. 서비스별 상세는 각 레포 문서를 본다.
 > - AI 서버(Vercel): `inote-ai` 레포 `docs/vercel-migration.md`
 > - DB(Neon → Supabase): `inote-server` 레포 `docs/supabase-migration.md`, AI 쪽은 `inote-ai` 레포 `docs/supabase-migration.md`
-> Notion 게시용 초안은 같은 폴더의 `notion-draft.md`.
+> Notion 게시용 초안은 [`../blog/hosting-migration-notion-draft.md`](../blog/hosting-migration-notion-draft.md).
 > 작성 시작: 2026-09-30 / 상태: 🟡 진행 중 (AI 이전 완료, BE 재개 대기, DB 이전 예정)
 
 ---
@@ -84,7 +84,7 @@
 - [ ] AI 서버의 글 연결 채팅(BE 작성자 확인), 독서 채팅(카카오 책 검색) 확인 — Vercel `KAKAO_REST_API_KEY` 입력 여부 확인
 - [ ] cron-job.org의 Inote Server 작업 활성화(BE 재개를 확인한 뒤)
 - [ ] `CLAUDE.md`(inote, inote-money)와 각 레포 README의 배포 정보 최신화
-- [ ] Notion 정리 (`notion-draft.md` 기준)
+- [ ] Notion 정리 (`docs/blog/hosting-migration-notion-draft.md` 기준)
 
 ## 6. 환경 변수 (값은 적지 않는다)
 

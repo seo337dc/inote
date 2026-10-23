@@ -1,7 +1,7 @@
 # [블로그 초안] 이미지 업로드를 붙였더니 "고아 파일"이 생겼다 — 설계 과정과 로컬에서 만난 함정들
 
 > 2026-10-13 작업 기록을 블로그용으로 정리한 초안이다. **설계 단계의 글이며 정리 배치는 아직 구현 전**이다. 글에 쓸 때 "구현했다"고 쓰지 않도록 주의.
-> 자세한 근거와 결정 표는 [`image-upload-lifecycle.md`](./image-upload-lifecycle.md), Docker 세팅은 [`../kure/DOCKER-SETUP-GUIDE.md`](../kure/DOCKER-SETUP-GUIDE.md)에 있다.
+> 자세한 근거와 결정 표는 [`0004-image-upload-lifecycle.md`](../adr/0004-image-upload-lifecycle.md), Docker 세팅은 [`../kure/DOCKER-SETUP-GUIDE.md`](../kure/DOCKER-SETUP-GUIDE.md)에 있다.
 > 환경: Next.js(FE) · NestJS 11 + Prisma(BE) · Cloudflare R2(파일 저장) · Supabase(DB, 무료) · Render(BE 무료 배포)
 
 ## 0. 글의 큰 줄거리 (제안 목차)
@@ -130,4 +130,4 @@ Supabase Session pooler(5432)는 동시 연결을 **15개**까지만 허용하�
 이 글과는 별개로, 가이드 문서를 에디터에 붙여 넣어 저장하면 `PATCH /blog/posts/:id`가 403을 돌려줬다. **원인은 아직 확정되지 않았다.**
 - 코드상 Nest의 403은 "작성자 불일치" 한 곳뿐이고, 로그인 문제는 401이다.
 - 응답 헤더에 Cloudflare 흔적이 있고 Nest가 안 붙이는 `Cache-Control` 조합이 보여서 **엣지(WAF)가 본문의 셸 명령·SQL 문자열을 오탐했을 가능성**을 의심 중이다(추정).
-- 확인 순서와 가설은 [`save-403-investigation.md`](./save-403-investigation.md)에 있다. 결론이 나오면 후속 글로 쓰는 것이 좋다.
+- 확인 순서와 가설은 [`0005-save-403-investigation.md`](../adr/0005-save-403-investigation.md)에 있다. 결론이 나오면 후속 글로 쓰는 것이 좋다.

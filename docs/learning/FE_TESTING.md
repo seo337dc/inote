@@ -1,6 +1,6 @@
 # 프론트엔드(inote 웹) 테스트 학습 문서
 
-> `inote-server`의 `LEARNING.md`와 같은 목적 — 세션 간 맥락 유지 + 실제로 뭘 왜 이렇게
+> `inote-server`의 `docs/learning/LEARNING.md`와 같은 목적 — 세션 간 맥락 유지 + 실제로 뭘 왜 이렇게
 > 세팅했는지 나중에 다시 봐도 이해할 수 있게 정리하는 문서.
 > 2026-09-20 — FE 테스트 인프라(Vitest + React Testing Library + Playwright) 처음 세팅하며 작성.
 
@@ -30,20 +30,20 @@
   테스트를 돌림. 그래서 Vite 설정(경로 별칭 `@/*` 등)을 거의 그대로 재사용할 수 있고, ESM
   라이브러리를 불러올 때도 Jest처럼 별도 설정 없이 잘 동작한다.
 
-  > 참고: `inote-server`의 [`LEARNING.md` Chapter 26](../inote-server/LEARNING.md)에서
+  > 참고: `inote-server`의 [`LEARNING.md` Chapter 26](../../../inote-server/docs/learning/LEARNING.md)에서
   > Jest가 순수 ESM 라이브러리(`better-auth`)를 못 불러와서 한참 삽질한 이야기가 나오는데,
   > Vitest는 애초에 ESM을 기본 전제로 만들어져서 그런 문제가 훨씬 적다. FE에서 Vitest를
   > 고른 이유 중 하나.
 
 세팅한 파일:
-- [`vitest.config.mts`](apps/web/vitest.config.mts) — jsdom 환경, `@/*` 경로 별칭, setup 파일 지정
-- [`vitest.setup.ts`](apps/web/vitest.setup.ts) — `@testing-library/jest-dom` 매처(`toBeInTheDocument` 등) 등록
+- [`vitest.config.mts`](../../apps/web/vitest.config.mts) — jsdom 환경, `@/*` 경로 별칭, setup 파일 지정
+- [`vitest.setup.ts`](../../apps/web/vitest.setup.ts) — `@testing-library/jest-dom` 매처(`toBeInTheDocument` 등) 등록
 
 ---
 
 ## 3. 단위 테스트 — 순수 함수만 떼어서 테스트
 
-예시: [`src/shared/lib/validation.test.ts`](apps/web/src/shared/lib/validation.test.ts)
+예시: [`src/shared/lib/validation.test.ts`](../../apps/web/src/shared/lib/validation.test.ts)
 
 ```typescript
 import { EMAIL_REGEX } from "./validation";
@@ -60,7 +60,7 @@ it("유효한 이메일 형식을 통과시킨다", () => {
 
 ## 4. 컴포넌트 테스트 — React Testing Library
 
-예시: [`src/shared/ui/badge.test.tsx`](apps/web/src/shared/ui/badge.test.tsx)
+예시: [`src/shared/ui/badge.test.tsx`](../../apps/web/src/shared/ui/badge.test.tsx)
 
 ```typescript
 import { render, screen } from "@testing-library/react";
@@ -89,7 +89,7 @@ it("children 텍스트를 렌더링한다", () => {
 
 ## 5. E2E 테스트 — Playwright로 실제 브라우저 조작
 
-예시: [`e2e/login.spec.ts`](apps/web/e2e/login.spec.ts)
+예시: [`e2e/login.spec.ts`](../../apps/web/e2e/login.spec.ts)
 
 ```typescript
 test("로그인 페이지에서 테스트 계정 버튼을 누르면 즉시 로그인된다", async ({ page }) => {

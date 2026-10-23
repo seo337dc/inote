@@ -1,4 +1,4 @@
-// 이미지 크기 조절 계산 — 크기는 본문 폭 대비 비율(%)로 저장한다 (docs/EDITOR_IMAGE_UPLOAD.md).
+// 이미지 크기 조절 계산 — 크기는 본문 폭 대비 비율(%)로 저장한다 (docs/adr/0002-editor-image-upload.md).
 
 export const MIN_WIDTH_PERCENT = 10;
 export const MAX_WIDTH_PERCENT = 100;
