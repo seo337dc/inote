@@ -1,6 +1,6 @@
 # Render 무료 서비스가 갑자기 죽었다 — 원인부터 호스팅 정리까지
 
-> Notion 게시용 초안. 작업용 상세 기록은 `hosting-migration.md`(진행 상황·체크리스트·환경 변수·로그).
+> Notion 게시용 초안. 작업용 상세 기록은 [`../adr/0003-hosting-migration.md`](../adr/0003-hosting-migration.md)(진행 상황·체크리스트·환경 변수·로그).
 > 기존 Notion 블로그 내용과 겹치는 부분은 사용자가 확인 후 합치기. 아직 Notion에는 올리지 않음.
 > 상태: 1편(원인·결정) 완료, 2편(AI→Vercel) 완료, 3편(DB→Supabase)은 이전하면서 채운다.
 

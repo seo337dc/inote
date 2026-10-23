@@ -2,7 +2,7 @@
 
 > 2026-10-21 작성. **계약(API)·키 구조는 사용자 승인 전 초안**이다. 승인되기 전에는 코드에 손대지 않는다.
 > 진행 순서는 `CLAUDE.md`의 원칙대로 **계약 → FE → BE(테스트는 사용자가 작성) → 통합**.
-> 이번에 하지 않고 남긴 것은 [`docs/todo/editor-image-upload.md`](todo/editor-image-upload.md)에 기록한다.
+> 이번에 하지 않고 남긴 것은 [`docs/todo/editor-image-upload.md`](../todo/editor-image-upload.md)에 기록한다.
 > 배경: R2 고아 파일 설계 `docs/blog/image-upload-r2-orphan-files.md` (tmp 폴더 → 저장 때 승격, 참조 기반 정리)
 
 ## 1. 요구사항 (사용자)

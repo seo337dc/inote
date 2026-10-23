@@ -6,7 +6,7 @@ import boundaries from "eslint-plugin-boundaries";
 // FSD 레이어 의존성 방향: app -> pages -> widgets -> features -> entities -> shared.
 // 상위 레이어는 하위 레이어를 import할 수 있지만, 그 반대(하위가 상위를 import)는 금지.
 // entities끼리는 서로 참조 가능(예: post가 category를 참조) — FSD에서 흔히 허용되는 예외.
-// 설계 근거 상세: docs/FSD.md
+// 설계 근거 상세: docs/design/FSD.md
 const fsdBoundaries = defineConfig([
   {
     plugins: { boundaries },

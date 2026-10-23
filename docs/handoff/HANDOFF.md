@@ -2,7 +2,10 @@
 
 > PC·채팅·AI 메모리가 바뀌어도 이 파일 + git이 맥락의 단일 소스다.
 > **새 세션 시작 시 이 파일을 먼저 읽는다.** (레포 여러 개에 걸친 작업이라 대표 문서를 `inote`에 둔다)
-> 마지막 갱신: 2026-10-07 (작성자: Claude Code) · 다음 작업 PC: 미정
+> 마지막 갱신: 2026-10-07, 2026-10-23에 git 이력 기준 변경 목록 추가 (작성자: Claude Code) · 다음 작업 PC: 미정
+> ⚠️ **2026-10-23 문서 정리: 기존 내용은 고치지 않고, 낡은 곳은 "확인 필요"로 표시했다.** 10/8~23 변경은 2절 끝에 git 이력으로 확인한 것만 추가했다.
+> 독서 기록·할 일 목록처럼 그 이전 시기 변경과 운영 반영 여부는 이 문서에 없다 — 최신 구현 경위는 `docs/devlog/fe.md`, 현재 상태는 `CLAUDE.md`.
+> 문서 경로가 바뀌었다: 호스팅 이전 기록은 `docs/adr/0003-hosting-migration.md`.
 
 ---
 
@@ -45,7 +48,7 @@
 - 결정: AI DB는 BE 프로젝트에 `ai` 스키마로 합치려다 **별도 프로젝트로 분리**했다 (AI 서버가 `postgres` 계정으로 BE의 사용자·OAuth 토큰·글까지 읽을 수 있고, 스키마 분리는 보안 경계가 아니라서). 코드는 `ai.` 접두사 없이 원래 SQL 그대로다.
 - BE 프로젝트에 합치기 시도 때 복원한 **`ai` 스키마 사본이 남아 있다** → 안정화 후 삭제 대상.
 - 새로 만들었다가 쓰지 않는 Supabase 프로젝트가 있으면 정리한다 (무료 프로젝트는 2개까지, 1주 미사용 시 자동 일시중지).
-- 상세 기록: `docs/infra/hosting-migration.md`(공통), `inote-ai/docs/vercel-migration.md`, `inote-ai/docs/supabase-migration.md`, `inote-server/docs/supabase-migration.md`
+- 상세 기록: `docs/adr/0003-hosting-migration.md`(공통), `inote-ai/docs/vercel-migration.md`, `inote-ai/docs/supabase-migration.md`, `inote-server/docs/supabase-migration.md`
 - Notion `Inote-server` 페이지: 기술 스택·인프라·환경변수·API(68개)·DB 스키마(21개)·테스트·미결정 항목을 10/2에 갱신함. **하위 페이지 5개(DB 문서, API 문서, devlog, 학습 노트, planning)는 아직 낡음.**
 
 ---
@@ -79,12 +82,18 @@
 - **사이드바 이동 아이콘은 호버할 때만**: 글 상세 왼쪽 폴더 줄의 external-link 아이콘은 줄에 마우스를 올리거나 포커스가 있을 때만 보이고, 터치 기기(hover 불가)에서는 항상 보인다
 
 **FE (`inote`)**
-- 글쓰기 에디터 **표 편집 플로팅 툴바**: 행·열 추가/삭제, 셀 내용 지우기, 셀 병합/분할, 표 삭제 (`shared/ui/editor/table-commands.ts`, `TableToolbar.tsx`). 활성 판정은 `editor.can()`이 아니라 아무것도 안 하는 dispatch로 명령을 돌려서 한다 (`can()`은 행이 하나뿐이어도 `deleteRow`를 true로 돌려줌). FE 테스트 305개 통과, 병합·분할은 브라우저에서 확인
+- 글쓰기 에디터 **표 편집 플로팅 툴바**: 행·열 추가/삭제, 셀 내용 지우기, 셀 병합/분할, 표 삭제 (`shared/ui/editor/table-commands.ts`, `TableToolbar.tsx`). 활성 판정은 `editor.can()`이 아니라 아무것도 안 하는 dispatch로 명령을 돌려서 한다 (`can()`은 행이 하나뿐이어도 `deleteRow`를 true로 돌려줌). FE 테스트 305개 통과(10/7 기준 — 현재 개수는 확인 필요), 병합·분할은 브라우저에서 확인
 - 카테고리 관리 화면: 트리 개편, 드래그 위치 이동(dnd-kit), 폴더 접기/펼치기, 이름 수정(FE), '글 이동' 탭
 
 **BE (`inote-server`)**
 - 고정 글 페이지네이션, AI 다시 요약하기 API, 카테고리 트리용 글 목록(`/blog/posts/outline`)
-- ⚠️ **이름 수정 API(#6) 테스트 19개는 일부러 "빨간색"** (구현 전, 자리표시자 `rename`/DTO만 있음)
+- ⚠️ **이름 수정 API(#6) 테스트 19개는 일부러 "빨간색"** (구현 전, 자리표시자 `rename`/DTO만 있음) — **낡음**: `inote-server`에 이름 수정 API 구현 커밋이 있다(2026-10-16 `a6cc584`). 테스트가 지금 통과하는지는 확인 필요
+
+**2026-10-08~23 변경 (git 이력으로 확인한 것만 — 운영 배포·반영 여부는 확인 필요, 상세는 `docs/devlog/fe.md`와 각 레포 커밋)**
+- **FE `inote`** (main에 PR #1~#7 병합): 에디터 취소선·선택 영역 서식 메뉴(버블 메뉴)·툴바 상단 고정·표 툴바 위치 변경, 글쓰기 화면 왼쪽 공개 설정·카테고리 선택, 나의 글 사이드바 카테고리 개수를 **하위 합계로**(10/10 `f32e960` — 아래 3-F "미결정: 사이드바 개수"의 내 글 쪽은 이 변경으로 정해진 것으로 보이나 확인 필요), **글이 카테고리를 id로 참조**(10/16, 설계 `docs/adr/0001-category-id.md`), 글 상세 '← 목록으로', 채팅 패널 긴 코드 블록 잘림 수정, **에디터 이미지 업로드**(10/21, 설계 `docs/adr/0002-editor-image-upload.md`, 남은 일 `docs/todo/editor-image-upload.md`)
+- **BE `inote-server`**: 이름 수정 API `PATCH /categories/:id`, 카테고리 추가 시 같은 부모 아래 중복 409(다른 부모 아래는 허용), `Post.categoryId`(추가형 마이그레이션)와 id 기준 읽기·백필 스크립트(기본 dry-run), 로컬 개발 DB(도커)·시드(`docs/runbooks/local-dev-db.md`), KURE 임베딩 호출·비슷한 글 API(`GET /blog/posts/:id/similar`)·공개 글 id 내부 API, 글 이미지 업로드(tmp → 저장 시 승격)와 글 삭제 시 R2 정리
+- **AI `inote-ai`**: 글 임베딩 API, 글 목록 채팅 '글 찾기' 모드(`/posts-chat/stream`)와 대화 저장·세션 종류(kind), 글쓰기 채팅에 초안 도구, CORS 허용 출처 입력 정리
+- **문서**: 이 레포 문서 구조 정리(2026-10-23) — `docs/{adr,design,learning,blog,todo}` 분리. 바뀐 경로는 위 배너 참고
 
 ---
 
@@ -115,7 +124,7 @@
 - **AI 서버가 요청자를 검증하지 않는다**: FE가 보낸 `user_id`를 그대로 신뢰해서, 공개 글 API에 `userId`가 노출되는 점과 합치면 다른 사람의 대화 목록·이력을 읽을 수 있을 가능성이 크다. 후보: BE가 짧은 수명 토큰 발급 / AI가 Better Auth 세션 직접 검증
 - 운영 Swagger(`/api/docs`) 공개 범위, Cloudflare R2 설정(이미지 업로드), Render 750시간 한도 대응(낮 시간대만 핑 vs 유료)
 
-### E. BE 카테고리 작업 (순서 유지)
+### E. BE 카테고리 작업 (순서 유지) — ⚠️ 10/7 기준, #6 이름 수정 API는 10/16 구현됨(위 변경 목록). 나머지 항목의 현재 상태는 확인 필요
 1. **#6 이름 수정 API — 테스트를 통과하게 구현**
    - 테스트: `inote-server/src/categories/categories.rename.spec.ts`(12개), `dto/rename-category.dto.spec.ts`(7개). 각 테스트에 주석이 있고 파일 상단에 계약·구현 계획이 있다
    - 구현: `dto/rename-category.dto.ts`(공백 정리 `@Transform` + 1~50자), `categories.service.ts`의 `rename`(조회 → 남의 것 404 → 같은 이름이면 그대로 → 중복 400 → 카테고리·내 글을 한 `$transaction`으로 갱신), 컨트롤러 `PATCH /categories/:id`. `Post.category`는 이름 문자열이라 이름이 바뀌면 그 사용자의 글도 같이 갱신해야 한다
@@ -176,8 +185,8 @@
 | 문서 | 내용 |
 |---|---|
 | `inote/CLAUDE.md` | 프로젝트 규칙·구조·커밋 전 체크리스트·작업 순서 |
-| `inote/docs/infra/hosting-migration.md` | Render 정지 원인, 선택지, 결정, 진행 상황 |
-| `inote/docs/infra/notion-draft.md` | Notion 게시용 초안 |
+| `inote/docs/adr/0003-hosting-migration.md` | Render 정지 원인, 선택지, 결정, 진행 상황 |
+| `inote/docs/blog/hosting-migration-notion-draft.md` | Notion 게시용 초안 |
 | `inote-ai/docs/vercel-migration.md` | AI 서버 Vercel 이전 상세·트러블슈팅 |
 | `inote-ai/docs/supabase-migration.md` | AI DB를 별도 Supabase 프로젝트로 분리한 기록·트러블슈팅 |
 | `inote-server/docs/supabase-migration.md` | Neon → Supabase 이전 계획·진행 로그·트러블슈팅 |

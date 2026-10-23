@@ -1,4 +1,4 @@
-# inote-blog — 기획서
+# inote — 기획서
 
 > `STRATEGY.md`가 "무엇을 만들지"라면, 이 문서는 "왜 만들고 무엇을 성공으로 볼지"를 정의한다.
 > devlog-llm의 PLANNING.md 형식과 원칙을 이어받되, iNote 시리즈 통합에 맞춰 다시 잡았다.
@@ -31,7 +31,7 @@ iNote 시리즈(`inote-money`와 같은 계열)로 편입하기로 함. 가장 �
 
 | 컴포넌트 | 역할 | 레포 |
 |---|---|---|
-| `inote-blog` | 블로그/노션 스타일 UI (Next.js) | 신규 — 이 레포 |
+| `inote` | 블로그/노션 스타일 UI (Next.js) | 신규 — 이 레포 |
 | `inote-server`의 `blog` 모듈 | 글 CRUD API, 인증 | 기존 레포 확장 (Better Auth·Prisma·Neon DB 그대로 재사용) |
 | [`inote-ai`](https://github.com/seo337dc/inote-ai) | LLM 채팅·임베딩·RAG | 신규 레포, **별도 DB** |
 
