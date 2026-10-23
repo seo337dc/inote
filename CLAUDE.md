@@ -128,6 +128,14 @@ devlog-llm과 동일한 방식 유지.
   자동으로 커밋·푸시까지 진행해서 사용자가 정정함 — 이 규칙이 이미 있었는데도 지켜지지 않았던 사례.)
 - **커밋을 한 번에 몰아서 하지 않는다.** 여러 기능/파일을 한 세션에서 고쳤어도 커밋은 기능 단위로
   쪼개서 각각 따로 만든다 (2026-09-20 추가 — `inote-server`/`inote-money`/`inote` 공통 규칙).
+- **작업은 항상 새 브랜치에서 한다. `main`에 직접 커밋·push하지 않는다** (2026-10-23 추가, `inote-server`/`inote-money`/`inote` 공통).
+  - 커밋하기 전에 현재 브랜치를 확인한다. `main`이면 먼저 새 브랜치를 만든다. 이미 있는 브랜치가 이번 작업과 무관하거나
+    **이미 main에 병합된 브랜치**면 그 위에 이어서 커밋하지 않고 **최신 `origin/main`에서 새 브랜치를 딴다**
+    (`git fetch` → `git checkout -b <새 브랜치> origin/main`).
+  - 브랜치 이름은 `feat/`·`fix/`·`docs/`·`chore/` + 한 줄 요약(영문 kebab-case).
+  - `main`으로 가는 길은 **PR 하나뿐**이다. `git push origin main`, `main`으로의 force push, PR 없이 `main`에 병합하는 것은
+    사용자가 요청해도 먼저 이 규칙을 상기시키고 확인한다. 병합 자체는 사람이 한다.
+  - 사용자가 푸시를 요청했을 때도 브랜치 푸시(`git push -u origin <브랜치>`)만 한다. PR 생성은 별도 요청이 있을 때만.
 - **커밋할 때는 PR description도 함께 작성한다** (2026-10-23 추가, `inote-server`와 공통) — 사용자가 커밋을
   요청하면 커밋 직후, 그 브랜치의 PR description 초안을 [`.github/pull_request_template.md`](.github/pull_request_template.md)
   형식(개요 / 변경 내용 / 배포 시 주의 / 테스트 / 문서 갱신 / 알려진 한계·후속)에 맞춰 작성해 사용자에게
