@@ -13,7 +13,7 @@ export default function ChatComposer({ chat }: Props) {
     if (e.nativeEvent.isComposing || e.keyCode === 229) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (chat.input.trim()) chat.handleSend(e as unknown as React.FormEvent);
+      if (chat.input.trim() && !chat.isSending) chat.handleSend(e as unknown as React.FormEvent);
     }
     // Shift+Enter는 기본 동작(줄바꿈) 그대로 둠
   }
@@ -40,7 +40,7 @@ export default function ChatComposer({ chat }: Props) {
       />
       <button
         type="submit"
-        disabled={!chat.input.trim()}
+        disabled={!chat.input.trim() || chat.isSending}
         aria-label="보내기"
         className="rounded bg-zinc-900 p-2 text-white hover:bg-zinc-800 disabled:opacity-50 disabled:hover:bg-zinc-900"
       >

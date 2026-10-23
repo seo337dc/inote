@@ -8,6 +8,8 @@ import type { ChatMessage } from "../model/types";
 
 type Props = {
   messages: ChatMessage[];
+  // 답변을 기다리는 중 — 빈 답변 말풍선 대신 점 세 개 로딩을 보여준다
+  isSending?: boolean;
 };
 
 const markdownComponents: Components = {
@@ -59,6 +61,24 @@ const markdownComponents: Components = {
   hr: () => <hr className="my-2 border-zinc-300" />,
 };
 
+function TypingBubble() {
+  return (
+    <div
+      role="status"
+      aria-label="답변 작성 중"
+      className="flex items-center gap-1 rounded-lg bg-zinc-100 px-3 py-3"
+    >
+      {[0, 150, 300].map((delay) => (
+        <span
+          key={delay}
+          style={{ animationDelay: `${delay}ms` }}
+          className="size-1.5 animate-bounce rounded-full bg-zinc-400 motion-reduce:animate-none"
+        />
+      ))}
+    </div>
+  );
+}
+
 function AssistantBubble({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -98,7 +118,7 @@ function AssistantBubble({ text }: { text: string }) {
   );
 }
 
-export default function ChatMessages({ messages }: Props) {
+export default function ChatMessages({ messages, isSending = false }: Props) {
   return (
     <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
       {messages.map((m) => (
@@ -107,6 +127,8 @@ export default function ChatMessages({ messages }: Props) {
             <p className="max-w-[85%] rounded-lg bg-zinc-900 px-3 py-2 text-sm whitespace-pre-wrap text-white">
               {m.text}
             </p>
+          ) : isSending && m.text === "" ? (
+            <TypingBubble />
           ) : (
             <AssistantBubble text={m.text} />
           )}
