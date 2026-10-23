@@ -1,21 +1,19 @@
 @AGENTS.md
 
 > 레포 전체 공통 규칙은 [`../../CLAUDE.md`](../../CLAUDE.md) 참고 (여기서 걸어서 못 오는
-> 위치라 놓치기 쉬움 — FE 작업 원칙, 커밋 규칙 등 대부분 거기 있음).
+> 위치라 놓치기 쉬움 — FE 작업 원칙, 커밋 규칙, **커밋 전 체크리스트** 등 대부분 거기 있음).
+> 체크리스트를 이 파일에 따로 복사해 두지 않는다 — 두 벌이 되면 서로 어긋남(E2E 보류 상태가 실제로
+> 충돌했던 적 있음).
 
-## ✅ 커밋 전 체크리스트 (매번 이 순서 그대로)
+## 이 폴더(`apps/web`)에서 쓰는 명령
 
-기능/컴포넌트 하나를 완성했을 때 — 커밋하기 직전, 예외 없이 이 폴더(`apps/web`)에서:
-
-- [ ] **단위/컴포넌트 테스트** — 새로 만들거나 수정한 로직/컴포넌트에 대해 Vitest + React
-      Testing Library 테스트 작성/보강 후 `pnpm test` 전체 통과
-- [ ] **Lint** — `pnpm lint`로 FSD 레이어 위반 등 확인
-- [ ] **빌드** — `pnpm build`로 타입 에러 없는지 확인
-- [ ] **E2E 테스트** — `pnpm test:e2e`(Playwright, 로컬에 `inote-server`가 `:3200`에 떠 있어야
-      함)로 로그인 같은 핵심 흐름이 안 깨졌는지 확인
-- [ ] **CLAUDE.md 문서 최신화** — 이 파일 또는 [`../../CLAUDE.md`](../../CLAUDE.md)에 적힌 사실
-      정보가 이번 작업으로 바뀌었다면 커밋 전에 갱신한다
-- [ ] 다섯 가지 다 통과한 뒤에만 커밋 (커밋/푸시 자체는 사용자가 명시적으로 요청했을 때만)
+```bash
+pnpm dev        # http://localhost:3011
+pnpm test       # Vitest (단위·컴포넌트, MSW)
+pnpm lint       # ESLint — FSD 레이어 위반도 여기서 잡힘
+pnpm build      # 타입 에러 확인
+pnpm test:e2e   # Playwright (로컬에 inote-server가 :3200에 떠 있어야 함 — 현재 보류 중, 루트 CLAUDE.md 참고)
+```
 
 FE 테스트 개념(단위/컴포넌트/E2E 차이, Vitest를 쓰는 이유 등)이 처음이라면
-[`../../LEARNING.md`](../../LEARNING.md) 먼저 읽을 것.
+[`../../docs/learning/FE_TESTING.md`](../../docs/learning/FE_TESTING.md) 먼저 읽을 것.
