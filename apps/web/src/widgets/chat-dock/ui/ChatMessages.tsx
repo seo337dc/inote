@@ -3,6 +3,7 @@ import { Check, Copy } from "lucide-react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { remarkBreakTags } from "@/shared/lib/remark-break-tags";
+import { isInlineCode } from "@/shared/lib/markdown-code";
 import type { ChatMessage } from "../model/types";
 
 type Props = {
@@ -24,8 +25,8 @@ const markdownComponents: Components = {
     </a>
   ),
   code: ({ className, children }) => {
-    // 코드블록(```)은 pre>code로 오고, 인라인 코드는 className이 없음
-    if (!className) {
+    // 코드블록(```)은 pre>code로 온다. 언어 없는 코드블록도 있어서 className만으로는 구분 못 함
+    if (isInlineCode(className, children)) {
       return (
         <code className="rounded bg-zinc-200 px-1 py-0.5 font-mono text-[0.85em]">
           {children}
