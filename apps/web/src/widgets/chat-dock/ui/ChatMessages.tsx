@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { remarkBreakTags } from "@/shared/lib/remark-break-tags";
 import { isInlineCode } from "@/shared/lib/markdown-code";
 import type { ChatMessage } from "../model/types";
+import { useStickToBottom } from "../model/useStickToBottom";
 
 type Props = {
   messages: ChatMessage[];
@@ -119,8 +120,14 @@ function AssistantBubble({ text }: { text: string }) {
 }
 
 export default function ChatMessages({ messages, isSending = false }: Props) {
+  const { containerRef, onScroll } = useStickToBottom(messages, isSending);
+
   return (
-    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+    <div
+      ref={containerRef}
+      onScroll={onScroll}
+      className="flex-1 space-y-3 overflow-y-auto px-4 py-3"
+    >
       {messages.map((m) => (
         <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
           {m.role === "user" ? (
