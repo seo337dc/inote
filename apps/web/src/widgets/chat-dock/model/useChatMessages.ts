@@ -27,6 +27,8 @@ export function useChatMessages() {
   const [sessionSearch, setSessionSearch] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const sendingRef = useRef(false);
 
   // 글쓰기 페이지 진입/이동 시 그 글의 세션으로 강제 전환. 글쓰기 페이지를 벗어나면
   // 다음에 (같은 글이든 다른 글이든) 다시 들어왔을 때 항상 재동기화되도록 리셋.
@@ -152,10 +154,23 @@ export function useChatMessages() {
     setSessionPanelOpen((v) => !v);
   }
 
+  // 답변이 끝날 때까지 다음 전송을 막는다 — 막지 않으면 두 답변이 섞여 들어온다.
+  // state는 화면(로딩·버튼 비활성)용이고, 같은 틱에 두 번 눌리는 경우는 ref로 막는다.
   async function sendMessage(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || sendingRef.current) return;
 
+    sendingRef.current = true;
+    setIsSending(true);
+    try {
+      await streamReply(trimmed);
+    } finally {
+      sendingRef.current = false;
+      setIsSending(false);
+    }
+  }
+
+  async function streamReply(trimmed: string) {
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", text: trimmed };
     const assistantId = crypto.randomUUID();
     const history = [...messages, userMessage];
@@ -257,6 +272,7 @@ export function useChatMessages() {
     messages,
     input,
     setInput,
+    isSending,
     handleSend,
     sendPreset,
     sessions,

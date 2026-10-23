@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ChatMessage } from "./types";
 
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
@@ -15,11 +15,26 @@ const READING_SUGGESTIONS = ["이번 달 베스트셀러 알려줘", "책 추천
 export function useReadingChatMessages() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const sendingRef = useRef(false);
 
+  // 답변이 끝날 때까지 다음 전송을 막는다 — 막지 않으면 두 답변이 섞여 들어온다.
+  // state는 화면(로딩·버튼 비활성)용이고, 같은 틱에 두 번 눌리는 경우는 ref로 막는다.
   async function sendMessage(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || sendingRef.current) return;
 
+    sendingRef.current = true;
+    setIsSending(true);
+    try {
+      await streamReply(trimmed);
+    } finally {
+      sendingRef.current = false;
+      setIsSending(false);
+    }
+  }
+
+  async function streamReply(trimmed: string) {
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", text: trimmed };
     const assistantId = crypto.randomUUID();
     const history = [...messages, userMessage];
@@ -95,6 +110,7 @@ export function useReadingChatMessages() {
     messages,
     input,
     setInput,
+    isSending,
     handleSend,
     sendPreset,
     sessions: [],

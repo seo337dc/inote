@@ -1,6 +1,7 @@
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { remarkBreakTags } from "@/shared/lib/remark-break-tags";
+import { isInlineCode } from "@/shared/lib/markdown-code";
 
 const components: Components = {
   p: ({ children }) => <p className="mb-3 leading-relaxed last:mb-0">{children}</p>,
@@ -17,7 +18,7 @@ const components: Components = {
     </a>
   ),
   code: ({ className, children }) => {
-    if (!className) {
+    if (isInlineCode(className, children)) {
       return (
         <code className="rounded bg-zinc-100 px-1 py-0.5 font-mono text-[0.85em]">
           {children}
