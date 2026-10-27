@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { render, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
 
@@ -134,5 +134,50 @@ describe("에디터 — 체크리스트 편집", () => {
       expect(el.querySelectorAll('ul[data-type="taskList"] ul[data-type="taskList"]')).toHaveLength(1),
     );
     expect(items()).toHaveLength(2);
+  });
+});
+
+describe("툴바의 '체크박스' 버튼", () => {
+  const button = () => screen.getByRole("button", { name: "체크박스" });
+
+  it("문단에 커서를 두고 누르면 그 문단이 체크 안 된 체크리스트 항목이 된다", async () => {
+    const { user, el, items } = await setup();
+    await user.click(el);
+    await user.keyboard("할 일");
+
+    await user.click(button());
+
+    await waitFor(() => expect(items()).toHaveLength(1));
+    expect(items()[0].getAttribute("data-checked")).toBe("false");
+    expect(items()[0].textContent).toContain("할 일");
+  });
+
+  it("체크리스트 안에서는 눌린 상태로 보이고, 다시 누르면 일반 문단으로 돌아온다", async () => {
+    const { user, el, items } = await setup();
+    await user.click(el);
+    await user.keyboard("할 일");
+    expect(button()).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(button());
+    await waitFor(() => expect(button()).toHaveAttribute("aria-pressed", "true"));
+
+    await user.click(button());
+
+    await waitFor(() => expect(items()).toHaveLength(0));
+    expect(button()).toHaveAttribute("aria-pressed", "false");
+    expect(el.textContent).toContain("할 일");
+  });
+
+  it("글머리 목록 안에서 누르면 그 목록이 체크리스트로 바뀐다", async () => {
+    const { user, el, items } = await setup();
+    await user.click(el);
+    await user.keyboard("- 항목");
+    expect(el.querySelector("ul:not([data-type])")).not.toBeNull();
+
+    await user.click(button());
+
+    await waitFor(() => expect(items()).toHaveLength(1));
+    expect(el.querySelector("ul:not([data-type])")).toBeNull();
+    expect(items()[0].textContent).toContain("항목");
   });
 });
