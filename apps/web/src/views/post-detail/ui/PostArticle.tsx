@@ -1,6 +1,7 @@
 import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { PostAuthor } from "@/widgets/post-list";
 import { buildToc } from "@/shared/lib/toc";
+import { lockTaskCheckboxes } from "@/shared/lib/task-list";
 import { ArchivePostButton } from "@/features/archive-posts";
 import BackToListButton from "./BackToListButton";
 import CategoryBreadcrumb from "./CategoryBreadcrumb";
@@ -19,7 +20,9 @@ import TogglePinButton from "./TogglePinButton";
 export default function PostArticle({ post }: { post: Post }) {
   // 3열 배치: 왼쪽 카테고리 트리 / 본문 / 오른쪽 목차(h1~h3). 폭이 부족하면 목차 → 카테고리 순으로 숨기고,
   // 넓은 화면에서는 두 영역을 직접 접어 본문을 넓힐 수 있다 (PostArticleLayout).
-  const { html, items } = buildToc(post.content);
+  const { html: tocHtml, items } = buildToc(post.content);
+  // 상세 화면의 체크리스트는 보기 전용 — 체크박스를 눌러도 바뀌지 않는다(체크는 글을 수정할 때 에디터에서)
+  const html = lockTaskCheckboxes(tocHtml);
 
   return (
     <PostArticleLayout

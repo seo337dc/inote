@@ -327,6 +327,97 @@
   position: absolute;
 }
 
+/* 체크리스트(할 일 목록): 노션처럼 글머리 기호 없이 [체크박스] + 글자. .tiptap(에디터)과 .prose(글 상세) 공통.
+   저장되는 HTML: <ul data-type="taskList"><li data-type="taskItem" data-checked="true|false"><label><input type="checkbox"><span></span></label><div>내용</div></li></ul>
+   체크박스는 브라우저 기본 모양 대신 직접 그려서(appearance: none) 에디터·상세·브라우저가 모두 같게 보인다 */
+.tiptap ul[data-type="taskList"],
+.prose ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type="taskList"] > li,
+.prose ul[data-type="taskList"] > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-left: 0;
+}
+
+/* 체크박스 칸 — 첫 줄 글자(줄간격 1.6)의 세로 가운데에 체크박스(1rem)가 오게 한다 */
+.tiptap ul[data-type="taskList"] > li > label,
+.prose ul[data-type="taskList"] > li > label {
+  display: flex;
+  flex: none;
+  margin-top: 0.3em;
+  user-select: none;
+}
+
+/* 내용 칸. 들여쓴(중첩) 체크리스트는 이 칸 안에 들어가므로 부모 글자 시작점에 자연히 맞춰진다 */
+.tiptap ul[data-type="taskList"] > li > div,
+.prose ul[data-type="taskList"] > li > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tiptap ul[data-type="taskList"] > li > div > p,
+.prose ul[data-type="taskList"] > li > div > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tiptap ul[data-type="taskList"] input[type="checkbox"],
+.prose ul[data-type="taskList"] input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  border: 1.5px solid var(--color-zinc-400, #a1a1aa);
+  border-radius: 0.25rem;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.tiptap ul[data-type="taskList"] input[type="checkbox"]:checked,
+.prose ul[data-type="taskList"] input[type="checkbox"]:checked {
+  border-color: var(--color-zinc-900, #18181b);
+  background-color: var(--color-zinc-900, #18181b);
+}
+
+/* 체크 표시(✓) */
+.tiptap ul[data-type="taskList"] input[type="checkbox"]:checked::after,
+.prose ul[data-type="taskList"] input[type="checkbox"]:checked::after {
+  content: "";
+  width: 0.3125rem;
+  height: 0.5625rem;
+  margin-top: -0.0625rem;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.tiptap ul[data-type="taskList"] input[type="checkbox"]:focus-visible,
+.prose ul[data-type="taskList"] input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-zinc-400, #a1a1aa);
+  outline-offset: 2px;
+}
+
+/* 체크한 항목은 노션처럼 회색 + 취소선. 글자(p)에만 걸어서, 안에 들여쓴 하위 항목까지 줄이 그어지지 않게 한다 */
+.tiptap ul[data-type="taskList"] > li[data-checked="true"] > div > p,
+.prose ul[data-type="taskList"] > li[data-checked="true"] > div > p {
+  color: var(--color-zinc-400, #a1a1aa);
+  text-decoration: line-through;
+}
+
+/* 글 상세(.tiptap이 아닌 .prose)의 체크박스는 disabled라 눌리지 않는다 — 눌릴 것처럼 보이지 않게 */
+.prose:not(.tiptap) ul[data-type="taskList"] input[type="checkbox"] {
+  cursor: default;
+}
+
 /* 콜아웃: 에디터(.callout-node, React 노드뷰)와 글 상세(.prose [data-type="callout"], 저장된 HTML)가 같은 모양.
    저장된 HTML에는 아이콘 요소가 없어서 글 상세는 data-emoji를 ::before로 그리고,
    에디터는 노드뷰가 눌러서 바꿀 수 있는 아이콘 버튼(.callout-icon)을 직접 그린다 */

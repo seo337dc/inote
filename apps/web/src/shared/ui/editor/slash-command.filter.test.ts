@@ -28,15 +28,21 @@ describe("슬래시 메뉴 검색 — 영어로도 찾아진다", () => {
     expect(titles("제목4")).toEqual(["제목 4"]);
   });
 
-  it("list는 글머리 기호 목록과 번호 매기기 목록 둘 다, bullet·number는 각각 하나만 찾는다", () => {
-    expect(titles("list")).toEqual(["글머리 기호 목록", "번호 매기기 목록"]);
+  it("list는 글머리 기호·번호 매기기 목록과 체크리스트(checklist)를 찾고, bullet·number는 각각 하나만 찾는다", () => {
+    expect(titles("list")).toEqual(["글머리 기호 목록", "번호 매기기 목록", "체크리스트"]);
     expect(titles("bullet")).toEqual(["글머리 기호 목록"]);
     expect(titles("number")).toEqual(["번호 매기기 목록"]);
   });
 
+  it("체크리스트는 todo·task·check·checkbox·checklist와 한글 '체크'·'할일'로 찾는다", () => {
+    for (const query of ["todo", "task", "check", "checkbox", "checklist", "체크", "체크박스", "체크리스트", "할일", "할 일"]) {
+      expect(titles(query)).toEqual(["체크리스트"]);
+    }
+  });
+
   it("콜아웃은 callout·box·note로, 한글 '콜아웃'으로 찾는다", () => {
     expect(titles("callout")).toEqual(["콜아웃"]);
-    expect(titles("box")).toEqual(["콜아웃"]);
+    expect(titles("box")).toEqual(["체크리스트", "콜아웃"]); // 체크리스트의 checkbox에도 들어 있다
     expect(titles("note")).toEqual(["콜아웃"]);
     expect(titles("콜아웃")).toEqual(["콜아웃"]);
     expect(titles("콜")).toEqual(["콜아웃"]);
@@ -66,7 +72,7 @@ describe("슬래시 메뉴 검색 — 한글 검색은 그대로 동작한다", 
 
 describe("슬래시 메뉴 검색 — 경계", () => {
   it("빈 쿼리('/'만 친 상태)는 모든 항목을 돌려준다", () => {
-    expect(titles("")).toHaveLength(13);
+    expect(titles("")).toHaveLength(14);
   });
 
   it("어디에도 없는 글자는 빈 목록이다", () => {
