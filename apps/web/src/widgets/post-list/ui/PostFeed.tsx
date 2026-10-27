@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Star } from "lucide-react";
 import type { PostListPage } from "@/entities/post";
-import PostList from "./PostList";
+import PostList, { type PostSelection } from "./PostList";
 import PostListEmpty from "./PostListEmpty";
 import PostPagination from "./PostPagination";
 
@@ -14,11 +14,13 @@ type Props = {
   emptyMessage?: string;
   // 조건 없이 글이 0개일 때 보여줄 화면 — 기본은 "첫 글을 써 보세요"(내 글 기준). 다른 사람의 목록은 다른 안내를 넘긴다
   emptyState?: ReactNode;
+  // 선택 모드(체크박스) — 고정 글·전체 글 두 목록에 똑같이 적용한다
+  selection?: PostSelection;
 };
 
 // 위 "고정 글"(3개씩, pinnedPage) + 아래 "전체 글"(page)을 각각 자기 페이지네이션으로 넘긴다.
 // 한쪽을 넘겨도 다른 쪽 페이지는 주소에 남겨 유지한다. 홈과 나의 글이 같이 씀.
-export default function PostFeed({ data, basePath, categoryId, q = null, emptyMessage, emptyState }: Props) {
+export default function PostFeed({ data, basePath, categoryId, q = null, emptyMessage, emptyState, selection }: Props) {
   const { pinned, pinnedPage, pinnedTotal, pinnedTotalPages, items, total, page, totalPages } = data;
 
   // 아무 조건 없이 글이 0개일 때만 "첫 글을 써 보세요" 화면 — 필터·검색 결과가 0개인 건 목록 안에서 안내
@@ -40,6 +42,7 @@ export default function PostFeed({ data, basePath, categoryId, q = null, emptyMe
             posts={pinned}
             showPinIcon={false}
             emptyMessage="이 페이지에는 고정 글이 없습니다."
+            selection={selection}
           />
           <PostPagination
             page={pinnedPage}
@@ -54,7 +57,7 @@ export default function PostFeed({ data, basePath, categoryId, q = null, emptyMe
 
       <section>
         {hasPinned && <h2 className="mb-1 text-sm font-semibold text-zinc-500">전체 글</h2>}
-        <PostList posts={items} emptyMessage={hasPinned ? "다른 글이 없습니다." : listEmptyMessage} />
+        <PostList posts={items} emptyMessage={hasPinned ? "다른 글이 없습니다." : listEmptyMessage} selection={selection} />
         <PostPagination
           page={page}
           totalPages={totalPages}

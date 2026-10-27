@@ -73,9 +73,11 @@ export default function NavMobile() {
             />
           </nav>
 
-          {pathname === "/my-posts" && (
+          {(pathname === "/my-posts" || pathname === "/my-posts/archive") && (
             <div className="mt-2 border-t border-zinc-200 px-4 pt-4">
               <MyCategoryFilter
+                basePath={pathname}
+                archived={pathname === "/my-posts/archive"}
                 activeCategoryId={activeCategoryId}
                 q={searchParams.get("q")}
                 onNavigate={() => setOpen(false)}
@@ -92,16 +94,20 @@ export default function NavMobile() {
 // 좁은 화면의 카테고리 필터 — 내 카테고리 트리와 카테고리(id)별 글 수. "나의 글"에서만 열리므로 로그인한 상태다.
 // (예전에는 고정 기본 5개 이름과 예시 글 개수를 보여줘서 실제 카테고리와 달랐다)
 function MyCategoryFilter({
+  basePath,
+  archived,
   activeCategoryId,
   q,
   onNavigate,
 }: {
+  basePath: string;
+  archived: boolean;
   activeCategoryId: string | null;
   q: string | null;
   onNavigate: () => void;
 }) {
   const categoriesQuery = useCategories();
-  const myPosts = useMyPosts(1, 1, null, null);
+  const myPosts = useMyPosts(1, 1, null, null, archived);
   const tree = buildCategoryTree(categoriesQuery.data ?? []);
   const directCounts = myPosts.data?.categoryCounts ?? {};
 
@@ -114,7 +120,7 @@ function MyCategoryFilter({
       activeCategoryId={activeCategoryId}
       className="w-full"
       onNavigate={onNavigate}
-      basePath="/my-posts"
+      basePath={basePath}
       q={q}
     />
   );

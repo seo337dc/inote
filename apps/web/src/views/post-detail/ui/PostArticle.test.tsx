@@ -28,6 +28,7 @@ vi.mock("@/widgets/post-outline", () => ({
 }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 vi.mock("./TogglePinButton", () => ({ default: () => null }));
+vi.mock("@/features/archive-posts", () => ({ ArchivePostButton: () => null }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }) }));
 vi.mock("./EditPostLink", () => ({ default: () => null }));
 vi.mock("./DeletePostButton", () => ({ default: () => null }));
@@ -209,5 +210,21 @@ describe("PostArticle — 카테고리·목차 접기", () => {
 
     expect(screen.queryByRole("button", { name: /목차/ })).toBeNull();
     expect(screen.getByRole("button", { name: "카테고리 접기" })).toBeInTheDocument();
+  });
+});
+
+describe("PostArticle — 보관한 글 안내", () => {
+  it("보관한 글이면 목록에는 나오지 않고 작성자만 볼 수 있다는 안내를 보여준다", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    render(<PostArticle post={makePost("p1", { archivedAt: "2026-10-01T00:00:00.000Z" })} />);
+
+    expect(screen.getByRole("note")).toHaveTextContent("보관된 글이에요");
+  });
+
+  it("보관하지 않은 글에는 안내가 없다", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    render(<PostArticle post={makePost("p1")} />);
+
+    expect(screen.queryByRole("note")).toBeNull();
   });
 });

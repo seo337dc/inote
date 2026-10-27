@@ -13,4 +13,6 @@ export { useUserOutline } from "./model/useUserOutline";
 export { useMyPostOutline } from "./model/useMyPostOutline";
 export { MY_POSTS_KEY, POST_OUTLINE_KEY, MY_POST_OUTLINE_KEY } from "./model/queryKeys";
 export { useMovePostCategory } from "./model/useMovePostCategory";
+export { useArchivePosts } from "./model/useArchivePosts";
+export type { ArchiveVariables } from "./model/useArchivePosts";
 export { moveCountKey, changePostCategory } from "./lib/moveCategory";

@@ -572,3 +572,34 @@ UI 의사결정 위주로 기록.
 - **글을 삭제하면 R2 이미지가 남는 문제**를 발견 → BE에서 글 삭제 시 정리하도록 수정(BE `DEV_LOG.md` 참고). 본문에서 지운 이미지·저장 없이 나간 업로드는 여전히 남아 정리 배치가 필요(`docs/todo/`).
 - **로컬 테스트가 운영 R2 버킷과 섞이는 문제**: BE `R2_KEY_PREFIX`(로컬은 `scripts/dev-db.sh start`가 `dev`를 주입)로 로컬은 버킷의 `dev/` 아래만 쓴다. FE는 R2 URL을 그대로 쓰므로 변경 없음.
 - 로컬 FE는 `.env.local`이 운영 BE를 가리키므로 `NEXT_PUBLIC_API_URL=http://localhost:3200 pnpm dev`로 덮어써 실행한다.
+
+---
+
+## 2026-10-27 — 글 보관함(아카이브) FE
+
+설계·계약은 `docs/adr/0007-archive-posts.md`, 남긴 것은 `docs/todo/archive-posts.md`. 순서는 계약 → FE → BE → 통합이라 FE는 MSW로 계약을 흉내 내서 먼저 만들고 테스트했고, 이후 BE(`inote-server` `DEV_LOG.md` 참고)를 만들어 로컬에서 통합 확인까지 했다.
+
+### 작업 내용
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | `Post.archivedAt` 타입, `getMyPosts`/`useMyPosts`에 `archived`(보관함이면 `archived=true`, 캐시 키도 분리) | ✅ |
+| 2 | `useArchivePosts` — `POST /blog/posts/archive`·`unarchive`(`ids`), 성공하면 나의 글·카테고리 트리·글 상세 캐시 무효화. 응답은 **실제로 처리된 id만** (서버가 건너뛴 글은 빠짐) | ✅ |
+| 3 | `/my-posts/archive` 경로 + `[나의 글 | 보관함]` 탭(`MyPostsTabs`). 같은 `MyPostsPage`에 `archived`만 넘겨 재사용 | ✅ |
+| 4 | 선택 모드 — `PostList`에 선택용 체크박스(`selection` prop, 없으면 지금과 동일), 화면 아래 `ArchiveActionBar`(개수·이 페이지 전체 선택·선택 해제·보관하기/보관 해제하기) | ✅ |
+| 5 | 글 상세(작성자만) `ArchivePostButton` + 보관한 글 안내 문구 | ✅ |
+| 6 | 모바일 드로어의 카테고리 필터가 보관함에서도 나오게 확장(`basePath`·`archived` 전달) | ✅ |
+| 7 | 테스트 — `useArchivePosts`·`getMyPosts`·`PostList` 선택·`ArchiveActionBar`·`ArchivePostButton`·`MyPostsTabs`·`MyPostsPage` 흐름·`PostArticle` 안내 | ✅ |
+
+### 결정과 이유
+- **`?view=archive`가 아니라 `/my-posts/archive` 경로로**: 검색·카테고리 필터·페이지 링크가 전부 `basePath`로 만들어져서, 경로만 바꾸면 그 링크들이 손대지 않고 그대로 동작한다. 쿼리로 두면 링크마다 `view`를 따라 붙여야 했다.
+- **선택은 "어느 화면에서 골랐는지"와 함께 보관**: `scope`(경로·페이지·카테고리·검색어)가 바뀌면 그 선택은 자동으로 무효가 된다 → 안 보이는 글이 선택된 채 보관되는 일이 없다. `useEffect`로 초기화하지 않아 린트(`set-state-in-effect`)도 피했다.
+- **서버가 건너뛴 글을 정직하게 반영**: 응답의 `archivedIds` 개수로 안내하고, 상세 버튼은 처리된 글이 0이면 상태를 바꾸지 않고 오류를 보여준다(발행 전 글 등).
+- **보관한 글의 직접 접근**: 서버가 작성자만 200, 타인은 404로 내려주므로, 기존 `OwnerPostFallback`(서버 쿠키 문제로 404가 나면 브라우저에서 다시 조회)이 그대로 작성자 본인을 구제한다 — 상세 화면은 따로 바꾸지 않았다.
+
+### 계약 보완
+- 보관함(`archived=true`)의 `categoryCounts`는 **보관한 글 기준**, 나의 글의 `categoryCounts`는 보관 글을 뺀 값 — BE 단계에서 지켜야 한다(ADR 5절에 추가).
+
+### 검증
+- `tsc`·`eslint` 오류 없음, vitest 86개 파일 / 685개 통과, `next build` 통과(`/my-posts/archive` 포함).
+- **로컬 통합 확인(로컬 FE·BE, 운영 DB)**: 보관 → 나의 글·홈에서 사라짐 → 카테고리 개수 감소 → 보관함에 보임(최신순) → 보관한 글 상세는 작성자만(비로그인은 404) → 보관 해제 시 복귀까지 사용자가 화면에서 확인했다.
+- 배포는 **BE 먼저**(마이그레이션 `add_post_archived_at`이 서버 시작 때 적용됨), 그다음 FE — FE가 먼저 나가면 `archive` 호출이 404다.

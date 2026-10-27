@@ -26,6 +26,8 @@ export type Post = {
   lastEditedAt: string | null;
   isPrivate: boolean;
   pinned: boolean;
+  // 보관함으로 옮긴 시각 — null이면 일반 글. 보관한 글은 목록·검색에서 빠지고 작성자만 주소로 열 수 있다
+  archivedAt: string | null;
   // 출간 화면에서 올린 썸네일 (R2 URL), 없으면 null
   thumbnailUrl: string | null;
   aiSummary: { summary: string[] } | null;

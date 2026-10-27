@@ -8,12 +8,20 @@ type Props = {
   emptyMessage?: string;
   // 고정 글 섹션처럼 이미 "고정 글" 제목으로 묶여 있으면 행마다 별을 또 달 필요가 없음
   showPinIcon?: boolean;
+  // 선택 모드 — 있으면 각 글 왼쪽에 체크박스를 보여준다 (보관함 일괄 보관/해제용). 없으면 지금 모양 그대로
+  selection?: PostSelection;
+};
+
+export type PostSelection = {
+  selectedIds: ReadonlySet<string>;
+  onToggle: (id: string) => void;
 };
 
 export default function PostList({
   posts,
   emptyMessage = "글이 없습니다.",
   showPinIcon = true,
+  selection,
 }: Props) {
   return (
     <ul className="divide-y divide-zinc-100">
@@ -21,6 +29,15 @@ export default function PostList({
         <li key={post.id} className="py-5">
           {/* 카드 전체가 아니라 제목(글)과 작성자(그 사람의 글 목록)가 각각 링크 — 링크 안에 링크를 넣을 수 없어서 카드를 링크로 감싸지 않는다 */}
           <div className="flex items-start gap-4">
+            {selection && (
+              <input
+                type="checkbox"
+                checked={selection.selectedIds.has(post.id)}
+                onChange={() => selection.onToggle(post.id)}
+                aria-label={`${post.title} 선택`}
+                className="mt-1.5 size-4 shrink-0 accent-zinc-900"
+              />
+            )}
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-400">
                 <div className="flex items-center gap-2 overflow-hidden">

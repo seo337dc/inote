@@ -40,6 +40,16 @@ describe("getMyPosts", () => {
     expect(captured.url?.searchParams.has("category")).toBe(false);
   });
 
+  it("보관함이면 archived=true를 보내고, 기본은 보내지 않는다 (나의 글은 보관한 글이 빠진다)", async () => {
+    const captured = captureRequest();
+
+    await getMyPosts(1, 1, null, null, true);
+    expect(captured.url?.searchParams.get("archived")).toBe("true");
+
+    await getMyPosts(1, 1, null);
+    expect(captured.url?.searchParams.has("archived")).toBe(false);
+  });
+
   it("응답의 고정 글 페이지 정보를 그대로 돌려준다", async () => {
     captureRequest();
 
