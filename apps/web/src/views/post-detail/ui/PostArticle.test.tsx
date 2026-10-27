@@ -228,3 +228,40 @@ describe("PostArticle — 보관한 글 안내", () => {
     expect(screen.queryByRole("note")).toBeNull();
   });
 });
+
+describe("PostArticle — 체크리스트는 보기 전용", () => {
+  // Tiptap이 저장하는 모양 (getHTML)
+  const item = (checked: boolean, text: string) =>
+    `<li data-checked="${checked}" data-type="taskItem"><label><input type="checkbox"${
+      checked ? ' checked="checked"' : ""
+    }><span></span></label><div><p>${text}</p></div></li>`;
+  const content = `<ul data-type="taskList">${item(true, "끝낸 일")}${item(false, "할 일")}</ul>`;
+
+  function renderArticle() {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    const { container } = render(<PostArticle post={makePost("p1", { content })} />);
+    return Array.from(container.querySelectorAll<HTMLInputElement>('ul[data-type="taskList"] input[type="checkbox"]'));
+  }
+
+  it("체크박스가 모두 비활성(disabled)이다", () => {
+    const boxes = renderArticle();
+
+    expect(boxes).toHaveLength(2);
+    expect(boxes.every((box) => box.disabled)).toBe(true);
+  });
+
+  it("에디터에서 체크한 상태는 그대로 보인다 (체크됨 / 안 됨)", () => {
+    const boxes = renderArticle();
+
+    expect(boxes.map((box) => box.checked)).toEqual([true, false]);
+  });
+
+  it("눌러도 체크 상태가 바뀌지 않는다 (저장되지 않는 체크를 보여 주지 않는다)", async () => {
+    const boxes = renderArticle();
+
+    await userEvent.click(boxes[1]);
+    await userEvent.click(boxes[0]);
+
+    expect(boxes.map((box) => box.checked)).toEqual([true, false]);
+  });
+});

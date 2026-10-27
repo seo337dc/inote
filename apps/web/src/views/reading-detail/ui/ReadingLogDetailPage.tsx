@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { ReadingLog } from "@/entities/reading-log";
 import { api, ApiError } from "@/shared/lib/api";
 import { buildToc } from "@/shared/lib/toc";
+import { lockTaskCheckboxes } from "@/shared/lib/task-list";
 import { ContentToc } from "@/shared/ui/content-toc";
 import DeleteReadingLogButton from "./DeleteReadingLogButton";
 import EditReadingLogLink from "./EditReadingLogLink";
@@ -29,7 +30,9 @@ export default async function ReadingLogDetailPage({ id }: Props) {
   const started = formatDate(readingLog.startedAt);
   const finished = formatDate(readingLog.finishedAt);
   // 독후감 본문의 h1~h3에 id를 달고 목차 항목을 뽑는다 (글 상세와 같은 방식)
-  const { html, items } = buildToc(readingLog.content);
+  const { html: tocHtml, items } = buildToc(readingLog.content);
+  // 상세 화면의 체크리스트는 보기 전용 — 체크박스를 눌러도 바뀌지 않는다
+  const html = lockTaskCheckboxes(tocHtml);
 
   return (
     <div className="@container">
