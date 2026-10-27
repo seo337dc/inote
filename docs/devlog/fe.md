@@ -615,6 +615,7 @@ UI 의사결정 위주로 기록.
 |---|------|------|
 | 1 | `@tiptap/extension-list`를 직접 의존성으로 선언(StarterKit이 이미 쓰던 3.31.0, 새 다운로드 없음) — `TaskList`·`TaskItem.configure({ nested: true })` 등록 | ✅ |
 | 2 | 슬래시 메뉴 "체크리스트"(`todo`·`task`·`check`·`checkbox`·`checklist`·`할일`·`체크박스`로 검색) | ✅ |
+| 2-1 | **툴바 "체크박스" 버튼**("목록" 옆, 2026-10-27 추가) — 문단을 체크리스트로 바꾸고, 체크리스트 안에서는 눌린 상태로 보이며 다시 누르면 일반 문단으로 돌아온다. 글머리 목록 안에서 누르면 그 목록이 체크리스트로 바뀐다(`toggleTaskList`) | ✅ |
 | 3 | 스타일(`globals.css`) — 글머리 기호 없이 체크박스 + 글자, 체크박스는 `appearance: none`으로 직접 그려서 에디터·상세·브라우저가 같게 보임, 체크한 항목은 회색 + 취소선, 중첩 항목 정렬 | ✅ |
 | 4 | **상세(읽기) 화면에서는 체크박스가 동작하지 않게** — `shared/lib/task-list.ts`의 `lockTaskCheckboxes`가 저장된 HTML의 체크박스에 `disabled`를 붙임. `PostArticle`·`ReadingLogDetailPage` 두 곳에 적용 | ✅ |
 | 5 | 테스트 — 만들기(`[] `·`[ ] `·`[x] `·글 중간은 변환 안 됨·슬래시), 편집(체크 토글·저장된 상태 불러오기·Enter 이어가기/벗어나기·Tab 들여쓰기), 읽기 전용 함수, `PostArticle` 상세 화면 | ✅ |

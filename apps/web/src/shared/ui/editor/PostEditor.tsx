@@ -46,6 +46,7 @@ type ActiveFormats = {
   italic: boolean;
   strike: boolean;
   bulletList: boolean;
+  taskList: boolean;
   blockquote: boolean;
   code: boolean;
   link: boolean;
@@ -61,6 +62,7 @@ const NO_ACTIVE: ActiveFormats = {
   italic: false,
   strike: false,
   bulletList: false,
+  taskList: false,
   blockquote: false,
   code: false,
   link: false,
@@ -206,6 +208,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         italic: editor.isActive("italic"),
         strike: editor.isActive("strike"),
         bulletList: editor.isActive("bulletList"),
+        taskList: editor.isActive("taskList"),
         blockquote: editor.isActive("blockquote"),
         code: editor.isActive("code"),
         link: findLinkRange(editor.state) !== null,
@@ -308,6 +311,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           active={active.bulletList}
         >
           목록
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+          active={active.taskList}
+        >
+          체크박스
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
