@@ -1,28 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CategoryFilter } from "@/features/filter-posts-by-category";
+import { ArchiveActionBar } from "@/features/archive-posts";
 import { PostFeed, PostListHeader } from "@/widgets/post-list";
 import { PageLoading } from "@/shared/ui/page-loading";
 import { useSession } from "@/shared/lib/auth-client";
 import { useMyPosts } from "@/entities/post";
 import { useCategories, buildCategoryTree, flattenCategoryTree, rollupCategoryCounts } from "@/entities/category";
+import MyPostsTabs from "./MyPostsTabs";
 
 type Props = {
   categoryId: string | null;
   page: number;
   pinnedPage: number;
   q: string | null;
+  // true면 보관함(보관한 글만) — 같은 화면을 /my-posts/archive에서 쓴다
+  archived?: boolean;
 };
 
-export default function MyPostsPage({ categoryId, page, pinnedPage, q }: Props) {
+// 선택한 글은 "어느 화면(목록·페이지·카테고리·검색)에서 골랐는지"와 함께 들고 있다 — 화면이 바뀌면 그 선택은 저절로 무효가 되어
+// 안 보이는 글이 선택된 채로 보관되는 일이 없다.
+type Selection = { scope: string; ids: ReadonlySet<string> };
+
+export default function MyPostsPage({ categoryId, page, pinnedPage, q, archived = false }: Props) {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, categoryId, q);
+  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, categoryId, q, archived);
   const categoriesQuery = useCategories();
   const categoryTree = buildCategoryTree(categoriesQuery.data ?? []);
   const flatCategories = flattenCategoryTree(categoryTree);
+  const [selecting, setSelecting] = useState(false);
+  const [selection, setSelection] = useState<Selection>({ scope: "", ids: new Set() });
 
   useEffect(() => {
     if (!isSessionPending && !session) {
@@ -32,6 +42,23 @@ export default function MyPostsPage({ categoryId, page, pinnedPage, q }: Props) 
 
   if (isSessionPending || !session || isPostsPending || !data) {
     return <PageLoading />;
+  }
+
+  const basePath = archived ? "/my-posts/archive" : "/my-posts";
+  const scope = `${basePath}|${page}|${pinnedPage}|${categoryId ?? ""}|${q ?? ""}`;
+  const selectedIds = selection.scope === scope ? selection.ids : new Set<string>();
+  const pageIds = [...data.pinned, ...data.items].map((post) => post.id);
+
+  function toggle(id: string) {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelection({ scope, ids: next });
+  }
+
+  function closeSelecting() {
+    setSelecting(false);
+    setSelection({ scope: "", ids: new Set() });
   }
 
   // 상위 카테고리는 하위 글까지 합친 수로 보여준다 (눌렀을 때 하위 글까지 나오므로). 전체는 직속 합계 그대로
@@ -47,23 +74,63 @@ export default function MyPostsPage({ categoryId, page, pinnedPage, q }: Props) 
           counts={rolledCounts}
           totalCount={allCount}
           activeCategoryId={categoryId}
-          basePath="/my-posts"
+          basePath={basePath}
           q={q}
           categories={flatCategories}
         />
       </div>
 
-      <div className="flex-1">
-        <PostListHeader title="나의 글" count={data.total} basePath="/my-posts" categoryId={categoryId} q={q} />
+      <div className="min-w-0 flex-1">
+        <div className="mb-3 flex items-end justify-between">
+          <MyPostsTabs archived={archived} />
+          {data.total > 0 && (
+            <button
+              type="button"
+              onClick={() => (selecting ? closeSelecting() : setSelecting(true))}
+              className="pb-2 text-sm text-zinc-500 hover:text-zinc-800"
+            >
+              {selecting ? "선택 취소" : "선택"}
+            </button>
+          )}
+        </div>
+        <PostListHeader
+          title={archived ? "보관함" : "나의 글"}
+          count={data.total}
+          basePath={basePath}
+          categoryId={categoryId}
+          q={q}
+          showWrite={!archived}
+        />
 
         <PostFeed
           data={data}
-          basePath="/my-posts"
+          basePath={basePath}
           categoryId={categoryId}
           q={q}
-          emptyMessage="이 카테고리엔 아직 글이 없습니다."
+          selection={selecting ? { selectedIds, onToggle: toggle } : undefined}
+          emptyState={archived ? <ArchiveEmpty /> : undefined}
         />
+
+        {selecting && (
+          <ArchiveActionBar
+            archived={archived}
+            selectedIds={[...selectedIds]}
+            pageIds={pageIds}
+            onSelectPage={(ids) => setSelection({ scope, ids: new Set(ids) })}
+            onClear={() => setSelection({ scope, ids: new Set() })}
+            onDone={closeSelecting}
+          />
+        )}
       </div>
+    </div>
+  );
+}
+
+function ArchiveEmpty() {
+  return (
+    <div className="py-20 text-center">
+      <p className="text-zinc-500">보관한 글이 없어요.</p>
+      <p className="mt-1 text-sm text-zinc-400">나의 글에서 [선택]을 눌러 글을 보관함으로 옮길 수 있어요.</p>
     </div>
   );
 }

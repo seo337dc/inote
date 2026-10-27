@@ -1,6 +1,7 @@
 import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { PostAuthor } from "@/widgets/post-list";
 import { buildToc } from "@/shared/lib/toc";
+import { ArchivePostButton } from "@/features/archive-posts";
 import BackToListButton from "./BackToListButton";
 import CategoryBreadcrumb from "./CategoryBreadcrumb";
 import DeletePostButton from "./DeletePostButton";
@@ -33,10 +34,16 @@ export default function PostArticle({ post }: { post: Post }) {
         </div>
         <div className="flex items-center gap-3">
           <TogglePinButton postId={post.id} authorId={post.userId} initialPinned={post.pinned} />
+          <ArchivePostButton postId={post.id} authorId={post.userId} initialArchived={Boolean(post.archivedAt)} />
           <EditPostLink postId={post.id} authorId={post.userId} />
           <DeletePostButton postId={post.id} authorId={post.userId} />
         </div>
       </div>
+      {post.archivedAt && (
+        <p role="note" className="mb-3 rounded bg-zinc-100 px-3 py-2 text-sm text-zinc-500">
+          보관된 글이에요. 목록에는 나오지 않고 작성자만 볼 수 있어요.
+        </p>
+      )}
       <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
       <div className="mb-6 flex items-start justify-between gap-4 text-sm text-zinc-400">
         {/* 작성자를 누르면 그 사람의 홈(/users/[id]) — 내 글이면 나의 글로 (목록 카드와 같은 규칙) */}
