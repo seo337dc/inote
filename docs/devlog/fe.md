@@ -572,3 +572,89 @@ UI 의사결정 위주로 기록.
 - **글을 삭제하면 R2 이미지가 남는 문제**를 발견 → BE에서 글 삭제 시 정리하도록 수정(BE `DEV_LOG.md` 참고). 본문에서 지운 이미지·저장 없이 나간 업로드는 여전히 남아 정리 배치가 필요(`docs/todo/`).
 - **로컬 테스트가 운영 R2 버킷과 섞이는 문제**: BE `R2_KEY_PREFIX`(로컬은 `scripts/dev-db.sh start`가 `dev`를 주입)로 로컬은 버킷의 `dev/` 아래만 쓴다. FE는 R2 URL을 그대로 쓰므로 변경 없음.
 - 로컬 FE는 `.env.local`이 운영 BE를 가리키므로 `NEXT_PUBLIC_API_URL=http://localhost:3200 pnpm dev`로 덮어써 실행한다.
+
+---
+
+## 2026-10-27 — 글 보관함(아카이브) FE
+
+설계·계약은 `docs/adr/0007-archive-posts.md`, 남긴 것은 `docs/todo/archive-posts.md`. 순서는 계약 → FE → BE → 통합이라 FE는 MSW로 계약을 흉내 내서 먼저 만들고 테스트했고, 이후 BE(`inote-server` `DEV_LOG.md` 참고)를 만들어 로컬에서 통합 확인까지 했다.
+
+### 작업 내용
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | `Post.archivedAt` 타입, `getMyPosts`/`useMyPosts`에 `archived`(보관함이면 `archived=true`, 캐시 키도 분리) | ✅ |
+| 2 | `useArchivePosts` — `POST /blog/posts/archive`·`unarchive`(`ids`), 성공하면 나의 글·카테고리 트리·글 상세 캐시 무효화. 응답은 **실제로 처리된 id만** (서버가 건너뛴 글은 빠짐) | ✅ |
+| 3 | `/my-posts/archive` 경로 + `[나의 글 | 보관함]` 탭(`MyPostsTabs`). 같은 `MyPostsPage`에 `archived`만 넘겨 재사용 | ✅ |
+| 4 | 선택 모드 — `PostList`에 선택용 체크박스(`selection` prop, 없으면 지금과 동일), 화면 아래 `ArchiveActionBar`(개수·이 페이지 전체 선택·선택 해제·보관하기/보관 해제하기) | ✅ |
+| 5 | 글 상세(작성자만) `ArchivePostButton` + 보관한 글 안내 문구 | ✅ |
+| 6 | 모바일 드로어의 카테고리 필터가 보관함에서도 나오게 확장(`basePath`·`archived` 전달) | ✅ |
+| 7 | 테스트 — `useArchivePosts`·`getMyPosts`·`PostList` 선택·`ArchiveActionBar`·`ArchivePostButton`·`MyPostsTabs`·`MyPostsPage` 흐름·`PostArticle` 안내 | ✅ |
+
+### 결정과 이유
+- **`?view=archive`가 아니라 `/my-posts/archive` 경로로**: 검색·카테고리 필터·페이지 링크가 전부 `basePath`로 만들어져서, 경로만 바꾸면 그 링크들이 손대지 않고 그대로 동작한다. 쿼리로 두면 링크마다 `view`를 따라 붙여야 했다.
+- **선택은 "어느 화면에서 골랐는지"와 함께 보관**: `scope`(경로·페이지·카테고리·검색어)가 바뀌면 그 선택은 자동으로 무효가 된다 → 안 보이는 글이 선택된 채 보관되는 일이 없다. `useEffect`로 초기화하지 않아 린트(`set-state-in-effect`)도 피했다.
+- **서버가 건너뛴 글을 정직하게 반영**: 응답의 `archivedIds` 개수로 안내하고, 상세 버튼은 처리된 글이 0이면 상태를 바꾸지 않고 오류를 보여준다(발행 전 글 등).
+- **보관한 글의 직접 접근**: 서버가 작성자만 200, 타인은 404로 내려주므로, 기존 `OwnerPostFallback`(서버 쿠키 문제로 404가 나면 브라우저에서 다시 조회)이 그대로 작성자 본인을 구제한다 — 상세 화면은 따로 바꾸지 않았다.
+
+### 계약 보완
+- 보관함(`archived=true`)의 `categoryCounts`는 **보관한 글 기준**, 나의 글의 `categoryCounts`는 보관 글을 뺀 값 — BE 단계에서 지켜야 한다(ADR 5절에 추가).
+
+### 검증
+- `tsc`·`eslint` 오류 없음, vitest 86개 파일 / 685개 통과, `next build` 통과(`/my-posts/archive` 포함).
+- **로컬 통합 확인(로컬 FE·BE, 운영 DB)**: 보관 → 나의 글·홈에서 사라짐 → 카테고리 개수 감소 → 보관함에 보임(최신순) → 보관한 글 상세는 작성자만(비로그인은 404) → 보관 해제 시 복귀까지 사용자가 화면에서 확인했다.
+- 배포는 **BE 먼저**(마이그레이션 `add_post_archived_at`이 서버 시작 때 적용됨), 그다음 FE — FE가 먼저 나가면 `archive` 호출이 404다.
+
+---
+
+## 2026-10-27 — 에디터 체크리스트(할 일 목록) 1단계
+
+글쓰기 에디터에서 `[ ]`를 쳐도 체크박스가 되지 않아 추가했다. 노션처럼 **줄 맨 앞에서 `[] `·`[ ] `·`[x] `를 치거나 슬래시 메뉴(`/todo`·`/체크리스트`)로 만들고**, 체크하면 회색 + 취소선이 된다. BE 변경은 없다 — 본문은 HTML 그대로 저장되고 BE는 가공하지 않는다. 남긴 것은 `docs/todo/editor-task-list.md`.
+
+### 작업 내용
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | `@tiptap/extension-list`를 직접 의존성으로 선언(StarterKit이 이미 쓰던 3.31.0, 새 다운로드 없음) — `TaskList`·`TaskItem.configure({ nested: true })` 등록 | ✅ |
+| 2 | 슬래시 메뉴 "체크리스트"(`todo`·`task`·`check`·`checkbox`·`checklist`·`할일`·`체크박스`로 검색) | ✅ |
+| 2-1 | **툴바 "체크박스" 버튼**("목록" 옆, 2026-10-27 추가) — 문단을 체크리스트로 바꾸고, 체크리스트 안에서는 눌린 상태로 보이며 다시 누르면 일반 문단으로 돌아온다. 글머리 목록 안에서 누르면 그 목록이 체크리스트로 바뀐다(`toggleTaskList`) | ✅ |
+| 3 | 스타일(`globals.css`) — 글머리 기호 없이 체크박스 + 글자, 체크박스는 `appearance: none`으로 직접 그려서 에디터·상세·브라우저가 같게 보임, 체크한 항목은 회색 + 취소선, 중첩 항목 정렬 | ✅ |
+| 4 | **상세(읽기) 화면에서는 체크박스가 동작하지 않게** — `shared/lib/task-list.ts`의 `lockTaskCheckboxes`가 저장된 HTML의 체크박스에 `disabled`를 붙임. `PostArticle`·`ReadingLogDetailPage` 두 곳에 적용 | ✅ |
+| 5 | 테스트 — 만들기(`[] `·`[ ] `·`[x] `·글 중간은 변환 안 됨·슬래시), 편집(체크 토글·저장된 상태 불러오기·Enter 이어가기/벗어나기·Tab 들여쓰기), 읽기 전용 함수, `PostArticle` 상세 화면 | ✅ |
+
+### 결정과 이유
+- **상세 화면은 보기 전용**: 저장된 HTML의 체크박스는 평범한 `<input type="checkbox">`라서 그대로 그리면 눌러지는데, 눌러도 저장되지 않고 화면에서만 바뀌어 "체크가 저장된 줄" 오해를 만든다. `disabled`를 붙이면 마우스·키보드 모두 막히고 스크린리더도 비활성으로 읽는다. CSS의 `pointer-events: none`만으로는 키보드(Tab·Space)로 바뀌므로 쓰지 않았다.
+- **문자열로 처리**(`toc.ts`와 같은 방식): SSR과 브라우저가 같은 HTML을 그려야 hydration 불일치가 없다. DOM 파싱·직렬화는 본문 마크업을 의도치 않게 바꿀 수 있어 쓰지 않았다.
+- **`[] `(공백 없는 형태)는 TaskItem 기본 입력 규칙이 이미 받는다** — 따로 만들지 않고 테스트로 고정했다. 글 중간에 친 `[] `는 변환되지 않는다(줄 맨 앞에서만).
+- **체크한 항목의 취소선은 그 항목의 글자(p)에만** 건다: 항목 전체에 걸면 안에 들여쓴 하위 항목까지 줄이 그어진다.
+- **에디터 안과 저장되는 HTML의 모양이 다르다**: 에디터 안(노드뷰)은 `<li data-checked>`이고 접근성용 숨김 글자가 들어가며, 저장되는 HTML(`getHTML`)은 `<li data-checked data-type="taskItem"><label><input type="checkbox"><span></span></label><div>…</div></li>`이다. 스타일 선택자는 `data-type`에 기대지 않고 `ul[data-type="taskList"] > li`로 잡았다.
+
+### 알게 된 것
+- StarterKit의 `trailingNode`가 문서 끝에 빈 문단을 항상 유지해서, 체크리스트 끝에서 Enter로 벗어나면 빈 문단이 두 개로 보인다(기존 동작).
+- `userEvent.keyboard`에서 글자 `[`는 `[[`로 쳐야 한다(`[Enter]` 같은 키 표기와 구분).
+- 테스트 중 콘솔 출력이 가려져서, 에디터 내부를 볼 때는 임시 테스트가 파일에 쓰게 해서 확인했다.
+
+### 검증
+- `tsc`·`eslint` 오류 없음, vitest 88개 파일 / 705개 통과, `next build` 통과.
+- `PostArticle`에서 잠금 호출을 일부러 빼 보니 상세 화면 테스트 2개가 실패했고, 되돌렸다.
+- 로그인 없이 볼 수 있게 로그인 화면에 같은 HTML을 임시로 넣어 **에디터 안/상세 화면 모양**을 눈으로 확인했다(체크 표시, 체크한 항목만 취소선, 하위 항목 정렬, 긴 글 줄바꿈, 일반 글머리 목록 그대로). 실제 글쓰기 화면(`/write`)에서의 조작은 2026-10-28에 사용자가 직접 확인했다.
+
+---
+
+## 2026-10-28 — 카테고리 이동 실패 시 서버 메시지 표시
+
+다른 부모로 옮길 곳에 같은 이름의 카테고리가 있으면 BE(`PATCH /categories/:id/move`)가 409를 돌려주는데, FE는 모든 실패를 같은 고정 토스트로만 보여줘서 이유를 알 수 없었다. BE 계약은 바뀌지 않았다.
+
+### 작업 내용
+| # | 작업 | 상태 |
+|---|------|------|
+| 1 | `moveErrorMessage`(`entities/category/lib/move-error.ts`) — 400·404·409면 서버 message를 그대로, 그 밖(5xx·네트워크)은 기존 일반 문구 | ✅ |
+| 2 | `CategoryManager`의 이동 `onError` 토스트가 위 함수를 사용 (낙관적 이동 되돌리기는 그대로) | ✅ |
+
+### 결정과 이유
+- **서버 message를 그대로 사용**: 문구는 BE가 소유하고 FE는 status로 "서버가 이유를 설명한 오류인지"만 판단한다. BE 문구가 바뀌어도 FE 수정이 필요 없다.
+- **create·rename과 방식이 다르다**: 둘은 보내기 전에 FE가 이름 중복을 검사해 인라인으로 막는다. 이동은 사전 검사가 없어서 서버 오류를 토스트로 받는다. 이동 로직(`canMove`·`evaluateDrop`)을 건드리지 않기로 한 범위 때문에 사전 검사는 하지 않았다.
+- 400(자기 하위 밑·3단계 초과)은 `canMove`가 드롭 전에 막아서 서버까지 가지 않는다.
+
+### 검증
+- vitest 714개 통과, `eslint`·`next build` 통과. 409를 일부러 빼 보니 해당 테스트가 실패했고 원복했다.
+- 드래그 → 토스트 연결은 jsdom에서 드롭을 재현하기 어려워 자동 테스트가 없다. 로컬 FE·BE에서 사용자가 직접 확인했다.
+- 이동 전에 같은 이름을 미리 검사해 드롭을 막는 방식은 후속 후보다.

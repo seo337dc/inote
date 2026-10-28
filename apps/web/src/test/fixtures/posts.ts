@@ -16,6 +16,7 @@ export function makePost(id: string, overrides: Partial<Post> = {}): Post {
     lastEditedAt: "2026-09-01T00:00:00.000Z",
     isPrivate: false,
     pinned: false,
+    archivedAt: null,
     thumbnailUrl: null,
     aiSummary: null,
     ...overrides,

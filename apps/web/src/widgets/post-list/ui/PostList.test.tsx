@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import PostList from "./PostList";
 import { makePost } from "@/test/fixtures/posts";
 
@@ -102,5 +103,34 @@ describe("PostList — 작성·수정 시각", () => {
     const [editedRow, plainRow] = screen.getAllByRole("listitem");
     expect(within(editedRow).getByText("생성일 : 2026.10.01 14:30 / 수정일 : 2026.10.02 09:12")).toBeInTheDocument();
     expect(within(plainRow).getByText("생성일 : 2026.10.01 14:30")).toBeInTheDocument();
+  });
+});
+
+describe("PostList — 선택 모드(보관함 일괄 처리)", () => {
+  it("selection이 없으면 체크박스가 없다 (지금 모양 그대로)", () => {
+    render(<PostList posts={[makePost("p1")]} />);
+
+    expect(screen.queryByRole("checkbox")).toBeNull();
+  });
+
+  it("selection이 있으면 글마다 체크박스가 있고, 선택한 글만 체크되어 있다", () => {
+    render(
+      <PostList
+        posts={[makePost("a", { title: "가" }), makePost("b", { title: "나" })]}
+        selection={{ selectedIds: new Set(["b"]), onToggle: vi.fn() }}
+      />,
+    );
+
+    expect(screen.getByRole("checkbox", { name: "가 선택" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "나 선택" })).toBeChecked();
+  });
+
+  it("체크박스를 누르면 그 글의 id로 onToggle이 불린다", async () => {
+    const onToggle = vi.fn();
+    render(<PostList posts={[makePost("a", { title: "가" })]} selection={{ selectedIds: new Set(), onToggle }} />);
+
+    await userEvent.click(screen.getByRole("checkbox", { name: "가 선택" }));
+
+    expect(onToggle).toHaveBeenCalledWith("a");
   });
 });

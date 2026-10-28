@@ -18,6 +18,7 @@ import {
   useCategories,
   useCreateCategory,
   useMoveCategory,
+  moveErrorMessage,
   useRenameCategory,
   buildCategoryTree,
   checkCategoryName,
@@ -199,8 +200,7 @@ export default function CategoryManager() {
     moveCategory.mutate(
       { id: dragId, ...result.target },
       {
-        onError: () =>
-          toast.error("카테고리를 옮기지 못했어요. 원래대로 되돌렸어요."),
+        onError: (error) => toast.error(moveErrorMessage(error)),
       },
     );
   }

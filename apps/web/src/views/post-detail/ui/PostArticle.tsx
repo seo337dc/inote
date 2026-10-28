@@ -1,6 +1,8 @@
 import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { PostAuthor } from "@/widgets/post-list";
 import { buildToc } from "@/shared/lib/toc";
+import { lockTaskCheckboxes } from "@/shared/lib/task-list";
+import { ArchivePostButton } from "@/features/archive-posts";
 import BackToListButton from "./BackToListButton";
 import CategoryBreadcrumb from "./CategoryBreadcrumb";
 import DeletePostButton from "./DeletePostButton";
@@ -18,7 +20,9 @@ import TogglePinButton from "./TogglePinButton";
 export default function PostArticle({ post }: { post: Post }) {
   // 3열 배치: 왼쪽 카테고리 트리 / 본문 / 오른쪽 목차(h1~h3). 폭이 부족하면 목차 → 카테고리 순으로 숨기고,
   // 넓은 화면에서는 두 영역을 직접 접어 본문을 넓힐 수 있다 (PostArticleLayout).
-  const { html, items } = buildToc(post.content);
+  const { html: tocHtml, items } = buildToc(post.content);
+  // 상세 화면의 체크리스트는 보기 전용 — 체크박스를 눌러도 바뀌지 않는다(체크는 글을 수정할 때 에디터에서)
+  const html = lockTaskCheckboxes(tocHtml);
 
   return (
     <PostArticleLayout
@@ -33,10 +37,16 @@ export default function PostArticle({ post }: { post: Post }) {
         </div>
         <div className="flex items-center gap-3">
           <TogglePinButton postId={post.id} authorId={post.userId} initialPinned={post.pinned} />
+          <ArchivePostButton postId={post.id} authorId={post.userId} initialArchived={Boolean(post.archivedAt)} />
           <EditPostLink postId={post.id} authorId={post.userId} />
           <DeletePostButton postId={post.id} authorId={post.userId} />
         </div>
       </div>
+      {post.archivedAt && (
+        <p role="note" className="mb-3 rounded bg-zinc-100 px-3 py-2 text-sm text-zinc-500">
+          보관된 글이에요. 목록에는 나오지 않고 작성자만 볼 수 있어요.
+        </p>
+      )}
       <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
       <div className="mb-6 flex items-start justify-between gap-4 text-sm text-zinc-400">
         {/* 작성자를 누르면 그 사람의 홈(/users/[id]) — 내 글이면 나의 글로 (목록 카드와 같은 규칙) */}

@@ -3,6 +3,7 @@
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
+import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableHeader } from "@tiptap/extension-table-header";
@@ -45,6 +46,7 @@ type ActiveFormats = {
   italic: boolean;
   strike: boolean;
   bulletList: boolean;
+  taskList: boolean;
   blockquote: boolean;
   code: boolean;
   link: boolean;
@@ -60,6 +62,7 @@ const NO_ACTIVE: ActiveFormats = {
   italic: false,
   strike: false,
   bulletList: false,
+  taskList: false,
   blockquote: false,
   code: false,
   link: false,
@@ -133,6 +136,10 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       TableHeader,
       TableCell,
       Callout,
+      // 체크리스트(할 일 목록) — 줄 맨 앞에서 "[] "·"[ ] "·"[x] "를 치거나 슬래시 메뉴로 만든다(입력 규칙은 TaskItem 기본).
+      // nested: Tab/Shift+Tab으로 들여쓰기. 읽기 화면에서는 체크박스가 눌리지 않는다(shared/lib/task-list)
+      TaskList,
+      TaskItem.configure({ nested: true }),
       Placeholder.configure({
         placeholder: "내용을 입력하거나 '/'를 입력해 블록을 삽입하세요...",
       }),
@@ -201,6 +208,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
         italic: editor.isActive("italic"),
         strike: editor.isActive("strike"),
         bulletList: editor.isActive("bulletList"),
+        taskList: editor.isActive("taskList"),
         blockquote: editor.isActive("blockquote"),
         code: editor.isActive("code"),
         link: findLinkRange(editor.state) !== null,
@@ -303,6 +311,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           active={active.bulletList}
         >
           목록
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+          active={active.taskList}
+        >
+          체크박스
         </ToolbarButton>
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
