@@ -100,8 +100,8 @@
 - **글 보관함** (PR #13 병합): `/my-posts/archive`, `[나의 글 | 보관함]` 탭, 선택 모드로 여러 글 보관·해제, 글 상세(작성자만) 보관 버튼. 설계는 `docs/adr/0007-archive-posts.md`. BE는 마이그레이션 `add_post_archived_at`이 서버 시작 때 적용되므로 **BE 먼저 배포한 뒤 FE** (FE가 먼저면 `archive` 호출이 404).
 - **에디터 체크리스트** (PR #14·#15 병합): `[] `·슬래시 메뉴·툴바 "체크박스" 버튼, 상세 화면은 보기 전용. BE 변경 없음(본문은 HTML 그대로 저장). `/write`에서의 조작은 2026-10-28에 사용자가 직접 확인했다. 후속은 `docs/todo/editor-task-list.md`.
 - **카테고리 이동 실패 시 서버 message 토스트** (브랜치 `feat/category-move-error-message`, **푸시됨·PR/병합 여부 확인 필요**): 이동 API(`PATCH /categories/:id/move`)가 400·404·409를 돌려주면 서버 message를 그대로 보여준다(`entities/category/lib/move-error.ts`). 409는 "옮길 곳에 같은 이름이 이미 있음"(BE가 계약에 없이 추가 — create·rename 규칙을 이동에도 적용). 이동 전에 같은 이름을 미리 검사해 드롭을 막는 방식은 하지 않았다(후속 후보). 낙관적 이동 되돌리기·이동 로직은 그대로.
-- **나의 글 불러오기 실패 안내** (브랜치 `feat/my-posts-load-error`, **로컬 커밋만 — 푸시 안 함**): 조회가 실패하고 보여줄 목록이 없으면 `LoadError`(안내 + 다시 시도)를 보여준다. 원래 동기였던 "로딩이 끝없이 길다"는 DB 연결 한도(Supabase 풀러) 문제였고 `connection_limit`으로 해결됐다.
-- **보류한 것 (stash@{0})**: `api.ts`의 요청 타임아웃(9초, AbortController)은 **버리지 않고 stash에 남겨 뒀다**. 전역 9초 제한이 Render 콜드 스타트(30~50초)·느린 쓰기 요청과 충돌할 수 있어서 넣지 않았다. 다시 하려면 GET에만 걸거나 상한을 늘리는 쪽을 먼저 의논한다.
+- **나의 글 불러오기 실패 안내** (브랜치 `feat/my-posts-load-error`, **푸시됨·PR #17**): 조회가 실패하고 보여줄 목록이 없으면 `LoadError`(안내 + 다시 시도)를 보여준다. 원래 동기였던 "로딩이 끝없이 길다"는 DB 연결 한도(Supabase 풀러) 문제였고 `connection_limit`으로 해결됐다.
+- **요청 타임아웃은 폐기 (2026-10-28 결정)**: `api.ts`의 9초 타임아웃(AbortController)은 전역 9초 제한이 Render 콜드 스타트(30~50초)·느린 쓰기 요청과 충돌할 수 있고, 원래 동기(DB 연결 한도)는 `connection_limit`으로 해결돼 필요가 없어 stash를 버렸다. 다시 필요해지면 GET에만 걸거나 상한을 늘리는 쪽을 먼저 의논한다.
 
 ---
 
@@ -110,7 +110,6 @@
 ### 0. 지금 남은 일 (2026-10-28 기준 — 아래 A~G는 대부분 10/7 기준이라 낡았을 수 있다)
 - **FE 브랜치 정리**: `feat/category-move-error-message`(푸시됨)는 PR 생성·병합, `feat/my-posts-load-error`는 푸시·PR 여부를 사람이 정한다. 배포는 **BE 먼저, FE 나중**.
 - **카테고리 이동(#8)**: FE는 9/30에 호출 구현 완료. BE `PATCH /categories/:id/move`는 `inote-server`의 `feat/category-move`에 구현·푸시됐고(409 추가), 운영 DB 마이그레이션은 적용됨. 로컬에서 같은 이름이 있는 곳으로 옮기는 시나리오는 사용자가 확인했다. BE 병합·운영 배포 여부는 확인 필요.
-- **stash@{0}**(타임아웃 코드)을 계속 둘지 버릴지 사람이 정한다.
 - **Safari 로그인 이슈 (사용자 결정 대기 — 구현하지 마라)**: 운영(vercel ↔ render)이 서로 다른 사이트라 BE 세션 쿠키가 Safari에서 서드파티 쿠키로 막혀 이메일·구글 로그인 모두 안 된다. 원인은 확정, 해결 방안은 A. Vercel rewrites 프록시 / B. 커스텀 도메인 / C. 토큰 방식 중 사용자가 고른다. 상세는 `inote-server/docs/todo/auth-follow-ups.md`. 정해지면 변경 목록·환경변수·배포 순서·롤백을 먼저 정리해 보여준다.
 - 이름 중복 미리 검사로 이동 드롭 막기, 에디터 체크리스트 후속 등은 각 `docs/todo/*.md`.
 
