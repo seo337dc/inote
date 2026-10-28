@@ -123,3 +123,39 @@ describe("MyPostsPage — 보관함", () => {
     expect(screen.getByRole("checkbox", { name: "가 선택" })).not.toBeChecked();
   });
 });
+
+describe("MyPostsPage — 불러오기 실패", () => {
+  beforeEach(() => {
+    vi.mocked(useSession).mockReturnValue({ data: { user: { id: "u1" } }, isPending: false } as unknown as ReturnType<typeof useSession>);
+  });
+
+  it("목록 조회가 실패하면 로딩 화면에 갇히지 않고 안내와 [다시 시도]를 보여준다", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/api/v1/blog/posts/mine`, () => HttpResponse.json({ message: "fail" }, { status: 500 })),
+      http.get(`${TEST_API_URL}/api/v1/categories`, () => HttpResponse.json([])),
+    );
+
+    renderPage(false);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("불러오지 못했어요");
+    expect(screen.getByRole("button", { name: "다시 시도" })).toBeInTheDocument();
+  });
+
+  it("[다시 시도]를 누르면 다시 불러와 성공하면 목록이 보인다", async () => {
+    let calls = 0;
+    server.use(
+      http.get(`${TEST_API_URL}/api/v1/blog/posts/mine`, () => {
+        calls += 1;
+        if (calls === 1) return HttpResponse.json({ message: "fail" }, { status: 500 });
+        return HttpResponse.json({ ...makePostListPage({ items: [makePost("a", { title: "가" })], total: 1 }), categoryCounts: {} });
+      }),
+      http.get(`${TEST_API_URL}/api/v1/categories`, () => HttpResponse.json([])),
+    );
+    renderPage(false);
+    await userEvent.click(await screen.findByRole("button", { name: "다시 시도" }));
+
+    expect(await screen.findByText("가")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(calls).toBe(2);
+  });
+});
