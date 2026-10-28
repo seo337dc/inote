@@ -6,6 +6,7 @@ import { CategoryFilter } from "@/features/filter-posts-by-category";
 import { ArchiveActionBar } from "@/features/archive-posts";
 import { PostFeed, PostListHeader } from "@/widgets/post-list";
 import { PageLoading } from "@/shared/ui/page-loading";
+import { LoadError } from "@/shared/ui/load-error";
 import { useSession } from "@/shared/lib/auth-client";
 import { useMyPosts } from "@/entities/post";
 import { useCategories, buildCategoryTree, flattenCategoryTree, rollupCategoryCounts } from "@/entities/category";
@@ -27,7 +28,7 @@ type Selection = { scope: string; ids: ReadonlySet<string> };
 export default function MyPostsPage({ categoryId, page, pinnedPage, q, archived = false }: Props) {
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
-  const { data, isPending: isPostsPending } = useMyPosts(page, pinnedPage, categoryId, q, archived);
+  const { data, isPending: isPostsPending, isError, refetch } = useMyPosts(page, pinnedPage, categoryId, q, archived);
   const categoriesQuery = useCategories();
   const categoryTree = buildCategoryTree(categoriesQuery.data ?? []);
   const flatCategories = flattenCategoryTree(categoryTree);
@@ -39,6 +40,11 @@ export default function MyPostsPage({ categoryId, page, pinnedPage, q, archived 
       router.replace("/login");
     }
   }, [isSessionPending, session, router]);
+
+  // 불러오기에 실패했는데 보여줄 이전 목록도 없으면 로딩 화면에 갇히지 않고 안내 + 다시 시도
+  if (!isSessionPending && session && isError && !data) {
+    return <LoadError onRetry={() => void refetch()} />;
+  }
 
   if (isSessionPending || !session || isPostsPending || !data) {
     return <PageLoading />;
