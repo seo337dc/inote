@@ -19,15 +19,15 @@
 iNote 시리즈의 개인 기록 앱. devlog-llm(개인 실험용 선행 프로젝트)의 후속으로, 인증·DB는 기존
 `inote-server`를 재사용하고 LLM/AI 부분만 별도 Python 서비스(`inote-ai`)로 새로 만든다.
 
-## 현재 상태 (2026-10-23 기준 — 코드로 확인한 것만)
+## 현재 상태 (2026-10-28 기준 — 코드로 확인한 것만)
 
-- **구현·배포됨**: 글쓰기(Tiptap 에디터, 표·콜아웃·이미지 업로드, 임시저장/발행), 카테고리(트리,
-  글이 id로 참조), LLM 챗, 이메일/Google 로그인, 독서 기록(`/reading`), 할 일 목록(`/todos`),
+- **구현·배포됨**: 글쓰기(Tiptap 에디터, 표·콜아웃·체크리스트·이미지 업로드, 임시저장/발행), 글 보관함(`/my-posts/archive`, main 병합 — 운영 배포는 BE 먼저라 확인 필요), 카테고리(트리,
+  글이 id로 참조, 드래그 이동), LLM 챗, 이메일/Google 로그인, 독서 기록(`/reading`), 할 일 목록(`/todos`),
   만다라트(`/dev-guide`), 관리자(`/admin`), 프로필·회원 탈퇴
 - **"준비 중" 표시만 있음**: 일지(`/journal`), 대시보드(`/dashboard`) — 다른 기능이 다 완성된 뒤에 진행
 - **모바일 앱(`apps/app`)**: 계획만 있고 미착수
 - 기능별 구현 경위·결정은 [`docs/devlog/fe.md`](./docs/devlog/fe.md), 세션 인수인계는
-  [`docs/handoff/HANDOFF.md`](./docs/handoff/HANDOFF.md)(10/7 기준 + 10/8~23 변경 목록, 운영 반영 여부는 확인 필요)
+  [`docs/handoff/HANDOFF.md`](./docs/handoff/HANDOFF.md)(10/7 기준 + 10/8~28 변경 목록·남은 일, 운영 반영 여부는 확인 필요)
 
 ## 레포 구조
 
