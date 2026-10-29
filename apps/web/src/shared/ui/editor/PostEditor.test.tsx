@@ -222,4 +222,26 @@ describe("PostEditor", () => {
     expect(el.querySelector("h3")).toBeNull();
     expect(el.querySelector("p")?.textContent).toBe("소제목 후보");
   });
+
+  it("커서가 화면 가장자리에 닿기 전에 미리 스크롤되도록 threshold/margin이 설정되어 있다", async () => {
+    // 지켜주는 것: ProseMirror 기본값(threshold 0, margin 5)이면 커서가 화면 맨 아래에 붙은 채로 입력된다.
+    // 실제 스크롤 동작은 jsdom에 레이아웃이 없어 못 잡으므로 설정값만 확인한다.
+    const { container } = render(<PostEditor content="" onChange={vi.fn()} />);
+    const el = await findEditorEl(container);
+    const props = (el.editor.view as unknown as { props: Record<string, unknown> }).props;
+
+    expect(props.scrollThreshold).toEqual({ top: 80, bottom: 160, left: 0, right: 0 });
+    expect(props.scrollMargin).toEqual({ top: 80, bottom: 160, left: 0, right: 0 });
+  });
+
+  it("에디터 박스 바깥 아래에 스크롤 여유 공간이 있다 (박스 안쪽이 아니라 테두리 밖)", async () => {
+    // 지켜주는 것: 마지막 줄 아래에도 스크롤 공간이 있어야 sticky 저장 바에 가려지지 않는다.
+    // 테두리 박스(.border) 안에 넣으면 박스가 40vh 늘어나 보이므로 바깥 래퍼에 둔다.
+    const { container } = render(<PostEditor content="" onChange={vi.fn()} />);
+    await findEditorEl(container);
+
+    const outer = container.firstElementChild as HTMLElement;
+    expect(outer.className).toContain("pb-[40vh]");
+    expect((outer.firstElementChild as HTMLElement).className).toContain("border");
+  });
 });
