@@ -4,7 +4,7 @@
 > (순서: `git pull` → `HANDOFF.md` → 이 파일)
 
 새 세션(다른 PC, 다른 AI 포함)에서 이 프로젝트를 이어받을 때 먼저 읽는 파일. 자세한 배경은
-`PLANNING.md`(왜 만들고 뭘 성공으로 볼지), `STRATEGY.md`(무엇을 만들지)를 참고.
+`PLANNING.md`(왜 만들고 뭘 성공으로 볼지)를 참고.
 
 > **2026-09-10: 모노레포 구조로 전환.** 최종 목표가 "블로그"가 아니라 **할일 리스트·일지·독서·글쓰기
 > 등을 기록하는 개인 기록 앱**이고 모바일(웹뷰) 앱도 예정돼 있어, `inote-money`와 동일하게
@@ -48,7 +48,7 @@ inote/
 ├── .claude/agents/ ← 서브에이전트 정의 (strategist · code-reviewer · debugger · test-runner)
 ├── .github/       ← pull_request_template.md (PR description 형식)
 ├── CLAUDE.md      ← 이 파일 (전체 레포 공통 컨텍스트)
-├── PLANNING.md / STRATEGY.md
+├── PLANNING.md
 ```
 
 > 폴더 목록·컴포넌트 목록은 문서에 손으로 옮겨 적지 않는다 — 코드(`apps/web/src`)가 소스.
