@@ -1,9 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { AI_API_URL } from "@/shared/lib/ai-url";
 import type { ChatMessage } from "./types";
-
-const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
 const READING_SUGGESTIONS = ["이번 달 베스트셀러 알려줘", "책 추천해줘", "이 책 가격이 궁금해"];
 // 세션이 없는 모드라 "답변 중" 표시를 쓸 대화 목록이 없다

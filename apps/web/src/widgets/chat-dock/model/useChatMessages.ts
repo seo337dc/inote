@@ -4,11 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/shared/lib/auth-client";
 import { api } from "@/shared/lib/api";
+import { AI_API_URL } from "@/shared/lib/ai-url";
 import type { Post } from "@/entities/post";
 import { getRoutePostIds } from "./routePost";
 import type { ChatMessage, ChatSession } from "./types";
-
-const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
 const WRITE_SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"];
 

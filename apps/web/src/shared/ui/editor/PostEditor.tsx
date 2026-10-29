@@ -69,6 +69,11 @@ const NO_ACTIVE: ActiveFormats = {
   codeBlock: false,
 };
 
+// 입력 중 커서가 화면 가장자리에 닿기 전에 미리 스크롤하기 위한 여백(px). ProseMirror 기본값(threshold 0, margin 5)이면
+// 커서가 화면 맨 아래에 붙은 채로 입력된다. top은 sticky 툴바(데스크톱 1280px 기준 약 65px)에 커서가 가려지지 않게,
+// bottom은 글쓰기 화면의 sticky 저장 바(약 72px)에 가려지지 않게 그보다 크게 잡았다. 툴바가 더 많이 줄바꿈되는 폭에서는 부족할 수 있다.
+const SCROLL_PADDING = { top: 80, bottom: 160, left: 0, right: 0 };
+
 function ToolbarButton({
   onClick,
   active,
@@ -151,6 +156,8 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       if (!isSyncingRef.current) onUserEdit?.();
     },
     editorProps: {
+      scrollThreshold: SCROLL_PADDING,
+      scrollMargin: SCROLL_PADDING,
       handleDOMEvents: {
         mouseover: (view, event) => {
           const anchor = (event.target as HTMLElement | null)?.closest?.("a");
@@ -260,129 +267,133 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
   };
 
   return (
-    <div ref={wrapperRef} className="relative rounded border border-zinc-200">
-      {/* 글이 길어져 스크롤해도 서식 버튼이 항상 보이도록 위에 고정한다 (스크롤 컨테이너는 main).
-          좁은 화면에서는 여러 줄로 줄바꿈하면 고정 영역이 커지므로 한 줄 가로 스크롤로 둔다 */}
-      <div className="hide-scrollbar sticky top-0 z-20 flex gap-1 overflow-x-auto rounded-t border-b border-zinc-200 bg-white px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
-        <ToolbarButton
-          onClick={() => toggleHeading(1)}
-          active={active.h1}
-        >
-          H1
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => toggleHeading(2)}
-          active={active.h2}
-        >
-          H2
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => toggleHeading(3)}
-          active={active.h3}
-        >
-          H3
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => toggleHeading(4)}
-          active={active.h4}
-        >
-          H4
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          active={active.bold}
-        >
-          B
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          active={active.italic}
-        >
-          I
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          active={active.strike}
-        >
-          취소선
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          active={active.bulletList}
-        >
-          목록
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          active={active.taskList}
-        >
-          체크박스
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          active={active.blockquote}
-        >
-          인용
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={openLinkPopup}
-          active={active.link}
-        >
-          링크
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          active={active.code}
-        >
-          인라인 코드
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          active={active.codeBlock}
-        >
-          코드 블록
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().insertTable(DEFAULT_TABLE).run()}
-          disabled={Boolean(inTable)}
-        >
-          표
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => editor.chain().focus().toggleCallout().run()}
-          active={Boolean(inCallout)}
-        >
-          콜아웃
-        </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().pickImage().run()}>이미지</ToolbarButton>
-        <span className="ml-auto shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400">
-          &apos;/&apos;로 블록 삽입
-        </span>
+    // 바깥 래퍼의 아래 여백: 마지막 줄 아래에도 스크롤할 공간을 둬서 커서가 sticky 저장 바 위로 올라오게 한다.
+    // 테두리 박스 안에 넣으면 박스가 그만큼 길어 보이므로 박스 바깥에 둔다.
+    <div className="pb-[40vh]">
+      <div ref={wrapperRef} className="relative rounded border border-zinc-200">
+        {/* 글이 길어져 스크롤해도 서식 버튼이 항상 보이도록 위에 고정한다 (스크롤 컨테이너는 main).
+            좁은 화면에서는 여러 줄로 줄바꿈하면 고정 영역이 커지므로 한 줄 가로 스크롤로 둔다 */}
+        <div className="hide-scrollbar sticky top-0 z-20 flex gap-1 overflow-x-auto rounded-t border-b border-zinc-200 bg-white px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
+          <ToolbarButton
+            onClick={() => toggleHeading(1)}
+            active={active.h1}
+          >
+            H1
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => toggleHeading(2)}
+            active={active.h2}
+          >
+            H2
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => toggleHeading(3)}
+            active={active.h3}
+          >
+            H3
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => toggleHeading(4)}
+            active={active.h4}
+          >
+            H4
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            active={active.bold}
+          >
+            B
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            active={active.italic}
+          >
+            I
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            active={active.strike}
+          >
+            취소선
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            active={active.bulletList}
+          >
+            목록
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+            active={active.taskList}
+          >
+            체크박스
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            active={active.blockquote}
+          >
+            인용
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={openLinkPopup}
+            active={active.link}
+          >
+            링크
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            active={active.code}
+          >
+            인라인 코드
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            active={active.codeBlock}
+          >
+            코드 블록
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().insertTable(DEFAULT_TABLE).run()}
+            disabled={Boolean(inTable)}
+          >
+            표
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleCallout().run()}
+            active={Boolean(inCallout)}
+          >
+            콜아웃
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().pickImage().run()}>이미지</ToolbarButton>
+          <span className="ml-auto shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400">
+            &apos;/&apos;로 블록 삽입
+          </span>
+        </div>
+        <EditorContent editor={editor} className="px-4 py-3" />
+        <SelectionBubbleMenu editor={editor} onLink={openLinkPopup} />
+        <TableToolbar editor={editor} wrapperRef={wrapperRef} />
+        {linkHover && !linkPopup && (
+          <LinkEditButton
+            state={linkHover}
+            onEnter={cancelHoverHide}
+            onLeave={hideHoverSoon}
+            onEdit={() => {
+              if (!wrapperRef.current) return;
+              const state = computeLinkPopup(editor.view, wrapperRef.current, linkHover.pos);
+              setLinkHover(null);
+              if (state) setLinkPopup({ id: ++popupIdRef.current, state });
+            }}
+          />
+        )}
+        {linkPopup && (
+          <LinkPopover
+            key={linkPopup.id}
+            editor={editor}
+            state={linkPopup.state}
+            onClose={closeLinkPopup}
+          />
+        )}
       </div>
-      <EditorContent editor={editor} className="px-4 py-3" />
-      <SelectionBubbleMenu editor={editor} onLink={openLinkPopup} />
-      <TableToolbar editor={editor} wrapperRef={wrapperRef} />
-      {linkHover && !linkPopup && (
-        <LinkEditButton
-          state={linkHover}
-          onEnter={cancelHoverHide}
-          onLeave={hideHoverSoon}
-          onEdit={() => {
-            if (!wrapperRef.current) return;
-            const state = computeLinkPopup(editor.view, wrapperRef.current, linkHover.pos);
-            setLinkHover(null);
-            if (state) setLinkPopup({ id: ++popupIdRef.current, state });
-          }}
-        />
-      )}
-      {linkPopup && (
-        <LinkPopover
-          key={linkPopup.id}
-          editor={editor}
-          state={linkPopup.state}
-          onClose={closeLinkPopup}
-        />
-      )}
     </div>
   );
 }

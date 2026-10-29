@@ -36,7 +36,7 @@
 왜 이 순서인가(제안): B는 이미 승인돼 있고 C·D가 B의 세션 구조(채팅↔글 연결)와 도구 호출 구조 위에 얹히기 때문이다. A는 작고 B·C의 전제를 정리한다. E는 B~D와 병행할 수 있다.
 
 ### A. 작은 정리
-- [ ] **AI 주소 끝의 `/` 방어** — `NEXT_PUBLIC_AI_API_URL` 끝에 `/`가 있으면 `//sessions`로 요청돼 Vercel이 308을 돌려주고, CORS 사전 요청이라 브라우저가 실패한다(2026-10-28 로컬에서 겪음). 주소를 읽는 곳(`useChatMessages`, `useReadingChatMessages` 두 곳뿐 — `api.ts`·`auth-client.ts`는 BE 주소용이라 대상 아님)에서 끝의 `/`를 제거. `shared/lib/ai-url.ts`로 구현, **PR #19 진행 중(머지 전)**
+- [x] **AI 주소 끝의 `/` 방어** — `NEXT_PUBLIC_AI_API_URL` 끝에 `/`가 있으면 `//sessions`로 요청돼 Vercel이 308을 돌려주고, CORS 사전 요청이라 브라우저가 실패한다(2026-10-28 로컬에서 겪음). 주소를 읽는 곳(`useChatMessages`, `useReadingChatMessages` 두 곳뿐 — `api.ts`·`auth-client.ts`는 BE 주소용이라 대상 아님)에서 끝의 `/`를 제거. `shared/lib/ai-url.ts`로 구현, **PR #19로 main 병합됨**
 - [x] **세션별 동시 진행(2026-10-29 방향 변경: 스트림 취소 → 동시 진행)** — 구현·로컬 QA 완료(미커밋, 브랜치 `feat/chat-concurrent-streams`, QA: `chat-concurrent-streams-qa.md`). — 답변이 오는 도중 새 대화·다른 세션을 고르면 이전 스트림이 끝날 때까지 새 대화 전송이 잠긴다(PR #10의 알려진 한계). 취소하면 서버가 답변을 끝에 저장하므로(`inote-ai` `chat.py` 232~235줄) 답이 사라질 것으로 추정되어, `messages`·`isSending`을 세션별로 나눠 이전 답변은 계속 진행하고 새 대화도 바로 보내게 한다. FE만 변경(서버·API 변경 없음). 아래 "검토했지만 보류한 것" 참고
 - [ ] 스트림 끊김·부분 청크 파싱 테스트 보강 (`useChatMessages`는 지금 테스트가 거의 없음 — ADR 0006의 FE 첫 단계와 겹친다)
 - [ ] 개발 일지 `docs/devlog/fe.md`에 채팅 코드블록·로딩·스크롤 변경(PR #10) 기록
