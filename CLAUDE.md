@@ -242,21 +242,13 @@ FE 유닛 테스트만으로 충분** — 전 단계는 새 기능 단위에만 
 > 기능별 후속은 [`docs/todo/`](./docs/todo/)에 둔다. (2026-10-23: 완료 항목 정리)
 
 - [ ] 일지 기능 착수 여부·순서 결정, 각 기능의 상세 기능 기획 (할 일 목록은 구현됨 — 후속 범위는 사람이 정함)
-- [ ] **FE 테스트 작성 (2026-09-22 추가, 우선순위 순)** — 완료할 때마다 체크. 체크 기준은 "테스트 파일이
+- [ ] **FE 테스트 작성 (남은 것)** — 완료할 때마다 줄을 지운다. 체크 기준은 "테스트 파일이
       있는지"만 확인한 것이라 커버리지가 충분한지는 확인 필요.
-  - 1순위 (2026-09-23 완료)
-    - [x] `features/mark-inote-used/MarkInoteUsed`
-    - [x] `views/admin/ui/UsageBadge`
-    - [x] `views/admin/ui/AdminUserDetailModal`
-  - 2순위 (로직 복잡한데 테스트 파일이 없음 — `auth-errors.ts`부터 추천, mock 불필요)
+  - 로직이 복잡한데 테스트 파일이 없음 (`auth-errors.ts`부터 추천, mock 불필요)
     - [ ] `shared/lib/auth-errors.ts` — 에러 코드 → 한글 메시지 매핑
     - [ ] `features/write-post/WritePostForm` — draft 이어쓰기 분기, 저장/발행 분기
     - [ ] `features/edit-profile/ProfileForm` — 비밀번호 생성/변경 분기, 계정 연결 목록
     - [ ] `widgets/nav/AuthNavAction` — 로그인/로그아웃 상태 분기
-    - [x] `views/admin/AdminMembersPage` — 테스트 파일 있음
-  - 3순위
-    - [x] `features/filter-posts-by-category` (`CategoryFilter.test.tsx`)
-    - [x] `features/manage-categories/CategoryManager`
   - E2E: 글쓰기 → 발행 → 목록 노출 흐름 1개 추가 검토 (회원 삭제는 파괴적 액션이라 자동화 제외) —
     Playwright는 보류 중
   - 제외(테스트 가치 낮음): `entities/*/api/*`(순수 fetch 래퍼), 단순 조합만 하는 `views/*`,
