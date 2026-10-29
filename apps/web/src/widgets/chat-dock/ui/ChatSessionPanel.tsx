@@ -61,6 +61,7 @@ export default function ChatSessionPanel({ chat }: Props) {
         {chat.sessions.map((session) => {
           const { kicker, title } = sessionLabel(session);
           const active = session.id === chat.activeSessionId;
+          const answering = chat.answeringSessionIds.has(session.id);
           return (
             <li key={session.id} className="relative">
               <button
@@ -70,7 +71,17 @@ export default function ChatSessionPanel({ chat }: Props) {
                   session.post_id ? "pr-9" : ""
                 } ${active ? "bg-zinc-100" : "hover:bg-zinc-50"}`}
               >
-                <p className="truncate text-[11px] text-zinc-400">{kicker}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="truncate text-[11px] text-zinc-400">{kicker}</p>
+                  {answering && (
+                    <span
+                      role="img"
+                      aria-label="답변 중"
+                      title="답변 중"
+                      className="size-1.5 shrink-0 rounded-full bg-red-500"
+                    />
+                  )}
+                </div>
                 <p className="truncate text-sm text-zinc-700">{title}</p>
               </button>
               {session.post_id && (
