@@ -6,6 +6,8 @@ import type { ChatMessage } from "./types";
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
 const READING_SUGGESTIONS = ["이번 달 베스트셀러 알려줘", "책 추천해줘", "이 책 가격이 궁금해"];
+// 세션이 없는 모드라 "답변 중" 표시를 쓸 대화 목록이 없다
+const NO_ANSWERING_SESSIONS: ReadonlySet<string> = new Set();
 
 // 독서 상담 채팅 — inote-ai의 /reading-chat/stream을 씀. 대화를 DB에 저장하지 않고
 // (세션 목록·검색 없음), 그때그때 휘발성으로 주고받는 훨씬 단순한 버전.
@@ -114,6 +116,7 @@ export function useReadingChatMessages() {
     handleSend,
     sendPreset,
     sessions: [],
+    answeringSessionIds: NO_ANSWERING_SESSIONS,
     activeSessionId: null,
     activeSessionTitle: firstUserMessage || null,
     startNewSession,
