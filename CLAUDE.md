@@ -48,7 +48,7 @@ inote/
 ├── .claude/agents/ ← 서브에이전트 정의 (strategist · code-reviewer · debugger · test-runner)
 ├── .github/       ← pull_request_template.md (PR description 형식)
 ├── CLAUDE.md      ← 이 파일 (전체 레포 공통 컨텍스트)
-├── PLANNING.md / STRATEGY.md / TODO.md
+├── PLANNING.md / STRATEGY.md
 ```
 
 > 폴더 목록·컴포넌트 목록은 문서에 손으로 옮겨 적지 않는다 — 코드(`apps/web/src`)가 소스.
@@ -262,6 +262,5 @@ FE 유닛 테스트만으로 충분** — 전 단계는 새 기능 단위에만 
   - 제외(테스트 가치 낮음): `entities/*/api/*`(순수 fetch 래퍼), 단순 조합만 하는 `views/*`,
     `shared/ui`의 서드파티 래퍼 컴포넌트
 - [ ] 문서 안에 남아 있는 `src/...` 경로 표기를 `apps/web/src/...`로 정리 (2026-09-10 모노레포 전환 후
-      남은 자잘한 정리, 급하지 않음 — `docs/learning/NEXTJS_ERROR_HANDLING.md`, `docs/UI_SCREENS.md` 등)
-- [ ] 문서 정리 후속: `TODO.md`·`docs/UI_SCREENS.md`(Phase 1 초기 계획, 현재와 맞지 않음) 확인 후 정리,
-      `docs/kure/` 위치 정리 — 계획은 `docs/todo/docs-cleanup.md`
+      남은 자잘한 정리, 급하지 않음 — `docs/learning/NEXTJS_ERROR_HANDLING.md` 등)
+- [ ] 문서 정리 후속: `docs/kure/` 위치 정리 등 — 계획은 `docs/todo/docs-cleanup.md`

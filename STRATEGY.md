@@ -63,7 +63,7 @@ inote-ai → inote-server(blog 모듈)  (RAG 인덱싱 시 글 내용 조회용)
 
 - `inote-server`: `blog` 모듈에 글 CRUD API
 - `inote`: 글 목록/작성/상세 화면, `inote-server` 인증 연동
-- 화면 단위로 쪼갠 세부 작업 리스트: [`docs/UI_SCREENS.md`](./docs/UI_SCREENS.md)
+- 화면 단위 세부 계획서(`UI_SCREENS.md`)와 체크리스트(`TODO.md`)는 현재와 맞지 않아 삭제함 — 현황은 `docs/handoff/HANDOFF.md`, 남은 일은 `docs/todo/`
 
 ### Phase 2 — LLM 채팅 연동
 
