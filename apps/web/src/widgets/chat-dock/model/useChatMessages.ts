@@ -11,6 +11,10 @@ import type { ChatMessage, ChatSession } from "./types";
 
 const WRITE_SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"];
 
+// 로그인 안 한 게스트는 세션 id가 없어서 이 키로 메시지를 보관한다
+const GUEST_KEY = "guest";
+const NO_MESSAGES: ChatMessage[] = [];
+
 export function useChatMessages() {
   const { data: authSession, isPending: isSessionPending } = useSession();
   const userId = authSession?.user.id;
@@ -24,10 +28,28 @@ export function useChatMessages() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [isSessionPanelOpen, setSessionPanelOpen] = useState(false);
   const [sessionSearch, setSessionSearch] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  // 메시지·전송 상태는 세션별로 보관한다 — 한 세션의 답변이 진행 중이어도 다른 세션으로 옮겨
+  // 새 대화를 보낼 수 있고, 진행 중인 답변은 화면을 떠나도 자기 세션에 계속 쌓인다.
+  const [messagesBySession, setMessagesBySession] = useState<Record<string, ChatMessage[]>>({});
   const [input, setInput] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const sendingRef = useRef(false);
+  const [sendingKeys, setSendingKeys] = useState<ReadonlySet<string>>(new Set());
+  // state는 화면(로딩·버튼 비활성)용이고, 같은 틱에 두 번 눌리는 경우와 비동기 콜백에서 최신 값을 보는 데는 ref를 쓴다.
+  const sendingRef = useRef(new Set<string>());
+
+  const activeKey = sessionId ?? GUEST_KEY;
+  const messages = messagesBySession[activeKey] ?? NO_MESSAGES;
+  const isSending = sendingKeys.has(activeKey);
+
+  const setSessionMessages = useCallback((key: string, next: ChatMessage[]) => {
+    setMessagesBySession((prev) => ({ ...prev, [key]: next }));
+  }, []);
+
+  const updateSessionMessages = useCallback(
+    (key: string, update: (prev: ChatMessage[]) => ChatMessage[]) => {
+      setMessagesBySession((prev) => ({ ...prev, [key]: update(prev[key] ?? NO_MESSAGES) }));
+    },
+    [],
+  );
 
   // 글쓰기 페이지 진입/이동 시 그 글의 세션으로 강제 전환. 글쓰기 페이지를 벗어나면
   // 다음에 (같은 글이든 다른 글이든) 다시 들어왔을 때 항상 재동기화되도록 리셋.
@@ -111,33 +133,35 @@ export function useChatMessages() {
 
     if (!sessionId || !userId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 세션 전환에 대한 동기화 리셋
-      setMessages([]);
+      setSessionMessages(sessionId ?? GUEST_KEY, []);
       return;
     }
 
+    // 답변이 진행 중인 세션은 서버 이력으로 덮어쓰지 않는다 — 서버는 답변이 끝나야 저장하므로
+    // 지금 불러오면 화면에 쌓이고 있는 답이 사라진다. 이력 응답을 기다리는 사이에 전송이 시작된 경우도 같다.
+    if (sendingRef.current.has(sessionId)) return;
+
     (async () => {
+      let history: ChatMessage[] = [];
       try {
         const res = await fetch(
           `${AI_API_URL}/conversations/${sessionId}?user_id=${encodeURIComponent(userId)}`,
         );
-        if (!res.ok) {
-          setMessages([]);
-          return;
+        if (res.ok) {
+          const rows = (await res.json()) as { role: "user" | "assistant"; content: string }[];
+          history = rows.map((m) => ({ id: crypto.randomUUID(), role: m.role, text: m.content }));
         }
-        const history = (await res.json()) as { role: "user" | "assistant"; content: string }[];
-        setMessages(
-          history.map((m) => ({ id: crypto.randomUUID(), role: m.role, text: m.content })),
-        );
       } catch {
-        setMessages([]);
+        // 이력을 못 불러오면 빈 대화로 시작
       }
+      if (sendingRef.current.has(sessionId)) return;
+      setSessionMessages(sessionId, history);
     })();
-  }, [sessionId, isSessionPending, userId]);
+  }, [sessionId, isSessionPending, userId, setSessionMessages]);
 
   function startNewSession() {
     setSessionId(crypto.randomUUID());
     setSessionPostId(null);
-    setMessages([]);
     setSessionPanelOpen(false);
     setSessionSearch("");
   }
@@ -153,31 +177,32 @@ export function useChatMessages() {
     setSessionPanelOpen((v) => !v);
   }
 
-  // 답변이 끝날 때까지 다음 전송을 막는다 — 막지 않으면 두 답변이 섞여 들어온다.
-  // state는 화면(로딩·버튼 비활성)용이고, 같은 틱에 두 번 눌리는 경우는 ref로 막는다.
+  // 같은 세션에서는 답변이 끝날 때까지 다음 전송을 막는다 — 막지 않으면 두 답변이 섞여 들어온다.
+  // 다른 세션의 답변이 진행 중인 것은 막지 않는다 (세션별로 따로 쌓인다).
   async function sendMessage(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || sendingRef.current) return;
+    // 로그인 안 한 게스트는 세션 없이 그냥 휘발성 채팅 (저장 안 됨)
+    const activeSessionId = userId ? (sessionId ?? crypto.randomUUID()) : null;
+    const key = activeSessionId ?? GUEST_KEY;
+    if (!trimmed || sendingRef.current.has(key)) return;
 
-    sendingRef.current = true;
-    setIsSending(true);
+    sendingRef.current.add(key);
+    setSendingKeys(new Set(sendingRef.current));
     try {
-      await streamReply(trimmed);
+      await streamReply(trimmed, activeSessionId, key);
     } finally {
-      sendingRef.current = false;
-      setIsSending(false);
+      sendingRef.current.delete(key);
+      setSendingKeys(new Set(sendingRef.current));
     }
   }
 
-  async function streamReply(trimmed: string) {
+  async function streamReply(trimmed: string, activeSessionId: string | null, key: string) {
     const userMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", text: trimmed };
     const assistantId = crypto.randomUUID();
     const history = [...messages, userMessage];
-    setMessages([...history, { id: assistantId, role: "assistant", text: "" }]);
+    setSessionMessages(key, [...history, { id: assistantId, role: "assistant", text: "" }]);
     setInput("");
 
-    // 로그인 안 한 게스트는 세션 없이 그냥 휘발성 채팅 (저장 안 됨)
-    const activeSessionId = userId ? (sessionId ?? crypto.randomUUID()) : null;
     if (userId && !sessionId) setSessionId(activeSessionId);
 
     // 글쓰기 세션이면 보낼 때마다 그 글의 실시간 제목/카테고리를 새로 가져옴
@@ -207,12 +232,12 @@ export function useChatMessages() {
         }),
       });
     } catch {
-      setAssistantText(assistantId, "AI 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.");
+      setAssistantText(key, assistantId, "AI 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.");
       return;
     }
 
     if (!res.ok || !res.body) {
-      setAssistantText(assistantId, "답변을 가져오지 못했어요. 잠시 후 다시 시도해주세요.");
+      setAssistantText(key, assistantId, "답변을 가져오지 못했어요. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -232,19 +257,21 @@ export function useChatMessages() {
         const payload = chunk.replace(/^data: /, "");
         if (!payload || payload === "[DONE]") continue;
         const { text } = JSON.parse(payload) as { text: string };
-        appendAssistantText(assistantId, text);
+        appendAssistantText(key, assistantId, text);
       }
     }
 
     if (userId) void loadSessions();
   }
 
-  function setAssistantText(id: string, text: string) {
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text } : m)));
+  function setAssistantText(key: string, id: string, text: string) {
+    updateSessionMessages(key, (prev) => prev.map((m) => (m.id === id ? { ...m, text } : m)));
   }
 
-  function appendAssistantText(id: string, text: string) {
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: m.text + text } : m)));
+  function appendAssistantText(key: string, id: string, text: string) {
+    updateSessionMessages(key, (prev) =>
+      prev.map((m) => (m.id === id ? { ...m, text: m.text + text } : m)),
+    );
   }
 
   function handleSend(e: React.FormEvent) {
@@ -272,6 +299,8 @@ export function useChatMessages() {
     input,
     setInput,
     isSending,
+    // 답변이 진행 중인 세션 id (다른 세션을 보고 있어도 포함) — 대화 목록의 "답변 중" 점에 쓴다
+    answeringSessionIds: sendingKeys,
     handleSend,
     sendPreset,
     sessions,
