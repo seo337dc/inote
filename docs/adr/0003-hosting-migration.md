@@ -1,8 +1,8 @@
 # 호스팅 정리 기록 — Render 무료 한도 초과 대응
 
 > 공통(전체) 기록: 배경·원인·선택지·결정·진행 상황. 서비스별 상세는 각 레포 문서를 본다.
-> - AI 서버(Vercel): `inote-ai` 레포 `docs/vercel-migration.md`
-> - DB(Neon → Supabase): `inote-server` 레포 `docs/supabase-migration.md`, AI 쪽은 `inote-ai` 레포 `docs/supabase-migration.md`
+> - AI 서버(Vercel): `inote-ai` 레포 `docs/adr/0001-render-to-vercel.md`
+> - DB(Neon → Supabase): `inote-server` 레포 `docs/adr/0001-neon-to-supabase.md`, AI 쪽은 `inote-ai` 레포 `docs/adr/0002-neon-to-supabase.md`
 > Notion 게시용 초안은 [`../blog/hosting-migration-notion-draft.md`](../blog/hosting-migration-notion-draft.md).
 > 작성 시작: 2026-09-30 / 상태: 🟡 진행 중 (AI 이전 완료, BE 재개 대기, DB 이전 예정)
 
@@ -49,7 +49,7 @@
 
 ### Vercel Hobby 제한 (요약)
 
-함수 최대 실행 시간 기본·최대 300초(Fluid compute), 월 Active CPU 4시간(I/O 대기 제외), 함수 호출 100만 건, 비상업 한도. 상세는 `inote-ai/docs/vercel-migration.md`.
+함수 최대 실행 시간 기본·최대 300초(Fluid compute), 월 Active CPU 4시간(I/O 대기 제외), 함수 호출 100만 건, 비상업 한도. 상세는 `inote-ai/docs/adr/0001-render-to-vercel.md`.
 
 ## 4. 결정
 
@@ -96,7 +96,7 @@
 | BE (Render) | `DATABASE_URL` | Neon 새 비밀번호 pooled 주소 (Supabase 이전 후 교체) |
 | AI (Vercel) | `INOTE_SERVER_URL` | Render BE 주소 + `/api/v1` |
 
-AI 서버 변수 전체 표는 `inote-ai/docs/vercel-migration.md`.
+AI 서버 변수 전체 표는 `inote-ai/docs/adr/0001-render-to-vercel.md`.
 
 ## 7. 진행 로그
 

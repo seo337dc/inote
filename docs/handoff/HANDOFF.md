@@ -49,7 +49,7 @@
 - 결정: AI DB는 BE 프로젝트에 `ai` 스키마로 합치려다 **별도 프로젝트로 분리**했다 (AI 서버가 `postgres` 계정으로 BE의 사용자·OAuth 토큰·글까지 읽을 수 있고, 스키마 분리는 보안 경계가 아니라서). 코드는 `ai.` 접두사 없이 원래 SQL 그대로다.
 - BE 프로젝트에 합치기 시도 때 복원한 **`ai` 스키마 사본이 남아 있다** → 안정화 후 삭제 대상.
 - 새로 만들었다가 쓰지 않는 Supabase 프로젝트가 있으면 정리한다 (무료 프로젝트는 2개까지, 1주 미사용 시 자동 일시중지).
-- 상세 기록: `docs/adr/0003-hosting-migration.md`(공통), `inote-ai/docs/vercel-migration.md`, `inote-ai/docs/supabase-migration.md`, `inote-server/docs/supabase-migration.md`
+- 상세 기록: `docs/adr/0003-hosting-migration.md`(공통), `inote-ai/docs/adr/0001-render-to-vercel.md`, `inote-ai/docs/adr/0002-neon-to-supabase.md`, `inote-server/docs/adr/0001-neon-to-supabase.md`
 - Notion `Inote-server` 페이지: 기술 스택·인프라·환경변수·API(68개)·DB 스키마(21개)·테스트·미결정 항목을 10/2에 갱신함. **하위 페이지 5개(DB 문서, API 문서, devlog, 학습 노트, planning)는 아직 낡음.**
 
 ---
@@ -134,7 +134,7 @@
 - BE 프로젝트의 `ai` 스키마(합치기 시도 사본) 삭제, Neon 두 DB 삭제(백업 보관 후), 쓰지 않는 Supabase 프로젝트 삭제
 - Supabase 비밀번호 로테이션 (BE 프로젝트는 한 번 노출된 적 있음). 바꾸면 Render·로컬 `.env`를 같이 갱신
 - AI 프로젝트의 **1주 미사용 일시중지 방지**: cron-job으로 AI `/health/db`(내부 시크릿 헤더 필요)를 주기 호출
-- `inote-ai`의 `README.md`·`CLAUDE.md`·`docs/vercel-migration.md` DB 정보 최신화, `render.yaml`·`runtime.txt` 삭제
+- `inote-ai`의 `README.md`·`CLAUDE.md`·`docs/adr/0001-render-to-vercel.md` DB 정보 최신화, `render.yaml`·`runtime.txt` 삭제
 
 ### D. 보안·설계 과제 (사람 승인 후 진행 — AI가 임의로 정하지 않는다)
 - **AI 서버가 요청자를 검증하지 않는다**: FE가 보낸 `user_id`를 그대로 신뢰해서, 공개 글 API에 `userId`가 노출되는 점과 합치면 다른 사람의 대화 목록·이력을 읽을 수 있을 가능성이 크다. 후보: BE가 짧은 수명 토큰 발급 / AI가 Better Auth 세션 직접 검증
@@ -203,8 +203,8 @@
 | `inote/CLAUDE.md` | 프로젝트 규칙·구조·커밋 전 체크리스트·작업 순서 |
 | `inote/docs/adr/0003-hosting-migration.md` | Render 정지 원인, 선택지, 결정, 진행 상황 |
 | `inote/docs/blog/hosting-migration-notion-draft.md` | Notion 게시용 초안 |
-| `inote-ai/docs/vercel-migration.md` | AI 서버 Vercel 이전 상세·트러블슈팅 |
-| `inote-ai/docs/supabase-migration.md` | AI DB를 별도 Supabase 프로젝트로 분리한 기록·트러블슈팅 |
-| `inote-server/docs/supabase-migration.md` | Neon → Supabase 이전 계획·진행 로그·트러블슈팅 |
+| `inote-ai/docs/adr/0001-render-to-vercel.md` | AI 서버 Vercel 이전 상세·트러블슈팅 |
+| `inote-ai/docs/adr/0002-neon-to-supabase.md` | AI DB를 별도 Supabase 프로젝트로 분리한 기록·트러블슈팅 |
+| `inote-server/docs/adr/0001-neon-to-supabase.md` | Neon → Supabase 이전 계획·진행 로그·트러블슈팅 |
 | `inote-server/docs/handoff/HANDOFF.md` | BE 쪽 handoff (이 문서를 가리킴) |
 | `inote-money/CLAUDE.md`, `inote-money/apps/app/CLAUDE.md` | 자산관리 FE·모바일 앱 규칙 |
