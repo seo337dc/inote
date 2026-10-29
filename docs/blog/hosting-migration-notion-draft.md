@@ -45,7 +45,7 @@
 
 ## 2편. AI 서버를 Vercel로 옮기기
 
-> 상세 원본: `inote-ai` 레포의 `docs/vercel-migration.md`
+> 상세 원본: `inote-ai` 레포의 `docs/adr/0001-render-to-vercel.md`
 
 ### Vercel Hobby로 AI 서버를 돌릴 수 있는 근거 (공식 문서 확인)
 - 함수 최대 실행 시간: Fluid compute 기준 기본·최대 **300초** (스트리밍 시간 포함).
@@ -70,7 +70,7 @@
 
 ## 3편. DB를 Neon에서 Supabase로 (예정)
 
-> 상세 원본: `inote-server` 레포의 `docs/supabase-migration.md`, `inote-ai` 레포의 `docs/supabase-migration.md`
+> 상세 원본: `inote-server` 레포의 `docs/adr/0001-neon-to-supabase.md`, `inote-ai` 레포의 `docs/adr/0002-neon-to-supabase.md`
 
 - 이유: Neon 무료 컴퓨트 한도 초과 경고, 프로젝트 2개(prod·dev)로 로컬/운영 DB 분리, AI DB를 BE DB에 합치기.
 

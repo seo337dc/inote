@@ -10,7 +10,7 @@
 - `app/routers/sessions.py` — `GET /sessions`, 내부용 `DELETE /sessions`(탈퇴), `DELETE /sessions/{id}`(글 삭제, `x-internal-secret`)
 - `app/routers/posts_chat.py`, `reading_chat.py` — 같은 테이블을 `kind`(`posts`/`reading`)로 씀 → **깨뜨리지 말 것**
 - `app/services/ownership.py`, `app/services/text_prep.py`(`html_to_text`)
-- `docs/vercel-migration.md` — 요청 본문 4.5MB, 함수 300초 제한
+- `docs/adr/0001-render-to-vercel.md` — 요청 본문 4.5MB, 함수 300초 제한
 
 ## 구현할 것
 

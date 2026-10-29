@@ -72,7 +72,7 @@ LLM 챗을 쓰려면 `inote-ai`(AI, `:8000`)도 같이 띄워야 한다.
 - [`docs/adr/`](./docs/adr/) — 결정 기록·설계 계약 · [`docs/design/FSD.md`](./docs/design/FSD.md) — 구조 설계 근거
 - [`docs/todo/`](./docs/todo/) — 이번에 안 하고 남긴 일
 - [`docs/learning/`](./docs/learning/) — 학습 문서 (FE 테스트 등)
-- [`PLANNING.md`](./PLANNING.md) — 왜 만드는지, 성공 기준 · [`STRATEGY.md`](./STRATEGY.md) — 전체 구조·단계별 전략
+- [`PLANNING.md`](./PLANNING.md) — 왜 만드는지, 성공 기준
 - 만다라트 — 핵심 목표 + 8대 축, `/dev-guide` 페이지에서 확인 (DB 기반, 항목 클릭 시 정리 페이지로 이동)
 
 ## 링크

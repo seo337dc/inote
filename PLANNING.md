@@ -1,6 +1,6 @@
 # inote — 기획서
 
-> `STRATEGY.md`가 "무엇을 만들지"라면, 이 문서는 "왜 만들고 무엇을 성공으로 볼지"를 정의한다.
+> 이 문서는 "왜 만들고 무엇을 성공으로 볼지"를 정의한다. ("무엇을 만들지"를 적었던 `STRATEGY.md`는 Phase 계획이 현재와 맞지 않아 삭제함)
 > devlog-llm의 PLANNING.md 형식과 원칙을 이어받되, iNote 시리즈 통합에 맞춰 다시 잡았다.
 
 ---
@@ -80,5 +80,3 @@ iNote 시리즈(`inote-money`와 같은 계열)로 편입하기로 함. 가장 �
 ## 미결정 사항
 
 - [ ] 만다라트 9번 축 (8번은 Playwright E2E 테스트로 확정)
-- [ ] 임베딩 모델 최종 확정 (Voyage AI `voyage-4-lite` 유력, devlog-llm에서 조사한 내용 재사용 가능)
-- [ ] `inote-server`의 Neon DB를 그대로 확장할지, 별도 브랜치를 팔지

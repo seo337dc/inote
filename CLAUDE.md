@@ -4,7 +4,7 @@
 > (순서: `git pull` → `HANDOFF.md` → 이 파일)
 
 새 세션(다른 PC, 다른 AI 포함)에서 이 프로젝트를 이어받을 때 먼저 읽는 파일. 자세한 배경은
-`PLANNING.md`(왜 만들고 뭘 성공으로 볼지), `STRATEGY.md`(무엇을 만들지)를 참고.
+`PLANNING.md`(왜 만들고 뭘 성공으로 볼지)를 참고.
 
 > **2026-09-10: 모노레포 구조로 전환.** 최종 목표가 "블로그"가 아니라 **할일 리스트·일지·독서·글쓰기
 > 등을 기록하는 개인 기록 앱**이고 모바일(웹뷰) 앱도 예정돼 있어, `inote-money`와 동일하게
@@ -48,7 +48,7 @@ inote/
 ├── .claude/agents/ ← 서브에이전트 정의 (strategist · code-reviewer · debugger · test-runner)
 ├── .github/       ← pull_request_template.md (PR description 형식)
 ├── CLAUDE.md      ← 이 파일 (전체 레포 공통 컨텍스트)
-├── PLANNING.md / STRATEGY.md / TODO.md
+├── PLANNING.md
 ```
 
 > 폴더 목록·컴포넌트 목록은 문서에 손으로 옮겨 적지 않는다 — 코드(`apps/web/src`)가 소스.
@@ -242,26 +242,17 @@ FE 유닛 테스트만으로 충분** — 전 단계는 새 기능 단위에만 
 > 기능별 후속은 [`docs/todo/`](./docs/todo/)에 둔다. (2026-10-23: 완료 항목 정리)
 
 - [ ] 일지 기능 착수 여부·순서 결정, 각 기능의 상세 기능 기획 (할 일 목록은 구현됨 — 후속 범위는 사람이 정함)
-- [ ] **FE 테스트 작성 (2026-09-22 추가, 우선순위 순)** — 완료할 때마다 체크. 체크 기준은 "테스트 파일이
+- [ ] **FE 테스트 작성 (남은 것)** — 완료할 때마다 줄을 지운다. 체크 기준은 "테스트 파일이
       있는지"만 확인한 것이라 커버리지가 충분한지는 확인 필요.
-  - 1순위 (2026-09-23 완료)
-    - [x] `features/mark-inote-used/MarkInoteUsed`
-    - [x] `views/admin/ui/UsageBadge`
-    - [x] `views/admin/ui/AdminUserDetailModal`
-  - 2순위 (로직 복잡한데 테스트 파일이 없음 — `auth-errors.ts`부터 추천, mock 불필요)
+  - 로직이 복잡한데 테스트 파일이 없음 (`auth-errors.ts`부터 추천, mock 불필요)
     - [ ] `shared/lib/auth-errors.ts` — 에러 코드 → 한글 메시지 매핑
     - [ ] `features/write-post/WritePostForm` — draft 이어쓰기 분기, 저장/발행 분기
     - [ ] `features/edit-profile/ProfileForm` — 비밀번호 생성/변경 분기, 계정 연결 목록
     - [ ] `widgets/nav/AuthNavAction` — 로그인/로그아웃 상태 분기
-    - [x] `views/admin/AdminMembersPage` — 테스트 파일 있음
-  - 3순위
-    - [x] `features/filter-posts-by-category` (`CategoryFilter.test.tsx`)
-    - [x] `features/manage-categories/CategoryManager`
   - E2E: 글쓰기 → 발행 → 목록 노출 흐름 1개 추가 검토 (회원 삭제는 파괴적 액션이라 자동화 제외) —
     Playwright는 보류 중
   - 제외(테스트 가치 낮음): `entities/*/api/*`(순수 fetch 래퍼), 단순 조합만 하는 `views/*`,
     `shared/ui`의 서드파티 래퍼 컴포넌트
 - [ ] 문서 안에 남아 있는 `src/...` 경로 표기를 `apps/web/src/...`로 정리 (2026-09-10 모노레포 전환 후
-      남은 자잘한 정리, 급하지 않음 — `docs/learning/NEXTJS_ERROR_HANDLING.md`, `docs/UI_SCREENS.md` 등)
-- [ ] 문서 정리 후속: `TODO.md`·`docs/UI_SCREENS.md`(Phase 1 초기 계획, 현재와 맞지 않음) 확인 후 정리,
-      `docs/kure/` 위치 정리 — 계획은 `docs/todo/docs-cleanup.md`
+      남은 자잘한 정리, 급하지 않음 — `docs/learning/NEXTJS_ERROR_HANDLING.md` 등)
+- [ ] 문서 정리 후속: `docs/kure/` 위치 정리 등 — 계획은 `docs/todo/docs-cleanup.md`

@@ -74,7 +74,7 @@
 | `inote-ai-embeddings.ts` | 글 벡터 저장·삭제 호출(`upsertPostEmbedding`·`deletePostEmbedding`·`deletePostEmbeddings`). fail-open, 같은 글은 순서대로 한 줄, 스위치 `EMBEDDINGS_ENABLED`. `isEmptyPost`, 백필용 `putPostEmbedding`(던짐), `describeError`, `internalHeaders` |
 | `embedding-candidates.ts` | **유출 방지의 핵심**: `readableCandidatesWhere`(B)·`ownCandidatesWhere`(C)·`publicCandidatesWhere`(D 임시)·`findCandidateIds`(5000개 상한). 비로그인·빈 id를 `userId: undefined/null`로 흘리지 않는다 |
 | `similar-posts.ts` | `findSimilarPosts`: AI 유사 조회(3초 제한, 던지지 않음, 후보 밖·자기·기준 미달·중복을 BE에서 재필터), `SIMILAR_MIN_SCORE`(기본 0.6, 임시) |
-| `embedding-backfill.ts` + `scripts/backfill-embeddings.ts` | 기존 글 일괄 임베딩. 사용법 `docs/embeddings-backfill.md` |
+| `embedding-backfill.ts` + `scripts/backfill-embeddings.ts` | 기존 글 일괄 임베딩. 사용법 `inote-server/docs/runbooks/embeddings-backfill.md` |
 | `blog.service.ts` | `update`(publish 때 임베딩, 기다리지 않음) · `remove` · `findSimilar` · 빈 글 처리(이전 벡터 삭제) |
 | `admin-users.service.ts` | 사용자 삭제 때 글 id를 먼저 모으고 트랜잭션 뒤 하나씩 벡터 삭제 |
 | `blog.controller.ts` | `GET :id/similar` — `Cache-Control: private, no-store`, `res.vary('Cookie')` |
@@ -211,4 +211,4 @@ bc.serializeSignedCookie('better-auth.session_token', process.argv[2], process.a
 ## 8. 참고
 
 - 설계·결정: [`PLAN.md`](PLAN.md) — 5.6(공개 범위 규칙), 6절 B(계약·구현 결과), 7절(평가 계획), 8절(배포 순서), 10절(결정과 미결정)
-- 각 레포: `inote-server/docs/handoff/HANDOFF.md`(BE 관점), `inote-server/docs/embeddings-backfill.md`, `inote-server/docs/local-dev-db.md`, `inote-ai/DEV_LOG.md`(A4·A5), `inote-embedder/docs/a2-results.md`·`a3-results.md`
+- 각 레포: `inote-server/docs/handoff/HANDOFF.md`(BE 관점), `inote-server/docs/runbooks/embeddings-backfill.md`, `inote-server/docs/runbooks/local-dev-db.md`, `inote-ai/docs/devlog/ai.md`(A4·A5), `inote-embedder/docs/a2-results.md`·`a3-results.md`

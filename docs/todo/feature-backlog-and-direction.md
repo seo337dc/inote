@@ -89,7 +89,7 @@
 
 ## 5. 관련 문서
 - 채팅 업데이트 결정·계약: [`docs/adr/0006-chat-update.md`](../adr/0006-chat-update.md), 레포별 인수인계 [`docs/handoff/chat-update/`](../handoff/chat-update/README.md), 후속 목록 [`chat-update.md`](./chat-update.md) (`can_draft` 초안 기능 정리·"넣어줘"·인증·sanitize 등)
-- 스트리밍·AI 서버: `inote-ai` 레포 `DEV_LOG.md`(2026-10-16 글 초안 도구)
+- 스트리밍·AI 서버: `inote-ai` 레포 `docs/devlog/ai.md`(2026-10-16 글 초안 도구)
 - 이번 대화에서 만든 채팅 변경(코드블록·로딩·스크롤): PR #10
 
 ## 완료
