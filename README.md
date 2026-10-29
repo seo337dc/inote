@@ -60,7 +60,7 @@ LLM 챗을 쓰려면 `inote-ai`(AI, `:8000`)도 같이 띄워야 한다.
 | FE (App) | React Native _(예정)_ |
 | BE | NestJS · Prisma (`inote-server`, 별도 레포, 공유 백엔드) — API는 Swagger(`/api/docs`)가 소스 |
 | 인증 | Better Auth (이메일/비밀번호, Google) |
-| DB | PostgreSQL (Supabase) |
+| DB | PostgreSQL (Supabase — BE용·AI용 프로젝트 별도) |
 | AI | Python + FastAPI (`inote-ai`, 별도 레포, 별도 DB) — LLM 채팅·임베딩·RAG |
 | 배포 | FE·AI: Vercel, BE: Render |
 
@@ -79,4 +79,5 @@ LLM 챗을 쓰려면 `inote-ai`(AI, `:8000`)도 같이 띄워야 한다.
 
 - BE: [inote-server](https://github.com/seo337dc/inote-server)
 - AI: [inote-ai](https://github.com/seo337dc/inote-ai)
-- 배포: https://inote-main.vercel.app/
+- 배포: FE https://inote-main.vercel.app/ · AI https://inote-ai-cyan.vercel.app
+- 호스팅 이전 경위: [`docs/adr/0003-hosting-migration.md`](./docs/adr/0003-hosting-migration.md), DB(Neon → Supabase): `inote-server/docs/adr/0001-neon-to-supabase.md`

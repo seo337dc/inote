@@ -19,37 +19,15 @@
 iNote 시리즈의 개인 기록 앱. devlog-llm(개인 실험용 선행 프로젝트)의 후속으로, 인증·DB는 기존
 `inote-server`를 재사용하고 LLM/AI 부분만 별도 Python 서비스(`inote-ai`)로 새로 만든다.
 
-## 현재 상태 (2026-10-28 기준 — 코드로 확인한 것만)
+## 현재 상태
 
-- **구현·배포됨**: 글쓰기(Tiptap 에디터, 표·콜아웃·체크리스트·이미지 업로드, 임시저장/발행), 글 보관함(`/my-posts/archive`, main 병합 — 운영 배포는 BE 먼저라 확인 필요), 카테고리(트리,
-  글이 id로 참조, 드래그 이동), LLM 챗, 이메일/Google 로그인, 독서 기록(`/reading`), 할 일 목록(`/todos`),
-  만다라트(`/dev-guide`), 관리자(`/admin`), 프로필·회원 탈퇴
-- **"준비 중" 표시만 있음**: 일지(`/journal`), 대시보드(`/dashboard`) — 다른 기능이 다 완성된 뒤에 진행
-- **모바일 앱(`apps/app`)**: 계획만 있고 미착수
-- 기능별 구현 경위·결정은 [`docs/devlog/fe.md`](./docs/devlog/fe.md), 세션 인수인계는
-  [`docs/handoff/HANDOFF.md`](./docs/handoff/HANDOFF.md)(10/7 기준 + 10/8~28 변경 목록·남은 일, 운영 반영 여부는 확인 필요)
+구현된 기능은 [`README.md`](./README.md)의 "구현된 기능"과 `apps/web/src/app`이 소스다(여기에 목록을 옮겨 적지 않는다). 일지(`/journal`)·대시보드(`/dashboard`)는 "준비 중" 화면만 있고 모바일 앱(`apps/app`)은 미착수다. 구현 경위는 [`docs/devlog/fe.md`](./docs/devlog/fe.md), 세션 인수인계·운영 반영 여부는 [`docs/handoff/HANDOFF.md`](./docs/handoff/HANDOFF.md).
 
 ## 레포 구조
 
-```
-inote/
-├── apps/
-│   ├── web/   ← Next.js 웹 서비스 (소스 구조는 apps/web/src 가 진짜 소스, FSD)
-│   └── app/   ← React Native 앱 (예정, 미착수 — inote-money/apps/app과 동일 패턴)
-├── docs/
-│   ├── handoff/   ← 세션 인수인계 (HANDOFF.md)
-│   ├── adr/       ← 결정 기록·설계 계약 (번호 순)
-│   ├── design/    ← 설계 근거 (FSD.md)
-│   ├── devlog/    ← 개발 일지 (fe.md) — 개발 일지는 이 파일 하나
-│   ├── learning/  ← 학습용 문서 전용 (README.md가 목차)
-│   ├── todo/      ← 이번에 안 하고 남긴 일 (기능별 파일)
-│   ├── blog/      ← 블로그 글·초안
-│   └── kure/      ← KURE 임베딩 설계·인수인계 (inote-server가 이 경로를 참조 — 옮기지 말 것)
-├── .claude/agents/ ← 서브에이전트 정의 (strategist · code-reviewer · debugger · test-runner)
-├── .github/       ← pull_request_template.md (PR description 형식)
-├── CLAUDE.md      ← 이 파일 (전체 레포 공통 컨텍스트)
-├── PLANNING.md
-```
+트리와 문서 목록은 [`README.md`](./README.md)가 기준이다. 알아둘 것:
+- `docs/kure/`는 `inote-server`가 경로를 참조하므로 옮기지 않는다.
+- 서브에이전트는 `.claude/agents/`, PR 형식은 `.github/pull_request_template.md`.
 
 > 폴더 목록·컴포넌트 목록은 문서에 손으로 옮겨 적지 않는다 — 코드(`apps/web/src`)가 소스.
 > 서버 API 엔드포인트도 여기 적지 않는다 — `inote-server`의 Swagger(`/api/docs`)가 소스.
@@ -83,23 +61,14 @@ Next.js Pages Router와 이름이 겹쳐서 폴더명은 `views`를 씀. 설계 
 
 ## 로컬 개발
 
-```bash
-cd apps/web
-pnpm install
-pnpm dev     # http://localhost:3011
-pnpm lint    # FSD 레이어 위반도 여기서 잡힘
-pnpm build
-```
+실행·환경변수는 [`README.md`](./README.md)의 "로컬 실행", 명령(`pnpm dev`·`test`·`lint`·`build`)은 [`apps/web/CLAUDE.md`](./apps/web/CLAUDE.md)를 본다. `pnpm lint`는 FSD 레이어 위반도 잡는다.
 
 shadcn/ui 적용됨 (`components.json`, inote-money와 동일한 초록 테마). 새 컴포넌트는
 `npx shadcn@latest add <name>`.
 
 ## 배포
 
-- FE: Vercel (`https://inote-main.vercel.app`)
-- AI 서버(`inote-ai`): **Vercel** (`https://inote-ai-cyan.vercel.app`) — Render 무료 한도 초과로 2026-09-30 이전
-- BE(`inote-server`): Render 무료 (서비스 1개만 상시 → 월 750시간 안). 정지 이력과 결정은 `docs/adr/0003-hosting-migration.md`
-- DB: **Supabase** (BE용, AI용 프로젝트 별도) — 2026-10-02 이전 완료. 이전 기록은 `inote-server/docs/adr/0001-neon-to-supabase.md`, Neon은 롤백용으로 남겨뒀다고 10/2 기준 HANDOFF에 적혀 있음 (현재 삭제 여부는 확인 필요)
+FE·AI는 Vercel, BE는 Render(무료, 서비스 1개만 상시 → 월 750시간 안), DB는 Supabase(BE용·AI용 프로젝트 별도). 주소와 이전 경위는 [`README.md`](./README.md)의 "링크"가 기준이다. Neon은 롤백용으로 남겨뒀다고 10/2 기준 HANDOFF에 적혀 있다(현재 삭제 여부는 확인 필요).
 
 ## Git / GitHub 계정 (중요 — 새 머신에서는 재설정 필요)
 
