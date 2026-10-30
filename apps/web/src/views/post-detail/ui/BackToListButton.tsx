@@ -1,24 +1,11 @@
-"use client";
+import Link from "next/link";
 
-import { useRouter } from "next/navigation";
-
-// 글 상세 맨 위의 "← 목록으로" 텍스트 버튼. 직전 화면(홈·나의 글·작성자 목록·카테고리 필터·페이지·검색 상태 그대로)으로 돌아가고,
-// 돌아갈 화면이 없으면(새 탭이나 주소로 바로 들어옴) 전체 글 목록(/)으로 간다.
+// 글 상세 맨 위의 "← 목록으로" 텍스트 링크. 항상 나의 글 목록(/my-posts)으로 간다.
+// (예전에는 router.back()으로 직전 화면에 돌아갔는데, 글 작성·수정 직후나 외부에서 들어온 경우엔 목록이 아닌 곳으로 가버려서 바꿈)
 export default function BackToListButton() {
-  const router = useRouter();
-
-  function handleClick() {
-    if (window.history.length > 1) router.back();
-    else router.push("/");
-  }
-
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="mb-3 text-sm text-zinc-500 hover:text-zinc-900"
-    >
+    <Link href="/my-posts" className="mb-3 inline-block text-sm text-zinc-500 hover:text-zinc-900">
       ← 목록으로
-    </button>
+    </Link>
   );
 }

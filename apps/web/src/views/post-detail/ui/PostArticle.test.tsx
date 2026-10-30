@@ -35,13 +35,13 @@ vi.mock("./DeletePostButton", () => ({ default: () => null }));
 vi.mock("./PostSummarySection", () => ({ default: () => null }));
 
 describe("PostArticle — 목록으로 돌아가기", () => {
-  it("글 맨 위에 '← 목록으로' 버튼이 있고, 카테고리 경로·제목보다 먼저 나온다", () => {
+  it("글 맨 위에 '← 목록으로' 링크가 있고, 카테고리 경로·제목보다 먼저 나온다", () => {
     vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
     render(<PostArticle post={makePost("p1")} />);
 
-    const button = screen.getByRole("button", { name: "← 목록으로" });
+    const link = screen.getByRole("link", { name: "← 목록으로" });
     const title = screen.getByRole("heading", { level: 1 });
-    expect(button.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(link.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 
