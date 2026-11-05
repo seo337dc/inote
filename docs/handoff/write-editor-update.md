@@ -1,10 +1,10 @@
 # 글쓰기 에디터 업데이트 — 인수인계 (2026-11-05)
 
-> 새 세션은 `git pull`(이 브랜치는 로컬 전용) → `docs/handoff/HANDOFF.md` → `CLAUDE.md` → 이 파일 순서로 읽는다.
+> 새 세션은 `git pull`(브랜치 `feat/write-memo-panel`을 받는다) → `docs/handoff/HANDOFF.md` → `CLAUDE.md` → 이 파일 순서로 읽는다.
 > 규칙(화면은 먼저 의논, 커밋·push는 요청 시에만, 하나씩 진행)은 `CLAUDE.md`가 우선이다.
 
 ## 현재 상태
-- 브랜치: `feat/write-memo-panel` (최신 `origin/main`에서 땀, upstream 해제됨). **아무것도 커밋하지 않았다.**
+- 브랜치: `feat/write-memo-panel` (최신 `origin/main`에서 땀). **커밋 5개로 저장했고 origin에 push했다. PR은 아직 만들지 않았다.** 사람의 화면 확인(폭별 배치·드래그·터치)이 남아 있다.
 - dev 서버는 꺼져 있다 (`apps/web`에서 `pnpm dev` → http://localhost:3011, 운영 BE(Render)에 붙는다. 로컬 BE는 운영 DB에 붙으므로 띄우지 않는다).
 - 이번 작업과 무관한 변경이 working tree에 섞여 있다: `docs/learning/README.md`(수정), `docs/learning/SSE.md`, `docs/blog/better-auth-duplicate-account.md` — **커밋에서 제외**.
 
@@ -30,7 +30,7 @@
 - 배포: BE 먼저, FE 나중. 마이그레이션은 테이블 추가뿐이지만 로컬 BE 기본 DB가 운영이므로 개발 DB 검증 전에는 `prisma migrate`를 돌리지 않는다.
 - 1차 범위 밖: 메모 여러 장(헤더 탭), 독서 기록 화면 마운트, 댓글, 참고/참조 페이지 — `docs/todo/`에 기록할 것(아직 `docs/todo/memo.md`는 없다).
 
-## 에디터 작업 1~3번 — 구현 완료 (2026-11-05, 미커밋, 사람 화면 확인 대기)
+## 에디터 작업 1~3번 — 구현 완료 (2026-11-05, 커밋·push 완료, 사람 화면 확인 대기)
 1. **`'/'로 블록 삽입` 문구**: `lg` 이상에서만 보인다(`PostEditor.tsx`).
 2. **툴바**: `H1~H4, B, I, 취소선`은 글자 버튼 그대로. 뒤쪽 9개(목록·체크박스·인용·링크·인라인 코드·코드 블록·표·콜아웃·이미지)는 **아이콘 버튼**으로 바꿨다(이름은 `aria-label`·`title`). `sm` 미만에서는 `…` 팝오버(`shared/ui/editor/ToolbarMoreMenu.tsx`, 5열 그리드, 항목을 누르면 닫힘, 바깥 클릭·Esc로 닫힘)에 담긴다. 접힘 여부는 `useMediaQuery("(max-width: 639px)")`.
 3. **모바일 헤더**: 헤더가 3칸 그리드라 로고가 모든 페이지에서 가운데에 온다. 왼쪽은 `header-left` 슬롯(범용, 등록된 게 없으면 빈 자리). 글쓰기 화면은 `features/write-post/ui/WriteSettingsSheet.tsx`가 `PanelLeft` 아이콘 버튼(테두리 없는 ghost)을 등록하고 왼쪽 시트로 글 설정을 연다. 시트는 선택해도 자동으로 닫히지 않는다. 글 설정 내용은 `WriteSettingsContent.tsx`로 분리해 데스크톱 패널(`WriteSidePanel`)과 같이 쓴다.
@@ -51,6 +51,6 @@
 - `/commit` 스킬(`.claude/skills/commit/SKILL.md`)에 2단계로 `refactor-advisor` 호출을 넣었다 (체크리스트 앞). 커밋을 막지 않고 보고만 한다.
 - 사용자가 요청했지만 만들지 않은 것: FE·BE·AI 최적화 점검 에이전트. 합치지 않고 관점별로 나누는 쪽을 추천했고, 범위는 아직 정하지 않았다.
 
-## 커밋할 때 (사용자가 요청하면)
+## 커밋·PR (이미 커밋했다 — 아래는 추가 커밋이 생길 때 참고)
 - `/commit` 스킬을 쓴다. 기능 단위로 쪼갠다. 예: ① 플로팅 패널+메모 UI ② 슬롯 레지스트리·모바일 도크(slot-actions, ChatDock) ③ 에디터 툴바(아이콘·`…` 팝오버, 문구 숨김) ④ 모바일 헤더·글 설정 시트·`xl` 분기 ⑤ 문서·에이전트·스킬(CLAUDE.md, refactor-advisor, commit 스킬, todo, handoff). 레지스트리 rename이 ②에 걸쳐 있으니 ④가 ②에 의존한다.
 - 메모는 아직 서버에 저장되지 않는다는 점을 PR의 "알려진 한계"에 적는다.
