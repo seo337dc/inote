@@ -24,6 +24,14 @@ beforeAll(() => {
 });
 
 describe("PostEditor", () => {
+  it("'/'로 블록 삽입 안내 문구는 lg 이상에서만 보이도록 클래스가 걸려 있다", async () => {
+    // jsdom은 미디어 쿼리를 평가하지 못하므로 실제 숨김은 브라우저에서 확인한다 — 여기서는 클래스 회귀만 막는다
+    const { container } = render(<PostEditor content="" onChange={vi.fn()} />);
+    await findEditorEl(container);
+    const hint = screen.getByText("'/'로 블록 삽입");
+    expect(hint).toHaveClass("hidden", "lg:inline");
+  });
+
   it("바깥에서 내려준 content를 불러올 때는 호출되지 않는다", async () => {
     const onUserEdit = vi.fn();
     const { container, rerender } = render(

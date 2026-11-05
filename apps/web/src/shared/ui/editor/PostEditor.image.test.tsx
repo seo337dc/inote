@@ -114,10 +114,10 @@ describe("PostEditor 이미지 업로드", () => {
 
   it("툴바 [이미지]는 이미지 파일만 고르는 선택창을 연다", async () => {
     const click = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
-    const { container } = await setup();
-    const button = Array.from(container.querySelectorAll("button")).find((b) => b.textContent === "이미지");
+    await setup();
+    const button = screen.getByRole("button", { name: "이미지" });
 
-    act(() => button?.click());
+    act(() => button.click());
 
     expect(click).toHaveBeenCalledTimes(1);
     const input = click.mock.contexts[0] as HTMLInputElement;

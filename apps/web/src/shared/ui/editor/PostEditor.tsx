@@ -1,6 +1,6 @@
 "use client";
 
-import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
@@ -10,6 +10,7 @@ import { TableHeader } from "@tiptap/extension-table-header";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useMediaQuery } from "@/shared/lib/useMediaQuery";
 import { SlashCommand } from "./slash-command";
 import { MarkdownPaste } from "./markdown-paste";
 import {
@@ -24,8 +25,11 @@ import {
 import { toggleHeadingOnLine } from "./line-heading";
 import { TableToolbar } from "./TableToolbar";
 import { SelectionBubbleMenu } from "./SelectionBubbleMenu";
+import { ToolbarMoreMenu } from "./ToolbarMoreMenu";
+import { buildMoreItems, type ToolbarMoreState } from "./toolbar-items";
+import { toolbarButtonClass } from "./toolbar-button-style";
 import { Callout } from "./CalloutView";
-import { DEFAULT_TABLE, TABLE_OPTIONS } from "./table-commands";
+import { TABLE_OPTIONS } from "./table-commands";
 import { ResizableImage } from "./image-extension";
 import { ImageUpload } from "./image-upload-extension";
 import { uploadPostImage } from "./image-upload";
@@ -78,21 +82,26 @@ function ToolbarButton({
   onClick,
   active,
   disabled,
+  label,
   children,
 }: {
   onClick: () => void;
   active?: boolean;
   disabled?: boolean;
+  // 아이콘만 있는 버튼의 접근 가능한 이름·툴팁 (글자 버튼은 생략)
+  label?: string;
   children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
+      aria-label={label}
+      title={label}
       onClick={onClick}
       disabled={disabled}
       aria-pressed={Boolean(active)}
-      className={`shrink-0 whitespace-nowrap rounded px-2 py-1 text-sm disabled:cursor-not-allowed disabled:text-zinc-300 disabled:hover:bg-transparent ${
-        active ? "bg-zinc-900 font-medium text-white hover:bg-zinc-800" : "hover:bg-zinc-100"
+      className={`${toolbarButtonClass(active, "shrink-0 whitespace-nowrap px-2 py-1 text-sm")} ${
+        active ? "font-medium" : ""
       }`}
     >
       {children}
@@ -100,9 +109,25 @@ function ToolbarButton({
   );
 }
 
+// 툴바 뒤쪽 아이콘 버튼 9개. 넓은 화면은 툴바에 펼쳐 보이고(ToolbarIconButtons), 좁은 화면은 `…` 팝오버에 담긴다(ToolbarMore).
+// 항목 정의는 buildMoreItems 한 곳이고, 링크 팝업을 여는 함수(ref를 쓴다)를 렌더 중에 함수 인자로 넘기지 않도록 컴포넌트 props로 받는다.
+function ToolbarIconButtons({ editor, state }: { editor: Editor; state: ToolbarMoreState }) {
+  return buildMoreItems(editor, state).map(({ key, label, icon: Icon, onClick, active, disabled }) => (
+    <ToolbarButton key={key} label={label} onClick={onClick} active={active} disabled={disabled}>
+      <Icon className="size-4" aria-hidden />
+    </ToolbarButton>
+  ));
+}
+
+function ToolbarMore({ editor, state }: { editor: Editor; state: ToolbarMoreState }) {
+  return <ToolbarMoreMenu items={buildMoreItems(editor, state)} />;
+}
+
 export default function PostEditor({ content = "", onChange, onUserEdit }: Props) {
   // 바깥에서 내려준 content를 에디터에 밀어넣는 동안 나오는 update는 사용자 편집이 아님
   const isSyncingRef = useRef(false);
+  // sm 미만이면 툴바 뒤쪽 아이콘 버튼을 `…` 팝오버로 접는다 (matchMedia가 없는 환경·서버에서는 false = 펼친 툴바)
+  const isNarrow = useMediaQuery("(max-width: 639px)");
   // 링크 주소 팝업 — 링크 글자에 마우스를 올려 나오는 편집 아이콘이나 툴바 '링크' 버튼을 누르면 글자 아래에 뜬다.
   // (링크 글자를 그냥 클릭하는 건 커서를 옮기려는 동작일 수 있어 팝업을 열지 않는다)
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -258,6 +283,14 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
     if (state) setLinkPopup({ id: ++popupIdRef.current, state });
   };
 
+  // 툴바 뒤쪽 버튼(전부 아이콘)이 쓰는 현재 상태
+  const moreState: ToolbarMoreState = {
+    active,
+    inTable: Boolean(inTable),
+    inCallout: Boolean(inCallout),
+    openLinkPopup,
+  };
+
   // 줄바꿈(<br>)으로 이어진 문단에선 누른 줄만 제목으로, 그 외에는 블록 전체를 토글
   const toggleHeading = (level: 1 | 2 | 3 | 4) => {
     editor.chain().focus().run();
@@ -273,7 +306,8 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       <div ref={wrapperRef} className="relative rounded border border-zinc-200">
         {/* 글이 길어져 스크롤해도 서식 버튼이 항상 보이도록 위에 고정한다 (스크롤 컨테이너는 main).
             좁은 화면에서는 여러 줄로 줄바꿈하면 고정 영역이 커지므로 한 줄 가로 스크롤로 둔다 */}
-        <div className="hide-scrollbar sticky top-0 z-20 flex gap-1 overflow-x-auto rounded-t border-b border-zinc-200 bg-white px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
+        <div className="sticky top-0 z-20 flex rounded-t border-b border-zinc-200 bg-white">
+          <div className="hide-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
           <ToolbarButton
             onClick={() => toggleHeading(1)}
             active={active.h1}
@@ -316,58 +350,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           >
             취소선
           </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            active={active.bulletList}
-          >
-            목록
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleTaskList().run()}
-            active={active.taskList}
-          >
-            체크박스
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            active={active.blockquote}
-          >
-            인용
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={openLinkPopup}
-            active={active.link}
-          >
-            링크
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            active={active.code}
-          >
-            인라인 코드
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            active={active.codeBlock}
-          >
-            코드 블록
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().insertTable(DEFAULT_TABLE).run()}
-            disabled={Boolean(inTable)}
-          >
-            표
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleCallout().run()}
-            active={Boolean(inCallout)}
-          >
-            콜아웃
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().pickImage().run()}>이미지</ToolbarButton>
-          <span className="ml-auto shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400">
+          {!isNarrow && <ToolbarIconButtons editor={editor} state={moreState} />}
+          <span className="ml-auto hidden shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400 lg:inline">
             &apos;/&apos;로 블록 삽입
           </span>
+          </div>
+          {isNarrow && <ToolbarMore editor={editor} state={moreState} />}
         </div>
         <EditorContent editor={editor} className="px-4 py-3" />
         <SelectionBubbleMenu editor={editor} onLink={openLinkPopup} />

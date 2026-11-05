@@ -11,6 +11,11 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --color-memo: var(--memo);
+  --color-memo-header: var(--memo-header);
+  --color-memo-border: var(--memo-border);
+  --color-memo-foreground: var(--memo-foreground);
+  --color-memo-muted: var(--memo-muted);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -82,6 +87,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* 메모장(Apple 메모 앱 느낌의 노란 종이 톤) */
+  --memo: oklch(0.97 0.07 95);
+  --memo-header: oklch(0.92 0.12 95);
+  --memo-border: oklch(0.85 0.1 90);
+  --memo-foreground: oklch(0.3 0.04 80);
+  --memo-muted: oklch(0.5 0.06 85);
 }
 
 .dark {
@@ -116,6 +127,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --memo: oklch(0.28 0.04 90);
+  --memo-header: oklch(0.34 0.06 90);
+  --memo-border: oklch(0.42 0.06 90);
+  --memo-foreground: oklch(0.92 0.05 95);
+  --memo-muted: oklch(0.75 0.06 90);
 }
 
 @layer base {
@@ -533,4 +549,29 @@
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* 메모 하단 패널: AI 패널(ChatPanel)과 같은 300ms로 아래에서 올라오고 내려간다 */
+@keyframes memo-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes memo-sheet-down {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+@keyframes memo-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes memo-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.memo-sheet-in { animation: memo-sheet-up 300ms ease-out both; }
+.memo-sheet-out { animation: memo-sheet-down 300ms ease-out both; }
+.memo-overlay-in { animation: memo-overlay-in 300ms ease-out both; }
+.memo-overlay-out { animation: memo-overlay-out 300ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .memo-sheet-in, .memo-sheet-out, .memo-overlay-in, .memo-overlay-out { animation-duration: 1ms; }
 }
