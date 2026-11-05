@@ -5,6 +5,8 @@
 > 마지막 갱신: 2026-10-29 — 낡은 항목을 정리했다. 최근 변경의 상세는 `docs/devlog/fe.md`와 git 이력, 현재 규칙은 `CLAUDE.md`. 확인하지 못한 항목은 "확인 필요"로 표시돼 있다.
 > **진행 중인 작업 (2026-10-23): LLM 채팅 업데이트** — 세 레포(inote · inote-ai · inote-server)에 걸친 작업의 인수인계·프롬프트는 [`docs/handoff/chat-update/README.md`](./chat-update/README.md), 결정·API 계약은 `docs/adr/0006-chat-update.md`.
 
+> **진행 중인 작업 (2026-11-05): 글쓰기 에디터 업데이트(메모장·모바일 도크·툴바·헤더)** — 상태·합의된 설계·다음 할 일은 [`docs/handoff/write-editor-update.md`](./write-editor-update.md). 브랜치 `feat/write-memo-panel`(로컬, 미커밋).
+
 ---
 
 ## 0. 새 PC에서 시작하는 순서 (필수)
