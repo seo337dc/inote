@@ -28,7 +28,7 @@
 - 모델: `targetType` + `targetId` 참조 id 방식(폴리모픽), 대상당 unique 제약 없음(탭 확장 대비), 1차는 FE가 `list[0]`만 표시. 글·독서 기록·회원 삭제 시 메모 삭제를 서비스에서 같은 트랜잭션으로 처리해야 한다(FK가 없으므로 — BE 테스트 목록에 넣을 것).
 - 동작: 처음 입력할 때 POST(빈 행 방지), 이후 1.5초 디바운스 PATCH(자동저장 최적화도 고려). POST 완료 전 PATCH가 나가지 않게 직렬화. 메모는 작성자만 보고, 공개 글 응답에 섞이지 않는 별도 컨트롤러.
 - 배포: BE 먼저, FE 나중. 마이그레이션은 테이블 추가뿐이지만 로컬 BE 기본 DB가 운영이므로 개발 DB 검증 전에는 `prisma migrate`를 돌리지 않는다.
-- 1차 범위 밖: 메모 여러 장(헤더 탭), 독서 기록 화면 마운트, 댓글, 참고/참조 페이지 — `docs/todo/`에 기록할 것(아직 `docs/todo/memo.md`는 없다).
+- 1차 범위 밖: 메모 여러 장(헤더 탭), 독서 기록 화면 마운트, 댓글, 참고/참조 페이지 — [`docs/todo/memo.md`](../todo/memo.md)에 기록했다.
 
 ## 에디터 작업 1~3번 — 구현 완료 (2026-11-05, 커밋·push 완료, 사람 화면 확인 대기)
 1. **`'/'로 블록 삽입` 문구**: `lg` 이상에서만 보인다(`PostEditor.tsx`).
@@ -44,6 +44,7 @@
   - 오른쪽 헤더 버튼(알림 벨·☰)은 아직 테두리가 있다. 왼쪽만 ghost라 모양이 다르다 — 맞출지 사용자가 정한다.
 
 ## 별도로 발견한 문제 (이번 작업과 무관, 보류)
+- 리팩토링 점검에서 미룬 것·소소한 후속 → [`docs/todo/write-editor-refactor-followups.md`](../todo/write-editor-refactor-followups.md)
 - 입력 없이 임시 저장 PATCH가 나가는 문제 → [`docs/todo/write-autosave-redundant-patch.md`](../todo/write-autosave-redundant-patch.md)
 
 ## 에이전트·스킬 (이번 세션에 추가)
