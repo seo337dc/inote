@@ -16,6 +16,7 @@ import { CategoryFilter } from "@/features/filter-posts-by-category";
 import { useMyPosts } from "@/entities/post";
 import { buildCategoryTree, flattenCategoryTree, rollupCategoryCounts, useCategories } from "@/entities/category";
 import { InoteWordmark } from "@/shared/ui/inote-wordmark";
+import { useSlotActions } from "@/shared/lib/slot-actions";
 import { NAV_LINKS } from "../model/links";
 import AuthNavAction from "./AuthNavAction";
 import DraftNotificationBell from "./DraftNotificationBell";
@@ -25,14 +26,24 @@ export default function NavMobile() {
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const activeCategoryId = searchParams.get("categoryId");
+  // 화면이 왼쪽 슬롯에 등록한 버튼들 (없으면 빈 자리 — 로고는 항상 가운데)
+  const leftActions = useSlotActions("header-left");
 
   return (
-    <header className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-zinc-200 px-4 py-3">
+      <div className="flex items-center gap-2">
+        {leftActions.map(({ id, label, icon: Icon, onClick }) => (
+          <Button key={id} variant="ghost" size="icon" aria-label={label} title={label} onClick={onClick}>
+            <Icon className="size-5" />
+          </Button>
+        ))}
+      </div>
+
       <Link href="/" className="hover:opacity-80">
         <InoteWordmark />
       </Link>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         <DraftNotificationBell />
 
         <Sheet open={open} onOpenChange={setOpen}>

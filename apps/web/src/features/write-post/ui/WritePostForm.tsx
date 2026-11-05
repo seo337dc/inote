@@ -11,10 +11,12 @@ import { useLeaveGuard } from "@/shared/lib/useLeaveGuard";
 import { LeaveConfirmDialog } from "@/shared/ui/leave-confirm-dialog";
 import type { Post } from "@/entities/post";
 import { PostAiSummary, useMyDrafts } from "@/entities/post";
+import { MemoPad } from "@/entities/memo";
 import PostAccessDenied from "./PostAccessDenied";
 import DraftListModal from "./DraftListModal";
 import PublishScreen from "./PublishScreen";
 import WriteSidePanel from "./WriteSidePanel";
+import WriteSettingsSheet from "./WriteSettingsSheet";
 
 const FORM_ID = "write-post-form";
 const EMPTY_CONTENT = ["", "<p></p>"];
@@ -220,22 +222,25 @@ export default function WritePostForm({ id }: Props) {
   }
   if (!post || !isOwnPost) return null;
 
+  const settingsProps = {
+    categories: categoryTree,
+    categoryId,
+    onCategoryChange: (id: string) => {
+      setCategoryId(id);
+      setIsDirty(true);
+    },
+    isPrivate,
+    onPrivateChange: (v: boolean) => {
+      setIsPrivate(v);
+      setIsDirty(true);
+    },
+  };
+
   return (
     <form id={FORM_ID} onSubmit={handleSubmit} className="flex gap-6">
-      {/* 왼쪽 글 설정 영역 (카테고리, 이후 공개 설정·즐겨찾기). 좁은 화면에서는 아직 숨김 */}
-      <WriteSidePanel
-        categories={categoryTree}
-        categoryId={categoryId}
-        onCategoryChange={(id) => {
-          setCategoryId(id);
-          setIsDirty(true);
-        }}
-        isPrivate={isPrivate}
-        onPrivateChange={(v) => {
-          setIsPrivate(v);
-          setIsDirty(true);
-        }}
-      />
+      {/* 글 설정(카테고리·공개 설정). xl 이상은 왼쪽 패널, 미만은 모바일 헤더 왼쪽 버튼으로 여는 시트 */}
+      <WriteSidePanel {...settingsProps} />
+      <WriteSettingsSheet {...settingsProps} />
 
       <div className="mx-auto flex min-w-0 max-w-4xl flex-1 flex-col gap-4">
         <input
@@ -296,6 +301,11 @@ export default function WritePostForm({ id }: Props) {
                   : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}
               </p>
             )}
+            {/* 메모 버튼은 데스크톱에서만 중앙 영역(이 바)의 오른쪽 끝에 둔다 — AI 패널 폭에 따라 같이 움직임.
+              좁은 화면에서는 오른쪽 아래 도크의 + 메뉴로 열린다(MemoPad가 등록) */}
+            <div className="hidden lg:ml-auto lg:block">
+              <MemoPad />
+            </div>
           </div>
         </div>
       </div>
