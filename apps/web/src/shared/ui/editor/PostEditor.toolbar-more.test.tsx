@@ -1,22 +1,11 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { type EditorElement } from "@/test/editor";
 
-type Ed = {
-  state: { doc: { descendants: (f: (n: { isText: boolean; text?: string }, p: number) => boolean | void) => void } };
-  commands: { setTextSelection: (p: number) => void; focus: () => void };
-};
-type El = HTMLElement & { editor: Ed };
 
 const MORE_LABELS = ["목록", "체크박스", "인용", "링크", "인라인 코드", "코드 블록", "표", "콜아웃", "이미지"];
-
-beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
-});
 
 afterEach(() => {
   // @ts-expect-error jsdom 기본값(없음)으로 되돌림
@@ -37,7 +26,7 @@ async function setup(initial = "<p>본문</p>") {
   const user = userEvent.setup();
   const { container } = render(<PostEditor content={initial} onChange={vi.fn()} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   await waitFor(() => expect(el.textContent).not.toBe(""));
   const cursorInBody = () => {
     let found = -1;
@@ -115,7 +104,7 @@ describe("툴바 뒤쪽 버튼 (아이콘)", () => {
     mockNarrowScreen();
     const { user } = await setup("<ul><li><p>항목</p></li></ul>");
     // 목록 안에 커서를 둔다
-    const el = document.querySelector(".ProseMirror") as El;
+    const el = document.querySelector(".ProseMirror") as EditorElement;
     act(() => {
       el.editor.commands.setTextSelection(3);
       el.editor.commands.focus();

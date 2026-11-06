@@ -1,22 +1,9 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { type EditorElement } from "@/test/editor";
 
-type Ed = {
-  getHTML: () => string;
-  view: { someProp: (name: string, f: (handler: unknown) => unknown) => unknown };
-  commands: { setTextSelection: (p: number | { from: number; to: number }) => void };
-};
-type El = HTMLElement & { editor: Ed };
-
-beforeAll(() => {
-  // jsdom엔 레이아웃이 없어서 ProseMirror의 좌표 계산이 실패한다
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
-});
 
 // "앞 링크글자 뒤" — 문서 위치: 앞(1~2), 공백(2~3), 링크글자(3~7), 공백(7~8), 뒤(8~9)
 const WITH_LINK = '<p>앞 <a href="https://a.com">링크글자</a> 뒤</p>';
@@ -25,7 +12,7 @@ async function setup(html: string) {
   const user = userEvent.setup();
   const { container } = render(<PostEditor content={html} onChange={vi.fn()} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   await waitFor(() => expect(el.textContent).not.toBe(""));
   const popup = () => screen.queryByRole("dialog", { name: "링크 편집" });
   const input = () => screen.getByRole("textbox", { name: "링크 주소" });
@@ -202,7 +189,7 @@ describe("링크 주소 팝업: 적용", () => {
       </form>,
     );
     await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-    const el = container.querySelector(".ProseMirror") as El;
+    const el = container.querySelector(".ProseMirror") as EditorElement;
     await waitFor(() => expect(el.textContent).not.toBe(""));
     act(() => el.editor.commands.setTextSelection(5));
     await user.click(screen.getByRole("button", { name: "링크" }));

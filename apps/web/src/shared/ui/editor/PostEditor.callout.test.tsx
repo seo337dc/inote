@@ -2,20 +2,11 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { placeCursorIn, type EditorElement } from "@/test/editor";
 import { CALLOUT_EMOJIS } from "./CalloutView";
 
-type Ed = {
-  getHTML: () => string;
-  state: { doc: { descendants: (f: (n: { isText: boolean; text?: string }, p: number) => boolean | void) => void } };
-  commands: { setTextSelection: (p: number) => void; focus: () => void };
-};
-type El = HTMLElement & { editor: Ed };
 
 beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
   Element.prototype.scrollIntoView = vi.fn();
   // 클릭하면 ProseMirror가 좌표로 위치를 찾으려고 elementFromPoint를 부르는데 jsdom에는 없다
   document.elementFromPoint = () => null;
@@ -28,19 +19,10 @@ async function setup(initial: string, { empty = false }: { empty?: boolean } = {
   const onChange = vi.fn();
   const { container } = render(<PostEditor content={initial} onChange={onChange} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   // 내용이 있는 글은 불러온 내용이 그려질 때까지 기다린다 (빈 글로 시작하면 기다릴 것이 없다)
   if (!empty) await waitFor(() => expect(el.textContent).not.toBe(""));
-  const cursorIn = (text: string) => {
-    let found = -1;
-    el.editor.state.doc.descendants((node, pos) => {
-      if (found < 0 && node.isText && node.text === text) found = pos + 1;
-    });
-    act(() => {
-      el.editor.commands.setTextSelection(found);
-      el.editor.commands.focus();
-    });
-  };
+  const cursorIn = (text: string) => placeCursorIn(el, text);
   const html = () => el.editor.getHTML();
   const toolbarButton = () => screen.getByRole("button", { name: "콜아웃" }) as HTMLButtonElement;
   return { user, el, container, onChange, cursorIn, html, toolbarButton };

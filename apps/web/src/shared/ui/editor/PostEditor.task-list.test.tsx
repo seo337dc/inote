@@ -2,15 +2,10 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { type EditorElement } from "@/test/editor";
 
-type Ed = { getHTML: () => string };
-type El = HTMLElement & { editor: Ed };
 
 beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
   Element.prototype.scrollIntoView = vi.fn();
   document.elementFromPoint = () => null;
 });
@@ -26,7 +21,7 @@ async function setup(initial = "<p></p>") {
   const onChange = vi.fn();
   const { container } = render(<PostEditor content={initial} onChange={onChange} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   // 에디터 안의 DOM은 노드뷰가 그려서 <li data-checked>만 있다 (data-type="taskItem"은 저장되는 HTML(getHTML)에만 붙는다)
   const items = () => Array.from(el.querySelectorAll('ul[data-type="taskList"] > li[data-checked]'));
   const checkboxes = () => Array.from(el.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'));

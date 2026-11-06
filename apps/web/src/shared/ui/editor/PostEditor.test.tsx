@@ -1,27 +1,14 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { type EditorElement } from "@/test/editor";
 
-type ProseMirrorEl = HTMLElement & {
-  editor: {
-    commands: { insertContent: (c: string) => void; setTextSelection: (p: number | { from: number; to: number }) => void };
-    view: { someProp: (name: string, f: (handler: unknown) => unknown) => unknown };
-  };
-};
 
 async function findEditorEl(container: HTMLElement) {
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  return container.querySelector(".ProseMirror") as ProseMirrorEl;
+  return container.querySelector(".ProseMirror") as EditorElement;
 }
-
-beforeAll(() => {
-  // jsdom엔 레이아웃이 없어서, focus()가 부르는 ProseMirror의 scrollIntoView(커서 좌표 계산)가 터진다
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
-});
 
 describe("PostEditor", () => {
   it("'/'로 블록 삽입 안내 문구는 lg 이상에서만 보이도록 클래스가 걸려 있다", async () => {
