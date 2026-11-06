@@ -6,6 +6,8 @@ import { FloatingPanel } from "@/shared/ui/floating-panel";
 import { useRegisterSlotAction, type SlotAction } from "@/shared/lib/slot-actions";
 import { useMediaQuery } from "@/shared/lib/useMediaQuery";
 import { MEMO_MAX_LENGTH } from "../model/constants";
+import { useMemoDraft } from "../model/useMemoDraft";
+import type { MemoTarget } from "../model/types";
 import { MemoBottomSheet } from "./MemoBottomSheet";
 
 // ChatDock이 모바일 AI 버튼을 보여주는 기준(lg)과 같다 — 이 폭 이상이면 떠다니는 패널, 미만이면 하단 패널.
@@ -18,11 +20,11 @@ const DESKTOP_QUERY = "(min-width: 1024px)";
  * - 좁은 화면: 모바일 도크의 + 메뉴에 메모 버튼을 등록하고, 누르면 하단 패널이 열린다.
  *   (이 안의 버튼은 부모가 좁은 화면에서 숨기도록 CSS로 가려야 한다)
  * 닫아도 이 컴포넌트가 상태를 들고 있어 입력 내용은 유지된다.
- * (지금은 화면 확인용 — 서버 저장은 이후 단계에서 연결한다)
+ * 내용은 target(글·독서 기록)에 붙은 내 메모 한 장으로 서버에 자동저장된다(useMemoDraft) — 패널을 닫으면 바로 저장한다.
  */
-export function MemoPad() {
+export function MemoPad({ target }: { target: MemoTarget }) {
   const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
+  const { text, setText, ready, flush } = useMemoDraft(target);
   const [anchor, setAnchor] = useState<{ right: number; top: number }>();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -32,7 +34,10 @@ export function MemoPad() {
     setOpen(true);
   }, []);
   // 참조가 고정돼야 하단 패널의 닫힘 타이머가 부모 리렌더로 리셋되지 않는다.
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => {
+    setOpen(false);
+    flush();
+  }, [flush]);
   const dockAction = useMemo<SlotAction>(
     () => ({
       id: "memo",
@@ -61,6 +66,7 @@ export function MemoPad() {
         value={text}
         onChange={(e) => setText(e.target.value)}
         maxLength={MEMO_MAX_LENGTH}
+        disabled={!ready}
         placeholder="모르는 부분이나 나중에 확인할 내용을 적어두세요"
         aria-label="메모 내용"
         className="text-memo-foreground placeholder:text-memo-muted min-h-0 flex-1 resize-none bg-transparent p-3 text-sm leading-relaxed outline-none"
