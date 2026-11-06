@@ -2,10 +2,17 @@
 
 > PC·채팅·AI 메모리가 바뀌어도 이 파일 + git이 맥락의 단일 소스다.
 > **새 세션 시작 시 이 파일을 먼저 읽는다.** (레포 여러 개에 걸친 작업이라 대표 문서를 `inote`에 둔다)
-> 마지막 갱신: 2026-10-29 — 낡은 항목을 정리했다. 최근 변경의 상세는 `docs/devlog/fe.md`와 git 이력, 현재 규칙은 `CLAUDE.md`. 확인하지 못한 항목은 "확인 필요"로 표시돼 있다.
+> 마지막 갱신: 2026-11-06(맨 위 "진행 중인 작업" 블록만 갱신, 나머지는 2026-10-29 기준) — 낡은 항목을 정리했다. 최근 변경의 상세는 `docs/devlog/fe.md`와 git 이력, 현재 규칙은 `CLAUDE.md`. 확인하지 못한 항목은 "확인 필요"로 표시돼 있다.
 > **진행 중인 작업 (2026-10-23): LLM 채팅 업데이트** — 세 레포(inote · inote-ai · inote-server)에 걸친 작업의 인수인계·프롬프트는 [`docs/handoff/chat-update/README.md`](./chat-update/README.md), 결정·API 계약은 `docs/adr/0006-chat-update.md`.
 
 > **진행 중인 작업 (2026-11-05): 글쓰기 에디터 업데이트(메모장·모바일 도크·툴바·헤더)** — 상태·합의된 설계·다음 할 일은 [`docs/handoff/write-editor-update.md`](./write-editor-update.md). 브랜치 `feat/write-memo-panel`(커밋 5개, origin에 push, PR 미생성).
+
+> **진행 중인 작업 (2026-11-06): 채팅에서 할 일 추가** — LLM이 "할 일 추가" 요청을 알아보고 확인 카드로 제안 → 승인하면 `POST /todos`로 추가하고 `/todos`로 이동. 계약·결정·단계·후속은 [`docs/todo/chat-add-todos.md`](../todo/chat-add-todos.md)가 소스. 브랜치 `feat/chat-add-todos`(FE 1단계 구현·사용자 화면 확인 완료, PR 미생성).
+> - **남은 일**: ① `inote-ai` 2단계(`propose_todos` 도구·규칙·`todo_proposal` 이벤트, 평가 예문 세트) ② 로컬 통합 확인(개발 DB만) ③ **할 일 UI 개선** — 사용자가 참고할 앱들을 보여줄 예정(보여주기 전에는 화면을 만들지 않는다).
+> - ⚠️ **배포 순서: FE 먼저, `inote-ai` 나중** (FE가 새 SSE 이벤트를 모르면 화면에 "undefined"가 찍힘 — 이 브랜치에서 FE는 이미 안전하게 처리).
+> - FE 1단계를 목 AI 서버(`/chat/stream`이 `text` → `todo_proposal` SSE를 흘리는 작은 node 스크립트)로 확인했다. 그 스크립트는 이전 PC의 임시 폴더에 있어서 **사라진다** — 필요하면 다시 만든다.
+> - ⚠️ **다른 PC에서 안 보일 수 있는 로컬 작업**: `inote`의 로컬 브랜치 `feat/admin-embeddings`(커밋 `2075d0c` 포함, origin에는 `feat/admin-embeddings-list`라는 다른 이름으로만 있음)와 `inote-ai`의 `feat/embedding-status-api`는 **push 전**이다. 이어서 하려면 먼저 push해야 한다.
+> - 파인튜닝·임베딩 기반 기능 구별에 대한 조사는 [`docs/learning/FINE_TUNING.md`](../learning/FINE_TUNING.md).
 
 ---
 
