@@ -1,27 +1,15 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { type EditorElement } from "@/test/editor";
 
-type Ed = {
-  getHTML: () => string;
-  state: { doc: { descendants: (f: (n: { isText: boolean; text?: string }, p: number) => boolean | void) => void } };
-  commands: { setTextSelection: (p: number | { from: number; to: number }) => void };
-};
-type El = HTMLElement & { editor: Ed };
-
-beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
-});
 
 async function setup(initial: string) {
   const user = userEvent.setup();
   const { container } = render(<PostEditor content={initial} onChange={vi.fn()} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   await waitFor(() => expect(el.textContent).not.toBe(""));
   // 텍스트가 들어 있는 위치(문서 좌표)를 찾아 그 안쪽에 커서를 둔다
   const cursorIn = (text: string) => {

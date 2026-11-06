@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
+import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { http, HttpResponse } from "msw";
 import { useArchivePosts } from "./useArchivePosts";
 import { MY_POSTS_KEY, MY_POST_OUTLINE_KEY, POST_OUTLINE_KEY } from "./queryKeys";
@@ -9,12 +8,9 @@ import { server } from "@/test/msw/server";
 import { TEST_API_URL } from "@/test/msw/handlers";
 
 function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const client = createTestQueryClient();
   const invalidate = vi.spyOn(client, "invalidateQueries");
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  );
-  return { ...renderHook(() => useArchivePosts(), { wrapper }), invalidate };
+  return { ...renderHookWithQueryClient(() => useArchivePosts(), client), invalidate };
 }
 
 describe("useArchivePosts", () => {

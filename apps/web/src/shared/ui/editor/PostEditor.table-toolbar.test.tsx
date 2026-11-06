@@ -1,24 +1,10 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CellSelection } from "@tiptap/pm/tables";
-import type { EditorState } from "@tiptap/pm/state";
-import type { EditorView } from "@tiptap/pm/view";
 import PostEditor from "./PostEditor";
+import { placeCursorIn, type EditorElement } from "@/test/editor";
 
-type Ed = {
-  view: EditorView;
-  getHTML: () => string;
-  isFocused: boolean;
-  state: EditorState;
-  commands: {
-    setTextSelection: (p: number) => void;
-    focus: () => void;
-    blur: () => void;
-    insertTable: (o: { rows: number; cols: number; withHeaderRow: boolean }) => boolean;
-  };
-};
-type El = HTMLElement & { editor: Ed };
 
 const TABLE_3X3 =
   "<p>표 위</p><table><tbody>" +
@@ -27,33 +13,17 @@ const TABLE_3X3 =
   "<tr><td><p>b1</p></td><td><p>b2</p></td></tr>" +
   "</tbody></table><p>표 아래</p>";
 
-beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
-});
-
 async function setup(initial: string = TABLE_3X3) {
   const user = userEvent.setup();
   const onChange = vi.fn();
   const onUserEdit = vi.fn();
   const { container } = render(<PostEditor content={initial} onChange={onChange} onUserEdit={onUserEdit} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   await waitFor(() => expect(el.textContent).not.toBe(""));
 
   // 텍스트가 들어 있는 위치를 찾아 그 안쪽에 커서를 두고 에디터에 포커스를 준다
-  const cursorIn = (text: string) => {
-    let found = -1;
-    el.editor.state.doc.descendants((node, pos) => {
-      if (found < 0 && node.isText && node.text === text) found = pos + 1;
-    });
-    act(() => {
-      el.editor.commands.setTextSelection(found);
-      el.editor.commands.focus();
-    });
-  };
+  const cursorIn = (text: string) => placeCursorIn(el, text);
   // 드래그로 두 칸을 고른 상태 (칸 안쪽 위치 두 곳을 넘기면 그 사이 직사각형이 선택된다)
   const selectCells = (from: string, to: string) => {
     const find = (text: string) => {

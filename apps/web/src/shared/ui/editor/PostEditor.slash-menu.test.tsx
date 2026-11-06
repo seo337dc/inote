@@ -5,10 +5,6 @@ import PostEditor from "./PostEditor";
 import { SLASH_MENU_Z_INDEX } from "./slash-command";
 
 beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
   Element.prototype.scrollIntoView = vi.fn();
   // 클릭하면 ProseMirror가 좌표로 위치를 찾으려고 elementFromPoint를 부르는데 jsdom에는 없다 (null이면 "찾지 못함"으로 처리됨)
   document.elementFromPoint = () => null;

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
+import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { http, HttpResponse } from "msw";
 import { useMyPostOutline } from "./useMyPostOutline";
 import { useSession } from "@/shared/lib/auth-client";
@@ -11,11 +10,8 @@ import { TEST_API_URL } from "@/test/msw/handlers";
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 
 function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  );
-  return renderHook(() => useMyPostOutline(), { wrapper });
+  const client = createTestQueryClient();
+  return renderHookWithQueryClient(() => useMyPostOutline(), client);
 }
 
 function setSession(state: "user" | "none") {

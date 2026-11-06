@@ -19,7 +19,7 @@
 
 ## 메모 저장(FE) 점검에서 미룬 것 (2026-11-06)
 - [ ] `useMemoDraft`가 돌려주는 `status`·`loadFailed`와 `MemoSaveStatus` 공개 export는 아직 UI가 쓰지 않는다(테스트만 사용). 저장 상태 표시·불러오기 실패 안내를 만들지 정하고, 안 만들면 걷어낸다 (`docs/todo/memo.md`)
-- [ ] 훅 테스트마다 `QueryClientProvider` wrapper를 손으로 만든다(`entities/post`·`entities/category`·`entities/memo`의 훅 테스트 6곳 이상). `test/render.tsx`에 훅용 헬퍼를 추가해 정리
+- [x] 훅 테스트마다 `QueryClientProvider` wrapper를 손으로 만들던 것(6개 파일)을 `test/render.tsx`의 `createTestQueryClient`·`renderHookWithQueryClient`로 정리함 (2026-11-06, 브랜치 `chore/test-setup-dedup`)
 - [ ] `MEMO_AUTOSAVE_MS`가 `model/memoSaver.ts`에 있고 공개 export인데 쓰는 곳은 테스트뿐이다. `constants.ts`로 옮기고 export를 뺄지 정한다
 - [ ] 다른 곳에서 메모 캐시를 건드릴 일이 생기면 `memosKey(target)` 말고 prefix 상수(`["memos"]`)를 추가 (entities/post의 `MY_POSTS_KEY` 방식)
 - [ ] `useMemoDraft`는 `target`이 마운트 동안 바뀌지 않는다고 가정한다(effect 의존성에서 뺌, eslint-disable). 독서 기록 메모를 붙일 때 같은 컴포넌트가 target만 바꿔 재사용되면 `target.type/id`를 의존성에 넣는 방식으로 다시 검토

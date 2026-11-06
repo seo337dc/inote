@@ -9,10 +9,12 @@ vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
 vi.mock("@/shared/lib/api", () => ({ api: { upload: vi.fn() } }));
 const upload = vi.mocked(api.upload);
 
+
 type Ed = {
   getHTML: () => string;
   state: { doc: { content: { size: number }; descendants: (f: (n: { type: { name: string }; attrs: Record<string, unknown> }, pos: number) => void) => void } };
   commands: { setTextSelection: (p: number) => void; setNodeSelection: (p: number) => void };
+  // someProp 핸들러를 임의 인자로 불러 붙여넣기·드롭 이벤트를 흉내 내므로 실제 Editor 타입 대신 느슨한 타입을 쓴다
   view: { someProp: (name: string, f: (handler: (...args: unknown[]) => boolean) => unknown) => unknown };
 };
 type El = HTMLElement & { editor: Ed };
@@ -20,10 +22,6 @@ type El = HTMLElement & { editor: Ed };
 const TMP_URL = "https://cdn.example.com/tmp/post/u1/abc.png";
 
 beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
   // jsdom에는 없는 미리보기 주소 API
   URL.createObjectURL = vi.fn(() => "blob:preview");
   URL.revokeObjectURL = vi.fn();

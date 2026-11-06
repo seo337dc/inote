@@ -1,37 +1,17 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PostEditor from "./PostEditor";
+import { selectText, type EditorElement } from "@/test/editor";
 
-type Ed = {
-  getHTML: () => string;
-  state: { doc: { descendants: (f: (n: { isText: boolean; text?: string }, p: number) => boolean | void) => void } };
-  commands: { setTextSelection: (p: number | { from: number; to: number }) => void };
-};
-type El = HTMLElement & { editor: Ed };
-
-beforeAll(() => {
-  const rect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
-  Range.prototype.getClientRects = () =>
-    ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect = () => ({ ...rect, toJSON: () => rect }) as DOMRect;
-});
 
 async function setup(initial: string) {
   const user = userEvent.setup();
   const { container } = render(<PostEditor content={initial} onChange={vi.fn()} />);
   await waitFor(() => expect(container.querySelector(".ProseMirror")).not.toBeNull());
-  const el = container.querySelector(".ProseMirror") as El;
+  const el = container.querySelector(".ProseMirror") as EditorElement;
   await waitFor(() => expect(el.textContent).not.toBe(""));
-  // 글자 text의 [from, to) 문서 위치를 찾아 선택
-  const select = (text: string) => {
-    let start = -1;
-    el.editor.state.doc.descendants((node, pos) => {
-      const i = node.isText ? (node.text?.indexOf(text) ?? -1) : -1;
-      if (start < 0 && i >= 0) start = pos + i;
-    });
-    act(() => el.editor.commands.setTextSelection({ from: start, to: start + text.length }));
-  };
+  const select = (text: string) => selectText(el, text);
   const pressed = (name: string) => screen.getByRole("button", { name }).getAttribute("aria-pressed") === "true";
   const click = async (name: string) => user.click(await screen.findByRole("button", { name }));
   return { el, select, pressed, click };
