@@ -11,7 +11,7 @@
 > - **남은 일**: ① `inote-ai` 2단계(`propose_todos` 도구·규칙·`todo_proposal` 이벤트, 평가 예문 세트) ② 로컬 통합 확인(개발 DB만) ③ **할 일 UI 개선** — 사용자가 참고할 앱들을 보여줄 예정(보여주기 전에는 화면을 만들지 않는다).
 > - ⚠️ **배포 순서: FE 먼저, `inote-ai` 나중** (FE가 새 SSE 이벤트를 모르면 화면에 "undefined"가 찍힘 — 이 브랜치에서 FE는 이미 안전하게 처리).
 > - FE 1단계를 목 AI 서버(`/chat/stream`이 `text` → `todo_proposal` SSE를 흘리는 작은 node 스크립트)로 확인했다. 그 스크립트는 이전 PC의 임시 폴더에 있어서 **사라진다** — 필요하면 다시 만든다.
-> - ⚠️ **다른 PC에서 안 보일 수 있는 로컬 작업**: `inote`의 로컬 브랜치 `feat/admin-embeddings`(커밋 `2075d0c` 포함, origin에는 `feat/admin-embeddings-list`라는 다른 이름으로만 있음)와 `inote-ai`의 `feat/embedding-status-api`는 **push 전**이다. 이어서 하려면 먼저 push해야 한다.
+> - **임베딩 관리 작업 브랜치(2026-11-06 push 완료)**: `inote`의 `feat/admin-embeddings`(어드민 임베딩 목록 1단계 FE + 계약 문서)와 `inote-ai`의 `feat/embedding-status-api`(`POST /embeddings/status`·`GET /embeddings/health`)를 origin에 올렸다. 둘 다 PR 미생성. `inote`의 origin에 있는 `feat/admin-embeddings-list`는 main이 갱신되기 전 기준의 **옛 복사본**(이력이 갈라져 있음)이라 쓰지 않는다 — 정리해도 된다(삭제는 사용자 결정). 이어서 할 일은 `docs/todo/admin-embeddings.md`(BE `GET /admin/embeddings`는 사용자가 테스트를 직접 작성).
 > - 파인튜닝·임베딩 기반 기능 구별에 대한 조사는 [`docs/learning/FINE_TUNING.md`](../learning/FINE_TUNING.md).
 
 ---
