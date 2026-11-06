@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
+import type { QueryClient } from "@tanstack/react-query";
+import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { delay, http, HttpResponse } from "msw";
 import { useMovePostCategory } from "./useMovePostCategory";
 import { MY_POSTS_KEY, MY_POST_OUTLINE_KEY, POST_OUTLINE_KEY } from "./queryKeys";
@@ -19,7 +19,7 @@ const MY_OUTLINE = [...MY_POST_OUTLINE_KEY, "u"];
 const OUTLINE = [...POST_OUTLINE_KEY, "u"];
 
 function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = createTestQueryClient();
   client.setQueryData(MY_OUTLINE, [
     { id: "p1", title: "a", category: "학습", categoryId: STUDY, isPrivate: false, publishedAt: null },
     { id: "p2", title: "b", category: "학습", categoryId: STUDY, isPrivate: false, publishedAt: null },
@@ -31,10 +31,7 @@ function setup() {
   client.setQueryData(OUTLINE, [
     { id: "p1", title: "a", category: "학습", categoryId: STUDY, isPrivate: false, pinned: false },
   ]);
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  );
-  return { client, ...renderHook(() => useMovePostCategory(), { wrapper }) };
+  return { client, ...renderHookWithQueryClient(() => useMovePostCategory(), client) };
 }
 
 const categoriesOf = (client: QueryClient, key: unknown[]) =>

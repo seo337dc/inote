@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
+import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { delay, http, HttpResponse } from "msw";
 import { useMoveCategory } from "./useMoveCategory";
 import { CATEGORIES_QUERY_KEY } from "./useCategories";
@@ -25,12 +24,9 @@ const order = (list: Category[] | undefined) =>
   [...(list ?? [])].sort((a, b) => a.position - b.position).map((c) => c.id);
 
 function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = createTestQueryClient();
   client.setQueryData(CATEGORIES_QUERY_KEY, INITIAL);
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  );
-  const hook = renderHook(() => useMoveCategory(), { wrapper });
+  const hook = renderHookWithQueryClient(() => useMoveCategory(), client);
   return { client, ...hook };
 }
 

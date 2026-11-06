@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
+import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
 import { TEST_API_URL } from "@/test/msw/handlers";
@@ -54,11 +53,8 @@ function mockMemos(opts: { list?: Memo[]; postDelay?: number } = {}) {
 }
 
 function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  );
-  return renderHook(() => useMemoDraft(TARGET, { delayMs: DELAY }), { wrapper });
+  const client = createTestQueryClient();
+  return renderHookWithQueryClient(() => useMemoDraft(TARGET, { delayMs: DELAY }), client);
 }
 
 async function ready(hook: ReturnType<typeof setup>) {

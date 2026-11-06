@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, waitFor } from "@testing-library/react";
+import type { QueryClient } from "@tanstack/react-query";
+import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { delay, http, HttpResponse } from "msw";
 import { useRenameCategory } from "./useRenameCategory";
 import { CATEGORIES_QUERY_KEY } from "./useCategories";
@@ -27,7 +27,7 @@ const OUTLINE = [...POST_OUTLINE_KEY, "u"];
 const MY_OUTLINE = [...MY_POST_OUTLINE_KEY, "u"];
 
 function setup() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const client = createTestQueryClient();
   client.setQueryData(CATEGORIES_QUERY_KEY, [cat("a", "학습"), cat("b", "이직")]);
   client.setQueryData(MY_POSTS, {
     ...makePostListPage({
@@ -45,10 +45,7 @@ function setup() {
     { id: "p1", title: "a", category: "학습", categoryId: "a", isPrivate: false, publishedAt: null },
     { id: "p2", title: "b", category: "이직", categoryId: "b", isPrivate: false, publishedAt: null },
   ]);
-  const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={client}>{children}</QueryClientProvider>
-  );
-  return { client, ...renderHook(() => useRenameCategory(), { wrapper }) };
+  return { client, ...renderHookWithQueryClient(() => useRenameCategory(), client) };
 }
 
 const names = (client: QueryClient) =>
