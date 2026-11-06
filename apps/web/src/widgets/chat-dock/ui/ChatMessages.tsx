@@ -4,13 +4,16 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { remarkBreakTags } from "@/shared/lib/remark-break-tags";
 import { isInlineCode } from "@/shared/lib/markdown-code";
-import type { ChatMessage } from "../model/types";
+import type { ChatMessage, TodoProposal } from "../model/types";
+import TodoProposalCard from "./TodoProposalCard";
 import { useStickToBottom } from "../model/useStickToBottom";
 
 type Props = {
   messages: ChatMessage[];
   // 답변을 기다리는 중 — 빈 답변 말풍선 대신 점 세 개 로딩을 보여준다
   isSending?: boolean;
+  // 할 일 제안 카드의 상태 변경 (카드가 없는 모드에서는 안 넘겨도 된다)
+  onUpdateTodoProposal?: (id: string, update: (prev: TodoProposal) => TodoProposal) => void;
 };
 
 const markdownComponents: Components = {
@@ -119,7 +122,7 @@ function AssistantBubble({ text }: { text: string }) {
   );
 }
 
-export default function ChatMessages({ messages, isSending = false }: Props) {
+export default function ChatMessages({ messages, isSending = false, onUpdateTodoProposal }: Props) {
   const { containerRef, onScroll } = useStickToBottom(messages, isSending);
 
   return (
@@ -128,19 +131,29 @@ export default function ChatMessages({ messages, isSending = false }: Props) {
       onScroll={onScroll}
       className="flex-1 space-y-3 overflow-y-auto px-4 py-3"
     >
-      {messages.map((m) => (
-        <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-          {m.role === "user" ? (
+      {messages.map((m) =>
+        m.role === "user" ? (
+          <div key={m.id} className="flex justify-end">
             <p className="max-w-[85%] rounded-lg bg-zinc-900 px-3 py-2 text-sm whitespace-pre-wrap text-white">
               {m.text}
             </p>
-          ) : isSending && m.text === "" ? (
-            <TypingBubble />
-          ) : (
-            <AssistantBubble text={m.text} />
-          )}
-        </div>
-      ))}
+          </div>
+        ) : (
+          <div key={m.id} className="flex flex-col items-start gap-2">
+            {isSending && m.text === "" && !m.todoProposal ? (
+              <TypingBubble />
+            ) : (
+              m.text !== "" && <AssistantBubble text={m.text} />
+            )}
+            {m.todoProposal && onUpdateTodoProposal && (
+              <TodoProposalCard
+                proposal={m.todoProposal}
+                onUpdate={(update) => onUpdateTodoProposal(m.id, update)}
+              />
+            )}
+          </div>
+        ),
+      )}
     </div>
   );
 }

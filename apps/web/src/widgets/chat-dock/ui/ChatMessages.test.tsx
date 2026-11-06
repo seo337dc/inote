@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { renderWithQueryClient } from "@/test/render";
 import ChatMessages from "./ChatMessages";
+
+// 카드가 useRouter를 쓴다 — 이 파일의 테스트는 이동을 확인하지 않는다
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {} }) }));
 
 const FENCE = "```";
 
@@ -61,5 +65,35 @@ describe("ChatMessages 로딩 표시", () => {
     const { queryByRole } = render(<ChatMessages messages={waiting} />);
 
     expect(queryByRole("status")).toBeNull();
+  });
+});
+
+describe("ChatMessages 할 일 제안 카드", () => {
+  const proposal = {
+    items: [{ id: "i1", title: "이력서 작성", selected: true }],
+    status: "cancelled" as const,
+    addedCount: 0,
+    failedCount: 0,
+  };
+
+  it("답변 문장 없이 제안만 온 메시지는 빈 말풍선 없이 카드만 보여준다", () => {
+    // 지켜주는 것: 모델이 안내 문장 없이 도구만 불렀을 때 복사 버튼만 달린 빈 말풍선이 뜨는 것
+    renderWithQueryClient(
+      <ChatMessages
+        messages={[{ id: "a1", role: "assistant", text: "", todoProposal: proposal }]}
+        onUpdateTodoProposal={() => {}}
+      />,
+    );
+
+    expect(screen.getByText("할 일에 추가하지 않았어요.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /복사/ })).not.toBeInTheDocument();
+  });
+
+  it("카드를 처리하는 곳이 없는 모드(독서 상담)에서는 제안이 와도 카드를 그리지 않는다", () => {
+    // 지켜주는 것: 할 일 추가가 없는 모드에서 동작하지 않는 카드가 뜨는 것
+    renderWithQueryClient(<ChatMessages messages={[{ id: "a1", role: "assistant", text: "안내", todoProposal: proposal }]} />);
+
+    expect(screen.getByText("안내")).toBeInTheDocument();
+    expect(screen.queryByText("할 일에 추가하지 않았어요.")).not.toBeInTheDocument();
   });
 });

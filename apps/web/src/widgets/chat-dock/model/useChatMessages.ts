@@ -7,7 +7,8 @@ import { api } from "@/shared/lib/api";
 import { AI_API_URL } from "@/shared/lib/ai-url";
 import type { Post } from "@/entities/post";
 import { getRoutePostIds } from "./routePost";
-import type { ChatMessage, ChatSession } from "./types";
+import { parseTodoProposal } from "./todoProposal";
+import type { ChatMessage, ChatSession, TodoProposal } from "./types";
 
 const WRITE_SUGGESTIONS = ["글을 쓰고 싶어", "과제를 도와줘", "어떤 글을 쓸까?"];
 
@@ -256,8 +257,11 @@ export function useChatMessages() {
       for (const chunk of chunks) {
         const payload = chunk.replace(/^data: /, "");
         if (!payload || payload === "[DONE]") continue;
-        const { text } = JSON.parse(payload) as { text: string };
-        appendAssistantText(key, assistantId, text);
+        // text가 없는 이벤트를 이어 붙이면 "undefined"가 찍히므로 이벤트 종류별로 나눠 처리한다
+        const event = JSON.parse(payload) as { text?: string; todo_proposal?: unknown };
+        if (typeof event.text === "string") appendAssistantText(key, assistantId, event.text);
+        const proposal = parseTodoProposal(event.todo_proposal);
+        if (proposal) attachTodoProposal(key, assistantId, proposal);
       }
     }
 
@@ -271,6 +275,17 @@ export function useChatMessages() {
   function appendAssistantText(key: string, id: string, text: string) {
     updateSessionMessages(key, (prev) =>
       prev.map((m) => (m.id === id ? { ...m, text: m.text + text } : m)),
+    );
+  }
+
+  function attachTodoProposal(key: string, id: string, todoProposal: TodoProposal) {
+    updateSessionMessages(key, (prev) => prev.map((m) => (m.id === id ? { ...m, todoProposal } : m)));
+  }
+
+  // 카드의 체크·추가·취소 상태 변경 — 카드가 보이는 세션(지금 활성 세션)의 메시지를 고친다
+  function updateTodoProposal(id: string, update: (prev: TodoProposal) => TodoProposal) {
+    updateSessionMessages(activeKey, (prev) =>
+      prev.map((m) => (m.id === id && m.todoProposal ? { ...m, todoProposal: update(m.todoProposal) } : m)),
     );
   }
 
@@ -312,6 +327,7 @@ export function useChatMessages() {
     toggleSessionPanel,
     sessionSearch,
     setSessionSearch,
+    updateTodoProposal,
     isLoggedIn: !!userId,
     suggestions: WRITE_SUGGESTIONS,
   };

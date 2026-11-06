@@ -10,5 +10,11 @@ export default function ChatBody({ chat }: Props) {
   if (chat.messages.length === 0) {
     return <ChatEmptyState onSelect={chat.sendPreset} suggestions={chat.suggestions} />;
   }
-  return <ChatMessages messages={chat.messages} isSending={chat.isSending} />;
+  return (
+    <ChatMessages
+      messages={chat.messages}
+      isSending={chat.isSending}
+      onUpdateTodoProposal={chat.updateTodoProposal}
+    />
+  );
 }

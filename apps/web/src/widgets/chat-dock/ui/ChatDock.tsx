@@ -43,7 +43,11 @@ function DockButton({
 
 export default function ChatDock({ chat }: Props) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  // 모바일 시트는 연 시점의 경로에서만 열려 있는 것으로 본다 — 채팅에서 다른 페이지로 이동하면(예: 할 일 추가 후 /todos)
+  // 시트가 이동한 페이지를 가리지 않도록 닫힌다. 대화는 레이아웃이 들고 있어서 다시 열면 이어진다.
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const open = openPath === pathname;
+  const setOpen = (next: boolean) => setOpenPath(next ? pathname : null);
   const [dialOpen, setDialOpen] = useState(false);
   // 화면(예: 글쓰기)이 등록한 추가 버튼. 없으면 AI 버튼 하나만 보여준다.
   const actions = useSlotActions();

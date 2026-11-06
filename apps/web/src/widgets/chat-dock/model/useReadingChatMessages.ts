@@ -124,6 +124,8 @@ export function useReadingChatMessages() {
     toggleSessionPanel: () => {},
     sessionSearch: "",
     setSessionSearch: () => {},
+    // 독서 상담에는 할 일 제안 카드가 없다
+    updateTodoProposal: () => {},
     // 세션 히스토리 자체가 없는 모드라 isLoggedIn을 항상 false로 둬서, ChatComposer의
     // "대화 목록" 버튼(이 필드의 유일한 소비처)을 숨긴다 — 실제 로그인 여부와는 무관.
     isLoggedIn: false,

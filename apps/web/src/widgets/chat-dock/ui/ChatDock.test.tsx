@@ -1,11 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotebookText } from "lucide-react";
 import ChatDock from "./ChatDock";
 import { registerSlotAction } from "@/shared/lib/slot-actions";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/write/1" }));
+// 페이지 이동을 흉내 내려고 값을 바꿀 수 있게 둔다
+let mockPathname = "/write/1";
+vi.mock("next/navigation", () => ({ usePathname: () => mockPathname }));
 // 패널 내부(대화 목록 등)는 이 테스트의 관심사가 아니다 — 열림 여부만 본다.
 vi.mock("./ChatPanel", () => ({
   default: ({ open }: { open: boolean }) => (open ? <div role="dialog">AI 패널</div> : null),
@@ -14,6 +16,10 @@ vi.mock("./ChatPanel", () => ({
 const chat = {} as Parameters<typeof ChatDock>[0]["chat"];
 
 describe("ChatDock", () => {
+  afterEach(() => {
+    mockPathname = "/write/1";
+  });
+
   it("등록된 추가 버튼이 없으면 AI 버튼만 보이고 누르면 AI 패널이 열린다", async () => {
     render(<ChatDock chat={chat} />);
     expect(screen.queryByRole("button", { name: "메뉴 열기" })).not.toBeInTheDocument();
@@ -67,5 +73,19 @@ describe("ChatDock", () => {
     await userEvent.click(screen.getByRole("button", { name: "AI 어시스턴트 열기" }));
     expect(screen.getByRole("dialog")).toHaveTextContent("AI 패널");
     act(() => off());
+  });
+
+  it("AI 패널을 연 채로 다른 페이지로 이동하면 패널이 닫히고, 같은 페이지에서 다시 열 수 있다", async () => {
+    // 지켜주는 것: 채팅에서 할 일을 추가해 /todos로 이동했을 때 모바일 시트가 이동한 페이지를 가리는 문제
+    const { rerender } = render(<ChatDock chat={chat} />);
+    await userEvent.click(screen.getByRole("button", { name: "AI 어시스턴트 열기" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    mockPathname = "/todos";
+    rerender(<ChatDock chat={chat} />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "AI 어시스턴트 열기" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 });

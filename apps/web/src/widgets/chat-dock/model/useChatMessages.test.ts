@@ -21,6 +21,9 @@ function controllableStream() {
     response: new Response(body, { status: 200 }),
     push: (text: string) =>
       controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`)),
+    // text가 아닌 이벤트(예: todo_proposal)를 그대로 흘린다
+    pushEvent: (event: object) =>
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`)),
     end: () => controller.close(),
   };
 }
@@ -186,5 +189,69 @@ describe("useChatMessages — 세션별 동시 진행", () => {
 
     await act(async () => b.end());
     await waitFor(() => expect(result.current.answeringSessionIds.size).toBe(0));
+  });
+});
+
+describe("useChatMessages — text 외 이벤트", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  // 한 번 보내고 → 스트림에 이벤트를 흘리고 → 답변이 끝날 때까지 기다린 뒤 훅 결과를 돌려준다
+  async function sendAndReceive(
+    question: string,
+    feed: (stream: ReturnType<typeof controllableStream>) => void,
+  ) {
+    const stream = controllableStream();
+    setupFetch([stream]);
+    const { result } = await renderReady();
+
+    act(() => result.current.sendPreset(question));
+    await waitFor(() => expect(result.current.isSending).toBe(true));
+    await act(async () => {
+      feed(stream);
+      stream.end();
+    });
+    await waitFor(() => expect(result.current.isSending).toBe(false));
+    return result;
+  }
+
+  it("text가 없는 이벤트가 섞여 와도 답변에 'undefined'가 찍히지 않는다", async () => {
+    // 지켜주는 것: inote-ai가 새 이벤트(todo_proposal 등)를 먼저 배포했을 때 화면에 "undefined"가 붙던 문제
+    const result = await sendAndReceive("할 일 추가해줘", (stream) => {
+      stream.push("추가할까요?");
+      stream.pushEvent({ todo_proposal: { items: [{ title: "이력서 작성" }] } });
+    });
+
+    expect(texts(result.current.messages)).toEqual(["할 일 추가해줘", "추가할까요?"]);
+  });
+
+  it("todo_proposal 이벤트는 답변 문장은 그대로 두고 그 메시지에 확인 대기 카드를 붙인다", async () => {
+    // 지켜주는 것: 서버가 보낸 제안이 화면의 카드 상태가 되는 것(문장이 바뀌거나 다른 메시지에 붙는 문제)
+    const result = await sendAndReceive("할 일 추가해줘", (stream) => {
+      stream.push("추가할까요?");
+      stream.pushEvent({ todo_proposal: { items: [{ title: "이력서 작성" }, { title: "독서모임" }] } });
+    });
+
+    const [user, assistant] = result.current.messages;
+    expect(user.todoProposal).toBeUndefined();
+    expect(assistant.text).toBe("추가할까요?");
+    expect(assistant.todoProposal?.status).toBe("pending");
+    expect(assistant.todoProposal?.items.map((i) => i.title)).toEqual(["이력서 작성", "독서모임"]);
+  });
+
+  it("updateTodoProposal은 그 메시지의 카드 상태만 바꾼다", async () => {
+    // 지켜주는 것: 카드의 체크·취소가 다른 메시지나 문장을 건드리는 것
+    const result = await sendAndReceive("할 일 추가해줘", (stream) => {
+      stream.push("추가할까요?");
+      stream.pushEvent({ todo_proposal: { items: [{ title: "이력서 작성" }] } });
+    });
+    const assistantId = result.current.messages[1].id;
+
+    act(() => result.current.updateTodoProposal(assistantId, (p) => ({ ...p, status: "cancelled" })));
+
+    expect(result.current.messages[1].todoProposal?.status).toBe("cancelled");
+    expect(result.current.messages[1].text).toBe("추가할까요?");
+    expect(result.current.messages[0].todoProposal).toBeUndefined();
   });
 });
