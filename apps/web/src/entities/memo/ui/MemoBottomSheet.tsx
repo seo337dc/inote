@@ -7,7 +7,10 @@ import { X } from "lucide-react";
 type Props = {
   open: boolean;
   onClose: () => void;
+  /** 접근성 이름. header가 없으면 헤더에 글자로도 보인다. */
   title: string;
+  /** 주면 title 글자 대신 이 내용이 헤더를 채운다. */
+  header?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -19,7 +22,7 @@ const CLOSE_MS = 300;
  * 닫을 때는 내려간 뒤 사라진다. 바깥(어두운 영역)을 누르면 닫힌다.
  * 데스크톱의 떠다니는 패널은 FloatingPanel.
  */
-export function MemoBottomSheet({ open, onClose, title, children }: Props) {
+export function MemoBottomSheet({ open, onClose, title, header, children }: Props) {
   const [closing, setClosing] = useState(false);
 
   // 부모가 직접 닫은 경우(예: 화면 폭이 바뀌어 다른 패널로 교체)에는 내려가는 애니메이션 없이 정리한다.
@@ -52,13 +55,17 @@ export function MemoBottomSheet({ open, onClose, title, children }: Props) {
           closing ? "memo-sheet-out" : "memo-sheet-in"
         }`}
       >
-        <header className="bg-memo-header border-memo-border flex shrink-0 items-center justify-between border-b px-4 py-3">
-          <span className="text-sm font-medium">{title}</span>
+        <header
+          className={`bg-memo-header border-memo-border flex shrink-0 justify-between border-b ${
+            header ? "items-end gap-1 pt-2 pr-3 pl-2" : "items-center px-4 py-3"
+          }`}
+        >
+          {header ? <div className="min-w-0 flex-1">{header}</div> : <span className="text-sm font-medium">{title}</span>}
           <button
             type="button"
             aria-label="닫기"
             onClick={requestClose}
-            className="text-memo-muted hover:bg-memo-border/60 hover:text-memo-foreground cursor-pointer rounded p-1 transition-colors"
+            className="text-memo-muted hover:bg-memo-border/60 hover:text-memo-foreground cursor-pointer self-center rounded p-1 transition-colors"
           >
             <X className="size-4" />
           </button>

@@ -6,20 +6,12 @@ import { MEMO_MAX_LENGTH } from "../model/constants";
 import { useSlotActions } from "@/shared/lib/slot-actions";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
-import { TEST_API_URL } from "@/test/msw/handlers";
+import { makeMemo, MEMOS_URL } from "@/test/fixtures/memo";
 import { renderWithQueryClient as render } from "@/test/render";
 import type { Memo } from "../model/types";
 
-const MEMOS_URL = `${TEST_API_URL}/api/v1/memos`;
 const TARGET = { type: "post", id: "p1" } as const;
-const savedMemo = (content: string): Memo => ({
-  id: "m1",
-  targetType: "post",
-  targetId: "p1",
-  content,
-  createdAt: "2026-11-05T00:00:00Z",
-  updatedAt: "2026-11-05T00:00:00Z",
-});
+const savedMemo = (content: string): Memo => makeMemo({ content });
 
 // 기본: 저장된 메모가 없다. 불러오기가 끝나기 전에는 입력창이 잠겨 있으므로 입력 전에 풀릴 때까지 기다린다.
 beforeEach(() => {
@@ -219,5 +211,33 @@ describe("MemoPad (서버 저장)", () => {
     await userEvent.click(screen.getByRole("button", { name: "도크:메모" }));
 
     expect(await screen.findByLabelText("메모 내용")).toHaveValue("모바일에서도");
+  });
+});
+
+describe("MemoPad (메모 여러 장)", () => {
+  const two = [{ ...savedMemo("첫째 내용"), id: "m1" }, { ...savedMemo("둘째 내용"), id: "m2", title: "질문" }];
+
+  it("탭으로 메모를 오가면 각각의 내용이 보인다", async () => {
+    setViewport(true);
+    server.use(http.get(MEMOS_URL, () => HttpResponse.json(two)));
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: /메모/ }));
+    expect(await screen.findByDisplayValue("첫째 내용")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: /질문/ }));
+    expect(screen.getByDisplayValue("둘째 내용")).toBeInTheDocument();
+  });
+
+  it("아래의 ←/→ 버튼으로 열려 있는 메모를 옮긴다 (양 끝에서는 막힌다)", async () => {
+    setViewport(true);
+    server.use(http.get(MEMOS_URL, () => HttpResponse.json(two)));
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: /메모/ }));
+    await screen.findByDisplayValue("첫째 내용");
+
+    expect(screen.getByRole("button", { name: "메모를 앞으로 옮기기" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "메모를 뒤로 옮기기" }));
+    expect(screen.getAllByRole("tab").map((t) => t.textContent?.trim())).toEqual(["질문", "메모 2"]);
+    expect(screen.getByRole("button", { name: "메모를 뒤로 옮기기" })).toBeDisabled();
   });
 });
