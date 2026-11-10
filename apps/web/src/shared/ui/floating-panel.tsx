@@ -15,11 +15,16 @@ const DEFAULT_SIZE = { width: 320, height: 360 };
 const BOTTOM_INSET = 64;
 const HANDLE_CLASS = "floating-panel-handle";
 const CANCEL_CLASS = "floating-panel-cancel";
+/** header 안에서 눌러도 패널이 끌려가지 않아야 하는 요소(탭·입력 등)에 붙이는 클래스. */
+export const FLOATING_PANEL_CANCEL_CLASS = CANCEL_CLASS;
 
 type Props = {
   open: boolean;
   onClose: () => void;
+  /** 접근성 이름. header가 없으면 헤더에 글자로도 보인다. */
   title: string;
+  /** 주면 title 글자 대신 이 내용이 헤더(끌어서 이동하는 손잡이)를 채운다. 안의 클릭 요소에는 FLOATING_PANEL_CANCEL_CLASS를 붙인다. */
+  header?: React.ReactNode;
   children: React.ReactNode;
   /** 열기 버튼 같은 기준 요소의 오른쪽·위쪽 끝(뷰포트 좌표). 주면 그 바로 위에 뜬다. */
   anchor?: { right: number; top: number };
@@ -31,16 +36,16 @@ type Props = {
  * 위치·크기는 저장하지 않는다(열 때마다 기준 요소 위, 없으면 오른쪽 아래 기본값). 닫혀도 children의 상태는
  * 부모가 들고 있으므로 입력 내용은 유지된다.
  */
-export function FloatingPanel({ open, onClose, title, children, anchor }: Props) {
+export function FloatingPanel({ open, onClose, title, header, children, anchor }: Props) {
   if (!open) return null;
   return (
-    <OpenPanel onClose={onClose} title={title} anchor={anchor}>
+    <OpenPanel onClose={onClose} title={title} header={header} anchor={anchor}>
       {children}
     </OpenPanel>
   );
 }
 
-function OpenPanel({ onClose, title, children, anchor }: Omit<Props, "open">) {
+function OpenPanel({ onClose, title, header, children, anchor }: Omit<Props, "open">) {
   // 열린 상태에서만 마운트되므로(클라이언트 상호작용 뒤) window를 안전하게 읽을 수 있다.
   const [rect] = useState(() =>
     initialPanelRect(
@@ -68,14 +73,16 @@ function OpenPanel({ onClose, title, children, anchor }: Omit<Props, "open">) {
           className="bg-memo text-memo-foreground border-memo-border flex h-full w-full flex-col overflow-hidden rounded-lg border shadow-lg"
         >
           <header
-            className={`${HANDLE_CLASS} bg-memo-header border-memo-border flex shrink-0 cursor-move items-center justify-between border-b px-3 py-2 select-none`}
+            className={`${HANDLE_CLASS} bg-memo-header border-memo-border flex shrink-0 cursor-move justify-between border-b select-none ${
+              header ? "items-end gap-1 pt-1.5 pr-2 pl-2" : "items-center px-3 py-2"
+            }`}
           >
-            <span className="text-sm font-medium">{title}</span>
+            {header ? <div className="min-w-0 flex-1">{header}</div> : <span className="text-sm font-medium">{title}</span>}
             <button
               type="button"
               aria-label="닫기"
               onClick={onClose}
-              className={`${CANCEL_CLASS} text-memo-muted hover:bg-memo-border/60 hover:text-memo-foreground cursor-pointer rounded p-1 transition-colors`}
+              className={`${CANCEL_CLASS} text-memo-muted hover:bg-memo-border/60 hover:text-memo-foreground cursor-pointer self-center rounded p-1 transition-colors`}
             >
               <X className="size-4" />
             </button>

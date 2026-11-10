@@ -7,6 +7,7 @@ export type Memo = {
   id: string;
   targetType: MemoTargetType;
   targetId: string;
+  title: string; // 비어 있으면 탭에는 번호("메모 1")로 보인다
   content: string;
   createdAt: string;
   updatedAt: string;

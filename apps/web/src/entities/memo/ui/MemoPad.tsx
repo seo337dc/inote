@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
-import { NotebookText } from "lucide-react";
+import { ChevronLeft, ChevronRight, NotebookText } from "lucide-react";
 import { FloatingPanel } from "@/shared/ui/floating-panel";
 import { useRegisterSlotAction, type SlotAction } from "@/shared/lib/slot-actions";
 import { useMediaQuery } from "@/shared/lib/useMediaQuery";
@@ -9,9 +9,12 @@ import { MEMO_MAX_LENGTH } from "../model/constants";
 import { useMemoDraft } from "../model/useMemoDraft";
 import type { MemoTarget } from "../model/types";
 import { MemoBottomSheet } from "./MemoBottomSheet";
+import { MemoTabs } from "./MemoTabs";
 
 // ChatDock이 모바일 AI 버튼을 보여주는 기준(lg)과 같다 — 이 폭 이상이면 떠다니는 패널, 미만이면 하단 패널.
 const DESKTOP_QUERY = "(min-width: 1024px)";
+const MOVE_BUTTON =
+  "text-memo-muted hover:bg-memo-border hover:text-memo-foreground flex size-6 cursor-pointer items-center justify-center rounded transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
 
 /**
  * 메모 버튼 + 메모장.
@@ -24,7 +27,8 @@ const DESKTOP_QUERY = "(min-width: 1024px)";
  */
 export function MemoPad({ target }: { target: MemoTarget }) {
   const [open, setOpen] = useState(false);
-  const { text, setText, ready, flush } = useMemoDraft(target);
+  const memo = useMemoDraft(target);
+  const { text, setText, ready, flush } = memo;
   const [anchor, setAnchor] = useState<{ right: number; top: number }>();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -60,6 +64,22 @@ export function MemoPad({ target }: { target: MemoTarget }) {
     setOpen(true);
   }
 
+  // 탭 줄이 곧 패널 헤더다(크롬 탭처럼)
+  const header = (
+    <MemoTabs
+      tabs={memo.items}
+      activeIndex={memo.activeIndex}
+      canAdd={memo.canAdd}
+      disabled={!ready}
+      error={memo.actionError}
+      onSelect={memo.setActiveIndex}
+      onAdd={memo.addMemo}
+      onTitleChange={memo.setTitle}
+      onRemove={memo.removeMemo}
+      onMove={memo.moveMemo}
+    />
+  );
+
   const body = (
     <div className="flex h-full flex-col">
       <textarea
@@ -71,9 +91,34 @@ export function MemoPad({ target }: { target: MemoTarget }) {
         aria-label="메모 내용"
         className="text-memo-foreground placeholder:text-memo-muted min-h-0 flex-1 resize-none bg-transparent p-3 text-sm leading-relaxed outline-none"
       />
-      <p className="text-memo-muted shrink-0 px-3 pb-2 text-right text-xs">
-        {text.length.toLocaleString()} / {MEMO_MAX_LENGTH.toLocaleString()}
-      </p>
+      <div className="flex shrink-0 items-center justify-between px-2 pb-2">
+        {/* 순서는 화면에서만 바뀐다(저장하지 않음) — 터치에서도 쓸 수 있게 버튼으로도 둔다 */}
+        <div className="flex gap-0.5">
+          <button
+            type="button"
+            aria-label="메모를 앞으로 옮기기"
+            title="앞으로 옮기기"
+            disabled={!ready || memo.activeIndex === 0}
+            onClick={() => memo.moveMemo(memo.activeIndex, memo.activeIndex - 1)}
+            className={MOVE_BUTTON}
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="메모를 뒤로 옮기기"
+            title="뒤로 옮기기"
+            disabled={!ready || memo.activeIndex === memo.items.length - 1}
+            onClick={() => memo.moveMemo(memo.activeIndex, memo.activeIndex + 1)}
+            className={MOVE_BUTTON}
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
+        <p className="text-memo-muted px-1 text-xs">
+          {text.length.toLocaleString()} / {MEMO_MAX_LENGTH.toLocaleString()}
+        </p>
+      </div>
     </div>
   );
 
@@ -90,10 +135,10 @@ export function MemoPad({ target }: { target: MemoTarget }) {
           메모
         </button>
       )}
-      <FloatingPanel open={open && isDesktop} onClose={close} title="메모" anchor={anchor}>
+      <FloatingPanel open={open && isDesktop} onClose={close} title="메모" header={header} anchor={anchor}>
         {body}
       </FloatingPanel>
-      <MemoBottomSheet open={open && !isDesktop} onClose={close} title="메모">
+      <MemoBottomSheet open={open && !isDesktop} onClose={close} title="메모" header={header}>
         {body}
       </MemoBottomSheet>
     </>

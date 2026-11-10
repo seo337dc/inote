@@ -3,25 +3,15 @@ import { act, waitFor } from "@testing-library/react";
 import { createTestQueryClient, renderHookWithQueryClient } from "@/test/render";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
-import { TEST_API_URL } from "@/test/msw/handlers";
+import { makeMemo as memo, MEMOS_URL as URL } from "@/test/fixtures/memo";
+import { sleep } from "@/test/sleep";
 import { useMemoDraft } from "./useMemoDraft";
 import { MEMO_AUTOSAVE_MS } from "./memoSaver";
 import type { Memo } from "./types";
 
-const URL = `${TEST_API_URL}/api/v1/memos`;
 const TARGET = { type: "post", id: "p1" } as const;
 const DELAY = 30; // 실제 1.5초를 기다리지 않도록 짧게 준다 (MEMO_AUTOSAVE_MS는 아래에서 값만 확인)
 
-const memo = (over: Partial<Memo> = {}): Memo => ({
-  id: "m1",
-  targetType: "post",
-  targetId: "p1",
-  content: "",
-  createdAt: "2026-11-05T00:00:00Z",
-  updatedAt: "2026-11-05T00:00:00Z",
-  ...over,
-});
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 type Call = { method: string; url: string; body?: unknown };
 
