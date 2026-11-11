@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
 import { api } from "@/shared/lib/api";
-import type { Post } from "@/entities/post";
+import { MY_DRAFTS_KEY, previewText, type Post } from "@/entities/post";
 
 type Props = {
   drafts: Post[];
@@ -13,11 +13,6 @@ type Props = {
   onClose: () => void;
 };
 
-function previewText(html: string): string {
-  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-  return text || "내용 없음";
-}
-
 export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }: Props) {
   const queryClient = useQueryClient();
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -25,7 +20,7 @@ export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/blog/posts/${id}`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["my-drafts"] });
+      void queryClient.invalidateQueries({ queryKey: MY_DRAFTS_KEY });
       setConfirmId(null);
     },
   });
