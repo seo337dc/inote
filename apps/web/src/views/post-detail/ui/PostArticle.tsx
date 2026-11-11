@@ -2,11 +2,10 @@ import { PostDates, PrivateBadge, type Post } from "@/entities/post";
 import { PostAuthor } from "@/widgets/post-list";
 import { buildToc } from "@/shared/lib/toc";
 import { lockTaskCheckboxes } from "@/shared/lib/task-list";
-import { ArchivePostButton } from "@/features/archive-posts";
 import BackToListButton from "./BackToListButton";
 import CategoryBreadcrumb from "./CategoryBreadcrumb";
-import DeletePostButton from "./DeletePostButton";
 import EditPostLink from "./EditPostLink";
+import PostActionsMenu from "./PostActionsMenu";
 import PostArticleLayout, {
   OUTLINE_HEADER_CLASS,
   OutlinePanel,
@@ -14,7 +13,6 @@ import PostArticleLayout, {
   TocPanel,
 } from "./PostArticleLayout";
 import PostSummarySection from "./PostSummarySection";
-import TogglePinButton from "./TogglePinButton";
 
 // 서버(공개 글 SSR)와 클라이언트(작성자 본인 확인 후 폴백) 양쪽에서 같은 화면을 그리려고 분리.
 export default function PostArticle({ post }: { post: Post }) {
@@ -36,12 +34,15 @@ export default function PostArticle({ post }: { post: Post }) {
           {post.isPrivate && <PrivateBadge />}
         </div>
         <div className="flex items-center gap-3">
-          <TogglePinButton postId={post.id} authorId={post.userId} initialPinned={post.pinned} />
-          <ArchivePostButton postId={post.id} authorId={post.userId} initialArchived={Boolean(post.archivedAt)} />
           <EditPostLink postId={post.id} authorId={post.userId} />
-          <DeletePostButton postId={post.id} authorId={post.userId} />
+          <PostActionsMenu post={post} />
         </div>
       </div>
+      {!post.publishedAt && (
+        <p role="note" className="mb-3 rounded bg-zinc-100 px-3 py-2 text-sm text-zinc-500">
+          임시저장 글이에요. 발행하기 전까지는 작성자만 볼 수 있어요.
+        </p>
+      )}
       {post.archivedAt && (
         <p role="note" className="mb-3 rounded bg-zinc-100 px-3 py-2 text-sm text-zinc-500">
           보관된 글이에요. 목록에는 나오지 않고 작성자만 볼 수 있어요.
