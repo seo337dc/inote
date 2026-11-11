@@ -1,24 +1,33 @@
 import Link from "next/link";
 
-type Props = { archived: boolean };
+export type MyPostsTab = "posts" | "drafts" | "archive";
 
-// 나의 글 ↔ 보관함 전환. 보관함은 같은 화면을 보관한 글만으로 보여주는 /my-posts/archive 경로다.
-export default function MyPostsTabs({ archived }: Props) {
+type Props = { current: MyPostsTab };
+
+const TABS: { key: MyPostsTab; label: string; href: string }[] = [
+  { key: "posts", label: "나의 글", href: "/my-posts" },
+  { key: "drafts", label: "임시저장", href: "/my-posts/drafts" },
+  { key: "archive", label: "보관함", href: "/my-posts/archive" },
+];
+
+// 나의 글 ↔ 임시저장 ↔ 보관함 전환. 보관함·임시저장은 /my-posts 아래 별도 경로다
+// (보관함은 같은 화면을 보관한 글만으로, 임시저장은 MyDraftsPage가 발행 전 글만 따로 보여준다).
+export default function MyPostsTabs({ current }: Props) {
   const base = "border-b-2 px-1 pb-2 text-sm";
   const active = "border-zinc-900 font-semibold text-zinc-900";
   const idle = "border-transparent text-zinc-400 hover:text-zinc-600";
   return (
     <nav aria-label="나의 글 보기" className="flex gap-4">
-      <Link href="/my-posts" aria-current={archived ? undefined : "page"} className={`${base} ${archived ? idle : active}`}>
-        나의 글
-      </Link>
-      <Link
-        href="/my-posts/archive"
-        aria-current={archived ? "page" : undefined}
-        className={`${base} ${archived ? active : idle}`}
-      >
-        보관함
-      </Link>
+      {TABS.map((tab) => (
+        <Link
+          key={tab.key}
+          href={tab.href}
+          aria-current={tab.key === current ? "page" : undefined}
+          className={`${base} ${tab.key === current ? active : idle}`}
+        >
+          {tab.label}
+        </Link>
+      ))}
     </nav>
   );
 }
