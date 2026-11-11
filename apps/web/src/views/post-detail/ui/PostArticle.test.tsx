@@ -27,11 +27,10 @@ vi.mock("@/widgets/post-outline", () => ({
   ),
 }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
-vi.mock("./TogglePinButton", () => ({ default: () => null }));
-vi.mock("@/features/archive-posts", () => ({ ArchivePostButton: () => null }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }) }));
 vi.mock("./EditPostLink", () => ({ default: () => null }));
-vi.mock("./DeletePostButton", () => ({ default: () => null }));
+// 작성자 메뉴(⋯)는 PostActionsMenu.test.tsx에서 따로 검증한다 — 여기서는 글 정보를 받아 그려지는지만 본다
+vi.mock("./PostActionsMenu", () => ({ default: ({ post }: { post: { id: string } }) => <div data-testid="post-actions-menu">{post.id}</div> }));
 vi.mock("./PostSummarySection", () => ({ default: () => null }));
 
 describe("PostArticle — 목록으로 돌아가기", () => {
@@ -226,6 +225,31 @@ describe("PostArticle — 보관한 글 안내", () => {
     render(<PostArticle post={makePost("p1")} />);
 
     expect(screen.queryByRole("note")).toBeNull();
+  });
+});
+
+describe("PostArticle — 임시저장 글 안내", () => {
+  it("발행 전 글(임시저장)이면 작성자만 볼 수 있다는 안내를 보여준다", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    render(<PostArticle post={makePost("p1", { publishedAt: null })} />);
+
+    expect(screen.getByRole("note")).toHaveTextContent("임시저장 글이에요");
+  });
+
+  it("발행된 글에는 임시저장 안내가 없다", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    render(<PostArticle post={makePost("p1")} />);
+
+    expect(screen.queryByText(/임시저장 글이에요/)).toBeNull();
+  });
+});
+
+describe("PostArticle — 작성자 메뉴", () => {
+  it("글 정보를 넘겨 작성자 메뉴(⋯)를 그린다 (보이는 조건은 메뉴가 판단한다)", () => {
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as unknown as ReturnType<typeof useSession>);
+    render(<PostArticle post={makePost("p1")} />);
+
+    expect(screen.getByTestId("post-actions-menu")).toHaveTextContent("p1");
   });
 });
 

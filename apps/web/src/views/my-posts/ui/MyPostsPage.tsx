@@ -88,7 +88,7 @@ export default function MyPostsPage({ categoryId, page, pinnedPage, q, archived 
 
       <div className="min-w-0 flex-1">
         <div className="mb-3 flex items-end justify-between">
-          <MyPostsTabs archived={archived} />
+          <MyPostsTabs current={archived ? "archive" : "posts"} />
           {data.total > 0 && (
             <button
               type="button"

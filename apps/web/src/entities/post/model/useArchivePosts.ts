@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/shared/lib/api";
-import { MY_POSTS_KEY, MY_POST_OUTLINE_KEY, POST_OUTLINE_KEY, USER_OUTLINE_KEY } from "./queryKeys";
+import { MY_POSTS_KEY, MY_POST_OUTLINE_KEY, POST_DETAIL_KEY, POST_KEY, POST_OUTLINE_KEY, USER_OUTLINE_KEY } from "./queryKeys";
 
 // archived: true = 보관, false = 보관 해제. ids는 본인 글만 처리되고(남의 글·없는 글·발행 전 글은 서버가 조용히 건너뛴다)
 // 응답은 실제로 처리된 id만 돌려준다 — 그래서 요청한 개수와 다를 수 있다.
@@ -26,8 +26,8 @@ export function useArchivePosts() {
       queryClient.invalidateQueries({ queryKey: MY_POST_OUTLINE_KEY });
       queryClient.invalidateQueries({ queryKey: POST_OUTLINE_KEY });
       queryClient.invalidateQueries({ queryKey: USER_OUTLINE_KEY });
-      queryClient.invalidateQueries({ queryKey: ["post-detail"] });
-      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: POST_DETAIL_KEY });
+      queryClient.invalidateQueries({ queryKey: POST_KEY });
     },
   });
 }
