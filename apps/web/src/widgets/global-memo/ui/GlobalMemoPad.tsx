@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { MemoPad, resolveMemoTarget, type MemoTarget } from "@/entities/memo";
 import { api } from "@/shared/lib/api";
 import { useSession } from "@/shared/lib/auth-client";
+import { useOpenMemoRequest } from "../model/useOpenMemoRequest";
 
 // 글 상세에서 "내 글인지"만 알면 되므로 작성자 id만 고른다
 const OWNER_STALE_MS = 60_000;
@@ -22,23 +22,8 @@ const OWNER_STALE_MS = 60_000;
  */
 export default function GlobalMemoPad() {
   const pathname = usePathname() ?? "/";
-  const searchParams = useSearchParams();
-  // "이 메모를 열어 줘" 요청 — 메모장은 레이아웃에 계속 떠 있어서 클라이언트 이동으로 ?memo=가 나중에 생길 수 있다.
-  // 요청이 올 때마다 seq를 올려 key를 바꿔 메모장을 새로 마운트한다(MemoPad는 처음 마운트 때만 openMemoId를 본다).
-  // 마운트한 뒤에는 id를 비워 둔다 — 다른 화면에 갔다 돌아왔을 때 저절로 다시 열리지 않도록.
-  const memoParam = searchParams.get("memo");
-  const [seenParam, setSeenParam] = useState<string | null>(null);
-  const [request, setRequest] = useState<{ seq: number; id?: string }>({ seq: 0 });
-  if (memoParam !== seenParam) {
-    // 렌더 중 상태 갱신(React 권장 패턴) — 주소가 바뀐 것을 한 번만 요청으로 바꾼다. 주소에서 지워지면 seenParam도 비워 같은 카드를 또 눌러도 새 요청이 된다
-    setSeenParam(memoParam);
-    if (memoParam) setRequest((r) => ({ seq: r.seq + 1, id: memoParam }));
-  }
-  useEffect(() => {
-    // 마운트가 끝난 뒤 요청 id를 비운다 — seq는 그대로라 메모장은 다시 마운트되지 않는다
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (request.id) setRequest((r) => ({ seq: r.seq }));
-  }, [request]);
+  // 메모 관리에서 "이 메모를 열어 줘"(?memo=ID)로 들어온 요청 — seq가 바뀌면 메모장을 새로 마운트한다
+  const request = useOpenMemoRequest();
   const { data: session, isPending } = useSession();
   const target = resolveMemoTarget(pathname);
   const isWriteScreen = pathname.startsWith("/write/");
@@ -54,13 +39,6 @@ export default function GlobalMemoPad() {
   });
 
   const wantsOpen = target?.type === "general" ? request.id : undefined;
-  useEffect(() => {
-    if (!searchParams.has("memo")) return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete("memo");
-    window.history.replaceState(window.history.state, "", url);
-  }, [searchParams]);
-
   if (isPending || !session || !target || isWriteScreen) return null;
   if (postId && owner.data !== session.user.id) return null;
 
