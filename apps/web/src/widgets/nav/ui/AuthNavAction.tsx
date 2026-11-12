@@ -79,6 +79,13 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
           >
             내 정보 보기
           </Link>
+          <Link
+            href="/memos"
+            onClick={onNavigate}
+            className="block rounded px-3 py-2 text-left text-zinc-600 hover:bg-zinc-100"
+          >
+            메모 관리
+          </Link>
           {isAdmin && (
             <Link
               href="/admin"
@@ -118,6 +125,9 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
         <DropdownMenuContent>
           <DropdownMenuItem render={<Link href="/profile" onClick={onNavigate} />}>
             내 정보 보기
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href="/memos" onClick={onNavigate} />}>
+            메모 관리
           </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem render={<Link href="/admin" onClick={onNavigate} />}>
