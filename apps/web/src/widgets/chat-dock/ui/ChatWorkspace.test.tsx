@@ -66,4 +66,27 @@ describe("ChatWorkspace", () => {
 
     expect(errorSpy).not.toHaveBeenCalled();
   });
+
+  it("floating은 본문 스크롤 영역 밖, 본문 컬럼의 오른쪽 아래에 놓인다 — AI 패널 폭에 따라 같이 움직이고 스크롤돼도 제자리", () => {
+    const { getByTestId, getByText } = render(
+      <ChatWorkspace nav={null} floating={<button data-testid="floating">메모</button>}>
+        <p>본문</p>
+      </ChatWorkspace>,
+    );
+
+    const floating = getByTestId("floating");
+    expect(floating.closest("main")).toBeNull();
+    expect(floating.parentElement).toHaveClass("absolute", "bottom-4");
+    // 본문과 같은 컬럼 안(AI 패널 옆이 아니라)
+    expect(floating.parentElement!.parentElement).toBe(getByText("본문").closest("main")!.parentElement);
+  });
+
+  it("floating을 안 주면 아무것도 더 그리지 않는다", () => {
+    const { container } = render(
+      <ChatWorkspace nav={null}>
+        <p>본문</p>
+      </ChatWorkspace>,
+    );
+    expect(container.querySelector(".absolute")).toBeNull();
+  });
 });
