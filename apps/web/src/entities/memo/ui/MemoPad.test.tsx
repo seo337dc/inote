@@ -241,3 +241,32 @@ describe("MemoPad (메모 여러 장)", () => {
     expect(screen.getByRole("button", { name: "메모를 뒤로 옮기기" })).toBeDisabled();
   });
 });
+
+describe("MemoPad — openMemoId (메모 관리 화면에서 들어올 때)", () => {
+  const LIST = [makeMemo({ id: "m1", content: "첫째" }), makeMemo({ id: "m2", content: "둘째" })];
+
+  it("openMemoId가 있으면 열린 채로 시작하고 그 메모 탭을 보여준다", async () => {
+    setViewport(true);
+    server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" />);
+
+    await waitFor(() => expect(screen.getByLabelText("메모 내용")).toHaveValue("둘째"));
+  });
+
+  it("openMemoId가 없으면 닫힌 채로 시작한다 (버튼만 보인다)", async () => {
+    setViewport(true);
+    server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
+    render(<MemoPad target={{ type: "general" }} />);
+
+    expect(await screen.findByRole("button", { name: "메모" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("메모 내용")).toBeNull();
+  });
+
+  it("좁은 화면에서도 openMemoId가 있으면 하단 패널이 열린다", async () => {
+    setViewport(false);
+    server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" />);
+
+    await waitFor(() => expect(screen.getByLabelText("메모 내용")).toHaveValue("둘째"));
+  });
+});

@@ -9,13 +9,15 @@ import { useReadingChatMessages } from "../model/useReadingChatMessages";
 type Props = {
   nav: React.ReactNode;
   children: React.ReactNode;
+  /** 본문 컬럼 오른쪽 아래에 떠 있는 요소(예: 메모장 버튼). 본문이 스크롤돼도 제자리이고 AI 패널 폭에 따라 같이 움직인다. */
+  floating?: React.ReactNode;
 };
 
 // AI 패널이 헤더 옆에서부터 화면 전체 높이로 이어지도록,
 // (헤더+본문)을 한 세로 컬럼으로 묶고 그 옆에 AI 패널을 나란히 둔다.
 //   header | llm
 //   main   | llm
-export default function ChatWorkspace({ nav, children }: Props) {
+export default function ChatWorkspace({ nav, children, floating }: Props) {
   const pathname = usePathname();
   const isReadingRoute = pathname?.startsWith("/reading") ?? false;
 
@@ -32,9 +34,10 @@ export default function ChatWorkspace({ nav, children }: Props) {
 
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-1">
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         {nav}
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+        {floating && <div className="absolute right-6 bottom-4 z-30">{floating}</div>}
       </div>
       <DesktopChatPanel chat={chat} />
       <ChatDock chat={chat} />

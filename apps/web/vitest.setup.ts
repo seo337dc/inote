@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import { configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { server } from "./src/test/msw/server";
 
@@ -15,6 +16,10 @@ if (typeof Range !== "undefined") {
     ({ length: 0, item: () => null, [Symbol.iterator]: [][Symbol.iterator] }) as unknown as DOMRectList;
   Range.prototype.getBoundingClientRect ??= () => ({ ...emptyRect, toJSON: () => emptyRect }) as DOMRect;
 }
+
+// waitFor·findBy의 기본 대기는 1초인데, 전체 테스트를 병렬로 돌리거나 빌드·dev 서버가 같이 돌 때 가짜 서버(MSW) 응답이
+// 그 안에 오지 못해 가끔 실패했다(useMemoDraft 테스트, 2026-11-12). 통과하는 테스트는 그대로 빠르고 실패할 때만 더 기다린다.
+configure({ asyncUtilTimeout: 3000 });
 
 // api.ts가 모듈 로드 시점에 읽는 값이라 다른 import보다 먼저 설정돼야 함.
 process.env.NEXT_PUBLIC_API_URL = "http://localhost:3200";

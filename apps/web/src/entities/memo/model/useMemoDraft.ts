@@ -20,11 +20,14 @@ export const MEMO_LIMIT_MESSAGE = `메모는 최대 ${MEMO_MAX_COUNT}장까지 �
  * - 메모가 한 장도 없으면 빈 탭 한 장(id=null)으로 시작하고, 첫 입력 때 서버에 만들어진다(빈 행 방지).
  *   그 탭이 만들어지기 전에는 +(canAdd)가 막힌다.
  * - 장마다 MemoSaver가 하나씩 있어 디바운스·직렬화·재시도가 서로 섞이지 않는다. 탭을 바꾸거나 닫을 때 바로 저장한다.
+ * - initialMemoId가 있으면 불러온 직후 그 메모 탭을 선택한다(메모 관리 화면에서 카드를 눌러 들어올 때). 없는 id면 첫 탭.
  * - target은 컴포넌트가 떠 있는 동안 바뀌지 않는다고 가정한다(대상이 바뀌면 새로 마운트).
  * - 화면을 열 때마다 서버 값을 새로 가져오고(캐시 재사용 안 함) 포커스로 다시 가져오지도 않는다 — 입력 중인 내용을 덮어쓰지 않으려고.
  */
-export function useMemoDraft(target: MemoTarget, options: { delayMs?: number } = {}) {
-  const { delayMs } = options;
+export function useMemoDraft(target: MemoTarget, options: { delayMs?: number; initialMemoId?: string } = {}) {
+  const { delayMs, initialMemoId } = options;
+  // 처음 선택할 메모 — 불러온 직후 한 번만 쓰므로 ref로 들고 있어 값이 바뀌어도 effect가 다시 돌지 않는다
+  const initialIdRef = useRef(initialMemoId);
   const query = useQuery({
     queryKey: memosKey(target),
     queryFn: () => getMemos(target),
@@ -76,9 +79,9 @@ export function useMemoDraft(target: MemoTarget, options: { delayMs?: number } =
     if (!query.isSuccess) return;
     const savers = saversRef.current;
     const memos: (Memo | null)[] = query.data.length > 0 ? query.data : [null];
+    const initial = initialIdRef.current ? query.data.findIndex((m) => m.id === initialIdRef.current) : -1;
     // 불러온 서버 데이터를 편집용 상태(+장마다 saver)로 옮기는 한 번의 초기화다 — 외부(서버) 값과 동기화하는 effect
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    commit(memos.map(attach), 0);
+    commit(memos.map(attach), Math.max(initial, 0));
     return () => {
       savers.forEach((s) => s.flush()); // 화면을 떠날 때 기다리던 변경을 보낸다
       savers.clear();
