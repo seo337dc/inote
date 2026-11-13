@@ -5,7 +5,7 @@
 
 ## 현재 상태 (2026-11-06)
 - **끝났다(모두 main에 병합):** 에디터·메모 UI(FE #29), 메모 서버 자동저장(FE #30), 메모 API(`inote-server` #12), 테스트 중복 설정 정리(FE #31). 메모 저장은 로컬에서 FE↔BE로 동작을 확인했다. **운영 반영 후 로그인한 운영 화면에서 확인했는지는 확인 필요.**
-- **남은 일은 `docs/todo/`가 기준이다:** [`memo.md`](../todo/memo.md)(저장 상태 표시 등 화면 후속), [`write-editor-refactor-followups.md`](../todo/write-editor-refactor-followups.md), [`editor-tablet-check.md`](../todo/editor-tablet-check.md)(사람이 폭별로 직접 확인), [`write-autosave-redundant-patch.md`](../todo/write-autosave-redundant-patch.md)(보류 중인 버그).
+- **남은 일은 `docs/todo/`가 기준이다:** [`memo.md`](../todo/memo.md)(저장 상태 표시 등 화면 후속), [`editor-tablet-check.md`](../todo/editor-tablet-check.md)(사람이 폭별로 직접 확인), 나머지 후속과 보류 중인 버그는 [`backlog.md`](../todo/backlog.md) 5절.
 - 폭별 배치(특히 1024~1279px)·드래그·터치는 jsdom으로 검증되지 않아 사람이 화면에서 확인해야 한다 — 결과는 확인 필요.
 - 로컬 BE의 기본 DB는 운영이므로 BE는 `scripts/dev-db.sh start`(개발 DB)로만 띄운다.
 - 작업과 무관한 파일(`docs/learning/README.md`, `docs/learning/SSE.md`, `docs/blog/better-auth-duplicate-account.md`)은 계속 커밋에서 제외한다.
@@ -46,8 +46,8 @@
   - 오른쪽 헤더 버튼(알림 벨·☰)은 아직 테두리가 있다. 왼쪽만 ghost라 모양이 다르다 — 맞출지 사용자가 정한다.
 
 ## 별도로 발견한 문제 (이번 작업과 무관, 보류)
-- 리팩토링 점검에서 미룬 것·소소한 후속 → [`docs/todo/write-editor-refactor-followups.md`](../todo/write-editor-refactor-followups.md)
-- 입력 없이 임시 저장 PATCH가 나가는 문제 → [`docs/todo/write-autosave-redundant-patch.md`](../todo/write-autosave-redundant-patch.md)
+- 리팩토링 점검에서 미룬 것·소소한 후속 → [`docs/todo/backlog.md`](../todo/backlog.md) 5절
+- 입력 없이 임시 저장 PATCH가 나가는 문제 → [`docs/todo/backlog.md`](../todo/backlog.md) 5절 "글쓰기·메모 화면"
 
 ## 에이전트·스킬
 - FE `.claude/agents/refactor-advisor.md`: 읽기 전용, 모듈화·리팩토링 후보를 P0/P1/P2로 보고한다. 2026-11-06부터 "테스트 설정 중복"(테스트 파일마다 복붙된 설정·헬퍼) 관점이 추가됐다. FE `/commit` 스킬(`.claude/skills/commit/SKILL.md`)이 2단계로 부른다(체크리스트 앞, 커밋을 막지 않고 보고만 한다).

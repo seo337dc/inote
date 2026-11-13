@@ -9,7 +9,7 @@
 | ProseMirror 추가 | 이슈 | 2026-10-28 | https://inote-main.vercel.app/posts/cmvrviy3f0007je3858sklzu7 | 에디터 스크롤 옵션 |
 | Next.js App Router 에러 처리 | 학습 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwel87pr000fgj397qgh8ck4 | |
 | 이미지 업로드를 붙였더니 "고아 파일"이 생겼다 — 설계 과정과 로컬에서 만난 함정들 | 이슈 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwelpmgw000jgj3940u6i5gv | `docs/adr/0004-image-upload-lifecycle.md`, `0005-save-403-investigation.md` |
-| 이미지 업로드를 붙였더니 "고아 파일"이 쌓인다 — R2 업로드 정리 전략 설계기 | 이슈 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwelwehj000pgj39b4j5o7vy | `docs/adr/0002-editor-image-upload.md`, `docs/todo/editor-image-upload.md` |
+| 이미지 업로드를 붙였더니 "고아 파일"이 쌓인다 — R2 업로드 정리 전략 설계기 | 이슈 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwelwehj000pgj39b4j5o7vy | `docs/adr/0002-editor-image-upload.md`, `docs/todo/backlog.md` |
 | Render 무료 서비스가 갑자기 죽었다 — 원인부터 호스팅 정리까지 | 이슈 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwelxyjy000tgj39n5m2jjs0 | `docs/adr/0003-hosting-migration.md`, `inote-server`·`inote-ai`의 호스팅·DB 이전 ADR |
 | DB 이전 — Neon → Supabase | 이슈 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwem2akx000xgj391772uj8m | https://inote-main.vercel.app/posts/cmwem80a00015gj3958ds004n, `inote/docs/adr/0003-hosting-migration.md` |
 | inote-ai 호스팅 이전 — Render → Vercel | 이슈 | 2026-11-13 | https://inote-main.vercel.app/posts/cmwem6t490011gj39lvi33yg4 | `inote/docs/adr/0003-hosting-migration.md` |

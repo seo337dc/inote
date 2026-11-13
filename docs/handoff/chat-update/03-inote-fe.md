@@ -56,7 +56,7 @@
 - 단계 5의 `shared` 스토어에 `appendHtml(html)` 명령을 같이 등록한다. 에디터 인스턴스를 밖에 내주지 말고 **명령 함수만** 등록 (`editor.chain().focus('end').insertContent(html)` 방향)
 - `shared/ui/editor/markdown-paste.ts`의 `markdownToHtml`을 export하고 `shared/ui/editor/index.ts`에서 re-export. **붙여넣기 전용 보정(`breaks:true`, 연도형 번호목록 보정)이 채팅 답변에도 맞는지 확인**한다
 - ⚠️ 확인 필요: 프로그램이 삽입한 내용이 `onUserEdit`/dirty로 잡히는지 (안 잡히면 자동저장·이탈 경고가 안 걸린다) — `PostEditor` 내부를 읽고 처리 방식을 사용자와 정한다
-- LLM 출력 HTML의 sanitize는 후속(`docs/todo/chat-update.md`). 1차는 Tiptap 스키마 경유만
+- LLM 출력 HTML의 sanitize는 후속(`docs/todo/backlog.md`). 1차는 Tiptap 스키마 경유만
 
 ## 건드리지 않는 것
 - 독서 상담(`useReadingChatMessages`, `/reading-chat`), `can_draft` 초안 기능, 이미지 첨부, 선택영역 AI 수정, 글 검색 연결 UI
@@ -64,7 +64,7 @@
 ## 문서·체크리스트
 - 각 단계 후 CLAUDE.md "커밋 전 체크리스트"를 그대로: 단위/컴포넌트 테스트 → lint → build → (E2E는 보류) → **CLAUDE.md 문서 최신화** → 사용자가 요청하면 커밋
 - 개발 일지는 `docs/devlog/fe.md`에만 쓴다. 이번 작업이 CLAUDE.md "현재 상태"를 바꾸면 갱신한다
-- `docs/todo/chat-update.md`의 후속 항목은 기능이 구현되면 "완료"로 옮기거나 갱신
+- `docs/todo/backlog.md`의 후속 항목은 기능이 구현되면 "완료"로 옮기거나 갱신
 - 통합 테스트(FE + 로컬 BE/AI)는 로컬 개발 DB에서만. FE를 개발 BE에 붙일 때: `NEXT_PUBLIC_API_URL=http://localhost:3200 pnpm dev`, AI 주소는 `NEXT_PUBLIC_AI_API_URL`(운영 AI 서버를 가리키고 있지 않은지 확인)
 
 ## 이 세션에 붙여넣을 프롬프트

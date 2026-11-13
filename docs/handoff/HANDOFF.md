@@ -5,7 +5,7 @@
 > 마지막 갱신: 2026-10-29 — 낡은 항목을 정리했다. 최근 변경의 상세는 `docs/devlog/fe.md`와 git 이력, 현재 규칙은 `CLAUDE.md`. 확인하지 못한 항목은 "확인 필요"로 표시돼 있다.
 > **진행 중인 작업 (2026-10-23): LLM 채팅 업데이트** — 세 레포(inote · inote-ai · inote-server)에 걸친 작업의 인수인계·프롬프트는 [`docs/handoff/chat-update/README.md`](./chat-update/README.md), 결정·API 계약은 `docs/adr/0006-chat-update.md`.
 
-> **최근 완료 (2026-11-06): 글쓰기 에디터 업데이트·메모 서버 저장** — FE #29·#30·#31, BE `inote-server` #12가 모두 병합됐다. 상태·구현 결과·남은 일은 [`docs/handoff/write-editor-update.md`](./write-editor-update.md), 후속은 `docs/todo/`(`memo.md`, `write-editor-refactor-followups.md`, `editor-tablet-check.md`, `write-autosave-redundant-patch.md`).
+> **최근 완료 (2026-11-06): 글쓰기 에디터 업데이트·메모 서버 저장** — FE #29·#30·#31, BE `inote-server` #12가 모두 병합됐다. 상태·구현 결과·남은 일은 [`docs/handoff/write-editor-update.md`](./write-editor-update.md), 후속은 `docs/todo/`(`memo.md`, `editor-tablet-check.md`, 나머지는 `backlog.md`).
 
 ---
 
@@ -63,7 +63,7 @@
 
 ### 0. 지금 남은 일 (2026-10-29 기준 — 아래 A~G는 대부분 10/7 기준이라 낡았을 수 있다)
 - **카테고리 이동(#8) BE 운영 배포 여부는 확인 필요** (BE PR #8은 병합됨, 운영 DB 마이그레이션은 적용됨). 배포는 **BE 먼저, FE 나중**.
-- **Safari 로그인 이슈 (사용자 결정 대기 — 구현하지 마라)**: 운영(vercel ↔ render)이 서로 다른 사이트라 BE 세션 쿠키가 Safari에서 서드파티 쿠키로 막혀 이메일·구글 로그인 모두 안 된다. 원인은 확정, 해결 방안은 A. Vercel rewrites 프록시 / B. 커스텀 도메인 / C. 토큰 방식 중 사용자가 고른다. 상세는 `inote-server/docs/todo/auth-follow-ups.md`. 정해지면 변경 목록·환경변수·배포 순서·롤백을 먼저 정리해 보여준다.
+- **Safari 로그인 이슈 (사용자 결정 대기 — 구현하지 마라)**: 운영(vercel ↔ render)이 서로 다른 사이트라 BE 세션 쿠키가 Safari에서 서드파티 쿠키로 막혀 이메일·구글 로그인 모두 안 된다. 원인은 확정, 해결 방안은 A. Vercel rewrites 프록시 / B. 커스텀 도메인 / C. 토큰 방식 중 사용자가 고른다. 상세는 `docs/todo/backlog.md` 2절. 정해지면 변경 목록·환경변수·배포 순서·롤백을 먼저 정리해 보여준다.
 - 이름 중복 미리 검사로 이동 드롭 막기, 에디터 체크리스트 후속 등은 각 `docs/todo/*.md`.
 
 
