@@ -11,6 +11,8 @@ export type ToolbarMoreItem = {
   onClick: () => void;
   active?: boolean;
   disabled?: boolean;
+  /** Tiptap 단축키 문자열(예: "Mod-b") — 넓은 화면 툴바 버튼의 툴팁에만 쓴다(터치용 팝오버에는 hover가 없다) */
+  shortcut?: string;
 };
 
 /**

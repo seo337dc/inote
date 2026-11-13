@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { DEFAULT_TABLE } from "./table-commands";
 import type { ToolbarMoreItem } from "./ToolbarMoreMenu";
+import { TOOLBAR_SHORTCUTS } from "./toolbar-shortcuts";
 
 export type ToolbarMoreState = {
   /** 현재 커서 위치에서 켜져 있는 서식 */
@@ -43,6 +44,7 @@ export function buildMoreItems(
       icon: List,
       onClick: () => editor.chain().focus().toggleBulletList().run(),
       active: active.bulletList,
+      shortcut: TOOLBAR_SHORTCUTS.bulletList.key,
     },
     {
       key: "taskList",
@@ -50,6 +52,7 @@ export function buildMoreItems(
       icon: ListChecks,
       onClick: () => editor.chain().focus().toggleTaskList().run(),
       active: active.taskList,
+      shortcut: TOOLBAR_SHORTCUTS.taskList.key,
     },
     {
       key: "blockquote",
@@ -57,6 +60,7 @@ export function buildMoreItems(
       icon: Quote,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
       active: active.blockquote,
+      shortcut: TOOLBAR_SHORTCUTS.blockquote.key,
     },
     { key: "link", label: "링크", icon: LinkIcon, onClick: openLinkPopup, active: active.link },
     {
@@ -65,6 +69,7 @@ export function buildMoreItems(
       icon: Code,
       onClick: () => editor.chain().focus().toggleCode().run(),
       active: active.code,
+      shortcut: TOOLBAR_SHORTCUTS.code.key,
     },
     {
       key: "codeBlock",
@@ -72,6 +77,7 @@ export function buildMoreItems(
       icon: SquareCode,
       onClick: () => editor.chain().focus().toggleCodeBlock().run(),
       active: active.codeBlock,
+      shortcut: TOOLBAR_SHORTCUTS.codeBlock.key,
     },
     {
       key: "table",
