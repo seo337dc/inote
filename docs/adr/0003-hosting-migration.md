@@ -1,9 +1,9 @@
 # 호스팅 정리 기록 — Render 무료 한도 초과 대응
 
 > 공통(전체) 기록: 배경·원인·선택지·결정·진행 상황. 서비스별 상세는 각 레포 문서를 본다.
-> - AI 서버(Vercel): `inote-ai` 레포 `docs/adr/0001-render-to-vercel.md`
-> - DB(Neon → Supabase): `inote-server` 레포 `docs/adr/0001-neon-to-supabase.md`, AI 쪽은 `inote-ai` 레포 `docs/adr/0002-neon-to-supabase.md`
-> Notion 게시용 초안은 [`../blog/hosting-migration-notion-draft.md`](../blog/hosting-migration-notion-draft.md).
+> - AI 서버(Vercel): https://inote-main.vercel.app/posts/cmwem6t490011gj39lvi33yg4
+> - DB(Neon → Supabase): https://inote-main.vercel.app/posts/cmwem2akx000xgj391772uj8m, AI 쪽은 https://inote-main.vercel.app/posts/cmwem80a00015gj3958ds004n
+> 블로그 글: https://inote-main.vercel.app/posts/cmwelxyjy000tgj39n5m2jjs0
 > 작성 시작: 2026-09-30 / 상태: 🟡 진행 중 (AI 이전 완료, BE 재개 대기, DB 이전 예정)
 
 ---
@@ -49,7 +49,7 @@
 
 ### Vercel Hobby 제한 (요약)
 
-함수 최대 실행 시간 기본·최대 300초(Fluid compute), 월 Active CPU 4시간(I/O 대기 제외), 함수 호출 100만 건, 비상업 한도. 상세는 `inote-ai/docs/adr/0001-render-to-vercel.md`.
+함수 최대 실행 시간 기본·최대 300초(Fluid compute), 월 Active CPU 4시간(I/O 대기 제외), 함수 호출 100만 건, 비상업 한도. 상세는 https://inote-main.vercel.app/posts/cmwem6t490011gj39lvi33yg4.
 
 ## 4. 결정
 
@@ -84,7 +84,7 @@
 - [ ] AI 서버의 글 연결 채팅(BE 작성자 확인), 독서 채팅(카카오 책 검색) 확인 — Vercel `KAKAO_REST_API_KEY` 입력 여부 확인
 - [ ] cron-job.org의 Inote Server 작업 활성화(BE 재개를 확인한 뒤)
 - [ ] `CLAUDE.md`(inote, inote-money)와 각 레포 README의 배포 정보 최신화
-- [ ] Notion 정리 (`docs/blog/hosting-migration-notion-draft.md` 기준)
+- [ ] Notion 정리 (사이트 글 https://inote-main.vercel.app/posts/cmwelxyjy000tgj39n5m2jjs0 기준)
 
 ## 6. 환경 변수 (값은 적지 않는다)
 
@@ -96,7 +96,7 @@
 | BE (Render) | `DATABASE_URL` | Neon 새 비밀번호 pooled 주소 (Supabase 이전 후 교체) |
 | AI (Vercel) | `INOTE_SERVER_URL` | Render BE 주소 + `/api/v1` |
 
-AI 서버 변수 전체 표는 `inote-ai/docs/adr/0001-render-to-vercel.md`.
+AI 서버 변수 전체 표는 https://inote-main.vercel.app/posts/cmwem6t490011gj39lvi33yg4.
 
 ## 7. 진행 로그
 

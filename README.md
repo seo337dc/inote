@@ -80,4 +80,4 @@ LLM 챗을 쓰려면 `inote-ai`(AI, `:8000`)도 같이 띄워야 한다.
 - BE: [inote-server](https://github.com/seo337dc/inote-server)
 - AI: [inote-ai](https://github.com/seo337dc/inote-ai)
 - 배포: FE https://inote-main.vercel.app/ · AI https://inote-ai-cyan.vercel.app
-- 호스팅 이전 경위: [`docs/adr/0003-hosting-migration.md`](./docs/adr/0003-hosting-migration.md), DB(Neon → Supabase): `inote-server/docs/adr/0001-neon-to-supabase.md`
+- 호스팅 이전 경위: [`docs/adr/0003-hosting-migration.md`](./docs/adr/0003-hosting-migration.md), DB(Neon → Supabase): https://inote-main.vercel.app/posts/cmwem2akx000xgj391772uj8m
