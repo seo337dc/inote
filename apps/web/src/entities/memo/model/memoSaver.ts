@@ -28,7 +28,7 @@ export class MemoSaver {
   private saved: Fields;
   private latest: Fields;
   private timer: ReturnType<typeof setTimeout> | null = null;
-  private running = false;
+  private inflight: Promise<void> | null = null;
 
   constructor(private readonly options: Options) {
     this.memoId = options.memo?.id ?? null;
@@ -45,13 +45,16 @@ export class MemoSaver {
     }, this.options.delayMs ?? MEMO_AUTOSAVE_MS);
   }
 
-  /** 기다리지 않고 지금 저장한다 (패널을 닫거나 화면을 떠날 때). */
-  flush() {
+  /**
+   * 기다리지 않고 지금 저장한다 (패널을 닫거나 화면을 떠날 때). 돌려준 프라미스는 저장이 끝나면(실패해도) 풀린다 —
+   * 저장 뒤에 목록을 다시 불러오려는 쪽이 기다릴 수 있다.
+   */
+  flush(): Promise<void> {
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
     }
-    void this.run();
+    return this.run();
   }
 
   /** 기다리던 저장을 멈춘다(메모를 지우려는 동안). 변경은 버리지 않으므로 update({})로 다시 걸 수 있다. */
@@ -69,36 +72,36 @@ export class MemoSaver {
     return diff;
   }
 
-  private async run() {
-    if (this.running) return; // 진행 중인 루프가 끝난 뒤 최신 값을 이어서 보낸다
-    this.running = true;
+  private run(): Promise<void> {
+    // 진행 중인 루프가 있으면 그것이 끝난 뒤 최신 값을 이어서 보내므로 같은 프라미스를 돌려준다
+    if (!this.inflight) this.inflight = this.loop().finally(() => (this.inflight = null));
+    return this.inflight;
+  }
+
+  private async loop() {
     let didSave = false;
-    try {
-      for (let diff = this.changed(); Object.keys(diff).length > 0; diff = this.changed()) {
-        const sent = { ...this.latest };
-        if (!this.memoId && sent.title === "" && sent.content === "") {
-          this.saved = sent;
-          break;
-        }
-        this.options.onStatus("saving");
-        try {
-          if (this.memoId) {
-            await updateMemo(this.memoId, diff);
-          } else {
-            const created = await createMemo(this.options.target, diff);
-            this.memoId = created.id;
-            this.options.onCreated?.(created);
-          }
-        } catch {
-          this.options.onStatus("error");
-          return;
-        }
+    for (let diff = this.changed(); Object.keys(diff).length > 0; diff = this.changed()) {
+      const sent = { ...this.latest };
+      if (!this.memoId && sent.title === "" && sent.content === "") {
         this.saved = sent;
-        didSave = true;
+        break;
       }
-      if (didSave) this.options.onStatus("saved");
-    } finally {
-      this.running = false;
+      this.options.onStatus("saving");
+      try {
+        if (this.memoId) {
+          await updateMemo(this.memoId, diff);
+        } else {
+          const created = await createMemo(this.options.target, diff);
+          this.memoId = created.id;
+          this.options.onCreated?.(created);
+        }
+      } catch {
+        this.options.onStatus("error");
+        return;
+      }
+      this.saved = sent;
+      didSave = true;
     }
+    if (didSave) this.options.onStatus("saved");
   }
 }

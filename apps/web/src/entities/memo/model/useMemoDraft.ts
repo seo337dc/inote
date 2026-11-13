@@ -88,7 +88,10 @@ export function useMemoDraft(target: MemoTarget, options: { delayMs?: number; in
     };
   }, [query.isSuccess, query.data, attach, commit]);
 
-  const flush = useCallback(() => saversRef.current.forEach((s) => s.flush()), []);
+  // 모든 장의 변경을 지금 저장한다. 돌려준 프라미스는 저장이 끝나면(실패해도) 풀린다.
+  const flush = useCallback(async () => {
+    await Promise.all([...saversRef.current.values()].map((s) => s.flush()));
+  }, []);
 
   const edit = useCallback(
     (patch: { title?: string; content?: string }) => {
