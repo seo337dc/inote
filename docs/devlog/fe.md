@@ -712,3 +712,28 @@ UI 의사결정 위주로 기록.
 - 로컬 QA(가짜 AI 서버 사용): 두 스트림이 모두 끝까지 오고 저장 100/100, 클라이언트 끊김 없음. QA 결과는 `docs/portfolio/chat-concurrent-streams.md` 6절.
 - **실제 AI 서버로는 확인하지 못했다.** Groq 청크 모양과 서버 저장 시점은 한 번 확인이 필요하다.
 - 알려진 한계: 새로고침·탭 닫기 시 진행 중 답변 유실, 목록이 닫혀 있으면 점이 안 보임, `JSON.parse` 예외 처리 없음.
+
+## 2026-11-05~06 — 글쓰기 에디터 업데이트: 메모장(플로팅 패널·서버 저장)·툴바 아이콘·모바일 헤더 (FE #29·#30·#31, `inote-server` #12)
+
+> 이 항목은 병합 뒤 삭제된 인수인계 문서 `write-editor-update.md`(2026-11-05 작성)의 구현 기록을 옮긴 것이다. 문서에 적혀 있던 사실을 그대로 옮겼고, 이 일지를 쓰면서 다시 실행해 확인한 것은 아니다.
+
+### 작업 내용
+- **메모장 UI**: 플로팅 패널 `shared/ui/floating-panel.tsx`(`react-rnd` 동적 import, 드래그·리사이즈, body 포털), 위치 계산 `shared/lib/floating-rect.ts`. `entities/memo`의 `MemoPad`(버튼 + 패널)와 `MemoBottomSheet`(좁은 화면 하단 패널, 아래→위 300ms 애니메이션). 최대 10,000자 일반 텍스트. 색은 `globals.css`의 `--memo*` 변수(노란 종이 톤, 다크 값 포함 — inote에 다크 모드는 아직 없음).
+- **배치**: `lg` 이상은 글쓰기 하단 바 오른쪽 끝의 `메모` 버튼 → 버튼 위 플로팅 패널(열려 있는 동안 버튼은 숨김). `lg` 미만은 오른쪽 아래 도크가 ⋮ 버튼이 되고, 누르면 AI·메모 아이콘 버튼이 쌓이며(바깥 클릭·Esc로 접힘) 메모는 하단 패널로 열린다.
+- **서버 저장**(FE #30, BE #12): `GET /memos`·`POST /memos`·`PATCH /memos/:id`(계약은 `docs/todo/memo.md`). 처음 입력할 때 POST(빈 행 방지), 이후 1.5초 디바운스 PATCH, POST가 끝나기 전에는 PATCH가 나가지 않게 직렬화(`model/memoSaver`·`model/useMemoDraft`). 모델은 `targetType`+`targetId` 참조 id 방식(대상은 FK 없음)이고 `Memo.userId`는 user FK(`onDelete: Cascade`)라 회원 삭제는 DB가 처리한다. 글·독서 기록 삭제 때만 서비스가 같은 `$transaction`에서 메모를 지운다.
+- **툴바**: H1~H4·B·I·취소선은 글자 버튼 그대로, 뒤쪽 9개(목록·체크박스·인용·링크·인라인 코드·코드 블록·표·콜아웃·이미지)는 아이콘 버튼(이름은 `aria-label`·`title`). `sm` 미만은 `…` 팝오버(`ToolbarMoreMenu`)에 담긴다. 항목 정의는 `toolbar-items.ts`, 버튼 스타일은 `toolbar-button-style.ts`. `'/'로 블록 삽입` 문구는 `lg` 이상에서만 보인다.
+- **모바일 헤더**: 3칸 그리드라 로고가 모든 페이지에서 가운데에 온다. 왼쪽은 `header-left` 슬롯이고, 글쓰기 화면은 `WriteSettingsSheet`가 `PanelLeft` 버튼을 등록해 글 설정을 왼쪽 시트로 연다(`WriteSettingsContent`로 분리해 데스크톱 패널과 공용).
+- **테스트 정리**(#31): 테스트마다 복붙된 설정(jsdom 보정·에디터 헬퍼·훅 wrapper)을 공통으로 모았다.
+
+### 결정과 이유
+- **`slot-actions` 레지스트리**: 위젯(`widgets/chat-dock`·`widgets/nav`)이 feature를 import할 수 없어서(FSD), 화면이 버튼을 `dock`·`header-left` 슬롯에 등록하고 위젯이 그린다. 원래 `dock-actions.ts`였다가 2026-11-05에 슬롯 개념으로 일반화하며 이름을 바꿨다. 모듈 레벨 가변 상태라 테스트 간 상태가 샐 수 있다는 점은 `docs/todo/backlog.md` 5절.
+- **분기 기준**: 헤더·글 설정은 `lg` → `xl`(1280px)로 옮기고 AI 패널은 `lg`를 유지했다. 1024~1279px에서 상단 메뉴 + 글 설정 패널 + AI 패널이 한꺼번에 있으면 에디터가 450~650px만 남아 툴바가 두 줄이 되기 때문이다. 표와 이유는 `docs/todo/editor-tablet-check.md`.
+- **번들 크기**: `react-rnd` 단독 약 13.2KB gzip(전체 클라이언트 JS 약 605KB gzip의 약 2%), 동적 import라 첫 로딩에는 영향이 없다.
+- **작업 순서**: 계약 → FE(MSW 목) → BE → 통합(개발 DB에서만). 이번에는 사용자가 BE도 같이 구현하고 테스트를 함께 읽자고 해서 Claude가 BE 구현과 `MemosService` 테스트를 작성했다(평소는 BE 테스트를 사용자가 직접 쓴다).
+- **배포**: BE 먼저, FE 나중(이 순서로 병합). 마이그레이션은 테이블 추가뿐이라 Render 배포 때 `prisma migrate deploy`로 적용된다.
+- **포맷**: 이 저장소에는 prettier 설정이 없다. `PostEditor.tsx`가 prettier 기본값으로 재포맷됐던 일이 있어 2026-11-05에 HEAD로 복구한 뒤 같은 변경을 원래 포맷으로 다시 적용했다. `npx prettier`로 파일을 정리하지 않는다.
+- **커밋 전 `refactor-advisor` 점검**으로 정리한 것: 툴바 항목 정의 분리, 버튼 스타일 공유, `ChatDock`의 `DockButton`, `WriteSidePanel`의 `{...props}`. 미룬 것은 `docs/todo/backlog.md` 5절.
+
+### 검증
+- 관련 테스트(`PostEditor*`, `slot-actions`, `NavMobile`, `WriteSettingsSheet`, `WriteSidePanel` 등)·lint·tsc 통과. 메모 저장은 로컬에서 FE↔BE로 동작을 확인했다.
+- **확인 필요**: 폭별 실제 배치(특히 1024~1279px)·드래그·리사이즈·애니메이션·터치는 jsdom으로 검증되지 않아 사람이 화면에서 확인해야 한다. 운영 반영 뒤 로그인한 운영 화면에서 메모 저장을 확인했는지도 확인 필요.

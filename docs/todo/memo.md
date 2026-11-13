@@ -1,7 +1,7 @@
 # 메모장 서버 연동과 확장
 
 > 2026-11-05 기록. 메모장 FE(플로팅 패널·모바일 하단 패널)는 구현됐고 **서버에 저장되지 않는다**(새로고침하면 사라짐).
-> 합의된 설계는 [`docs/handoff/write-editor-update.md`](../handoff/write-editor-update.md)의 "합의된 설계". 서버 연동은 사용자가 따로 시키기 전에는 시작하지 않는다.
+> 구현된 1차 설계(API·모델·저장 동작)는 [`docs/devlog/fe.md`](../devlog/fe.md)의 2026-11-05~06 항목. 서버 연동은 사용자가 따로 시키기 전에는 시작하지 않는다.
 
 ## 서버 연동 (순서: FE(MSW 목) → BE(사람이 테스트 작성) → 통합(로컬 개발 DB에서만))
 - [x] API 계약 확정 (2026-11-06, 작업하면서 바뀔 수 있음): `GET /memos?targetType&targetId`, `POST /memos`(201), `PATCH /memos/:id`, `Memo = { id, targetType, targetId, content, createdAt, updatedAt }`. 오류: 400 검증, 401, POST 403(남의 대상·`Post.userId` null)·404(대상 없음), PATCH 404(없거나 남의 메모). `content` 최대 10,000자·빈 문자열 허용, DELETE 없음, `Memo.userId` FK Cascade(회원 삭제), draft 글에도 생성 가능
