@@ -242,31 +242,98 @@ describe("MemoPad (메모 여러 장)", () => {
   });
 });
 
-describe("MemoPad — openMemoId (메모 관리 화면에서 들어올 때)", () => {
+describe("MemoPad — standalone (메모 관리에서 카드를 눌러 엶)", () => {
   const LIST = [makeMemo({ id: "m1", content: "첫째" }), makeMemo({ id: "m2", content: "둘째" })];
+  const serveList = () => server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
 
-  it("openMemoId가 있으면 열린 채로 시작하고 그 메모 탭을 보여준다", async () => {
+  it("열린 채로 시작하고 메모 버튼은 없다", async () => {
     setViewport(true);
-    server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
-    render(<MemoPad target={{ type: "general" }} openMemoId="m2" />);
+    serveList();
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" standalone />);
+
+    expect(await screen.findByRole("dialog", { name: "메모" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "메모" })).toBeNull();
+  });
+
+  it("openMemoId에 해당하는 메모 탭이 선택돼 있다", async () => {
+    setViewport(true);
+    serveList();
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" standalone />);
 
     await waitFor(() => expect(screen.getByLabelText("메모 내용")).toHaveValue("둘째"));
   });
 
-  it("openMemoId가 없으면 닫힌 채로 시작한다 (버튼만 보인다)", async () => {
+  it("openMemoId만 있고 standalone이 아니면 닫힌 채 시작한다 (탭 선택에만 쓰인다)", async () => {
     setViewport(true);
-    server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
-    render(<MemoPad target={{ type: "general" }} />);
+    serveList();
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" />);
 
     expect(await screen.findByRole("button", { name: "메모" })).toBeInTheDocument();
-    expect(screen.queryByLabelText("메모 내용")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("좁은 화면에서도 openMemoId가 있으면 하단 패널이 열린다", async () => {
+  it("좁은 화면에서도 열린 채로 시작한다 (하단 패널)", async () => {
     setViewport(false);
-    server.use(http.get(MEMOS_URL, () => HttpResponse.json(LIST)));
-    render(<MemoPad target={{ type: "general" }} openMemoId="m2" />);
+    serveList();
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" standalone />);
 
     await waitFor(() => expect(screen.getByLabelText("메모 내용")).toHaveValue("둘째"));
+  });
+
+  it("모바일 도크에 메모 버튼을 등록하지 않는다 (이 화면의 전역 메모장은 숨겨져 있다)", async () => {
+    setViewport(false);
+    serveList();
+    render(
+      <>
+        <MemoPad target={{ type: "general" }} openMemoId="m2" standalone />
+        <DockProbe />
+      </>,
+    );
+
+    await screen.findByLabelText("메모 내용");
+    expect(screen.queryByRole("button", { name: "도크:메모" })).toBeNull();
+  });
+
+  it("닫으면 기다리던 입력이 서버에 저장된 뒤에 onClose가 불린다", async () => {
+    setViewport(true);
+    serveList();
+    const order: string[] = [];
+    server.use(
+      http.patch(`${MEMOS_URL}/:id`, async () => {
+        order.push("patch");
+        return HttpResponse.json(makeMemo({ id: "m2", content: "고침" }));
+      }),
+    );
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" standalone onClose={() => order.push("onClose")} />);
+    const textarea = await screen.findByLabelText("메모 내용");
+    await waitFor(() => expect(textarea).toHaveValue("둘째"));
+    await userEvent.clear(textarea);
+    await userEvent.type(textarea, "고침");
+
+    await userEvent.click(screen.getByRole("button", { name: "닫기" }));
+
+    await waitFor(() => expect(order).toContain("onClose"));
+    expect(order.indexOf("patch")).toBeLessThan(order.indexOf("onClose"));
+  });
+
+  it("standalone이 아니어도 닫기에 onClose가 불린다", async () => {
+    setViewport(true);
+    serveList();
+    const onClose = vi.fn();
+    render(<MemoPad target={{ type: "general" }} onClose={onClose} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await userEvent.click(await screen.findByRole("button", { name: "닫기" }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
+  it("큰 메모장이다 — 데스크톱에서 일반 패널보다 크게 가운데에 열린다", async () => {
+    setViewport(true);
+    serveList();
+    render(<MemoPad target={{ type: "general" }} openMemoId="m2" standalone />);
+
+    const dialog = await screen.findByRole("dialog", { name: "메모" });
+    // react-rnd는 jsdom에서 껍데기로 대체돼 있어 크기를 재지 못한다 — 대신 패널에 큰 크기 표시(data-size)가 붙는다
+    expect(dialog.closest("[data-size]")?.getAttribute("data-size")).toBe("large");
   });
 });

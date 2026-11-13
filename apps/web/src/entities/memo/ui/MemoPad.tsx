@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, NotebookText } from "lucide-react";
 import { FloatingPanel } from "@/shared/ui/floating-panel";
 import { useRegisterSlotAction, type SlotAction } from "@/shared/lib/slot-actions";
@@ -23,11 +23,16 @@ const MOVE_BUTTON =
  * - 좁은 화면: 모바일 도크의 + 메뉴에 메모 버튼을 등록하고, 누르면 하단 패널이 열린다.
  *   (이 안의 버튼은 부모가 좁은 화면에서 숨기도록 CSS로 가려야 한다)
  * 닫아도 이 컴포넌트가 상태를 들고 있어 입력 내용은 유지된다.
- * openMemoId가 있으면 열린 채로 시작해 그 메모 탭을 보여준다(메모 관리 화면에서 카드를 눌러 들어올 때).
+ * - openMemoId: 처음 선택해 둘 메모 탭(없는 id면 첫 탭). 열고 닫는 것과는 무관하다.
+ * - standalone: 메모 관리처럼 버튼 없이 다른 곳에서 띄울 때 — 열린 채로 시작하고, 데스크톱에서는 큰 패널을 화면 가운데에 연다.
+ *   모바일 도크에는 등록하지 않는다(그 화면에서는 전역 메모장이 숨겨져 있다). 부모가 onClose에서 이 컴포넌트를 내린다.
+ * - onClose: 패널을 닫고 기다리던 입력의 저장이 끝난 뒤에 불린다(저장 뒤에 목록을 다시 불러올 수 있게).
  * 내용은 target(글·독서 기록)에 붙은 내 메모 한 장으로 서버에 자동저장된다(useMemoDraft) — 패널을 닫으면 바로 저장한다.
  */
-export function MemoPad({ target, openMemoId }: { target: MemoTarget; openMemoId?: string }) {
-  const [open, setOpen] = useState(false);
+type Props = { target: MemoTarget; openMemoId?: string; standalone?: boolean; onClose?: () => void };
+
+export function MemoPad({ target, openMemoId, standalone = false, onClose }: Props) {
+  const [open, setOpen] = useState(standalone);
   const memo = useMemoDraft(target, { initialMemoId: openMemoId });
   const { text, setText, ready, flush } = memo;
   const [anchor, setAnchor] = useState<{ right: number; top: number }>();
@@ -41,8 +46,8 @@ export function MemoPad({ target, openMemoId }: { target: MemoTarget; openMemoId
   // 참조가 고정돼야 하단 패널의 닫힘 타이머가 부모 리렌더로 리셋되지 않는다.
   const close = useCallback(() => {
     setOpen(false);
-    flush();
-  }, [flush]);
+    void flush().then(() => onClose?.());
+  }, [flush, onClose]);
   const dockAction = useMemo<SlotAction>(
     () => ({
       id: "memo",
@@ -54,7 +59,7 @@ export function MemoPad({ target, openMemoId }: { target: MemoTarget; openMemoId
     }),
     [openFromDock],
   );
-  useRegisterSlotAction(dockAction);
+  useRegisterSlotAction(standalone ? null : dockAction);
 
   function openFromButton() {
     // 열기 직전의 버튼 위치를 기억해 둔다 — 열린 동안 버튼은 숨겨지지만 패널은 그 자리 위에 뜬다.
@@ -64,14 +69,6 @@ export function MemoPad({ target, openMemoId }: { target: MemoTarget; openMemoId
     }
     setOpen(true);
   }
-
-  // 처음부터 열어야 하면(메모 관리에서 들어옴) 버튼 위치를 잰 뒤 한 번만 연다 — 버튼 바로 위에 패널이 뜨도록
-  useEffect(() => {
-    if (!openMemoId) return;
-    openFromButton();
-    // 마운트 때 한 번만 — 이후 prop이 바뀌어도 사용자가 닫은 패널을 다시 열지 않는다
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // 탭 줄이 곧 패널 헤더다(크롬 탭처럼)
   const header = (
@@ -133,7 +130,7 @@ export function MemoPad({ target, openMemoId }: { target: MemoTarget; openMemoId
 
   return (
     <>
-      {!open && (
+      {!open && !standalone && (
         <button
           ref={buttonRef}
           type="button"
@@ -144,7 +141,7 @@ export function MemoPad({ target, openMemoId }: { target: MemoTarget; openMemoId
           메모
         </button>
       )}
-      <FloatingPanel open={open && isDesktop} onClose={close} title="메모" header={header} anchor={anchor}>
+      <FloatingPanel open={open && isDesktop} onClose={close} title="메모" header={header} anchor={anchor} large={standalone}>
         {body}
       </FloatingPanel>
       <MemoBottomSheet open={open && !isDesktop} onClose={close} title="메모" header={header}>
