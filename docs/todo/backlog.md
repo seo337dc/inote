@@ -15,13 +15,13 @@
 - 새로 미루는 일은 **이 파일에만** 적는다. 기능마다 후속 파일을 만들지 않는다.
 - 가치가 없어진 항목(사소한 리팩토링, 착수 조건이 없는 아이디어)은 쌓지 않고 지운다.
 
-**살아 있는 작업 지시서**: [`admin-embeddings.md`](./admin-embeddings.md)(임베딩 관리 화면 2·3단계), [`memo.md`](./memo.md)(메모장), [`post-unpublish.md`](./post-unpublish.md)(글 임시저장 되돌리기), [`editor-tablet-check.md`](./editor-tablet-check.md)(태블릿 폭 수동 확인 — 현재 분기 표 포함)
+**살아 있는 작업 지시서**: [`admin-embeddings.md`](./admin-embeddings.md)(임베딩 관리 화면 2·3단계), [`memo.md`](./memo.md)(메모장), [`post-unpublish.md`](./post-unpublish.md)(글 임시저장 되돌리기), [`editor-tablet-check.md`](./editor-tablet-check.md)(태블릿 폭 수동 확인 — 현재 분기 표 포함), [`handoff-cleanup.md`](./handoff-cleanup.md)(handoff 문서 정리)
 
 ---
 
 ## 1. 켜기 전에·배포 전에 (조건이 걸린 것)
 - [ ] ⚠️ [BE] **임베딩을 켜기 전에: 보관한 글을 비슷한 글 후보에서 제외** — `embedding-candidates.ts`의 `publicCandidatesWhere`·`readableCandidatesWhere`·`ownCandidatesWhere`와 `findSimilar`가 후보 글을 다시 읽는 조회에 `archivedAt: null`을 넣는다. 지금은 운영에서 임베딩이 꺼져 있어(`EMBEDDINGS_ENABLED=false`) 보류했지만 **켜기 전에 안 하면 보관한 글이 남에게 추천될 수 있다.** 벡터는 지우지 않고 후보에서만 뺀다. 보관·해제 때 벡터를 다시 만들지 않는 정책도 이때 확인한다. (이미 한 것: `findSimilar`의 원본 글 검사와 `public-ids` 목록 제외) (출처: 글 보관함 `docs/adr/0007-archive-posts.md` 10절, PR #13·`inote-server` #7)
-- [ ] ⚠️ [AI] **채팅 API 인증** — `inote-ai`는 FE가 보낸 `user_id`를 그대로 신뢰한다. 채팅 삭제·이름 수정·연결 변경 API가 생겨서 `user_id`를 위조하면 남의 채팅을 지울 수 있다. 세션 토큰 확인 같은 검증을 별건으로 도입한다. (출처: 채팅 업데이트 `docs/adr/0006-chat-update.md`)
+- [ ] ⚠️ [AI] **채팅 API 인증** — `inote-ai`는 FE가 보낸 `user_id`를 그대로 신뢰한다. 채팅 삭제·이름 수정·연결 변경 API가 생겨서 `user_id`를 위조하면 남의 채팅을 지울 수 있다. 세션 토큰 확인 같은 검증을 별건으로 도입한다. 공개 글 API에 `userId`가 노출되는 점과 합치면 다른 사람의 대화 목록·이력을 읽을 수 있을 가능성이 크다. 후보: BE가 짧은 수명 토큰을 발급 / AI가 Better Auth 세션을 직접 검증. (출처: 채팅 업데이트 `docs/adr/0006-chat-update.md`)
 - [ ] ⚠️ [FE] **LLM 답변을 에디터에 넣을 때 sanitize** — 지금은 Tiptap 스키마를 거치는 것만 믿는다. 글 상세(`PostArticle`)는 `dangerouslySetInnerHTML`로 sanitize 없이 출력하므로, LLM 출력이 HTML로 저장되는 경로가 생긴 만큼 별도 sanitize가 필요한지 검토한다. (출처: 채팅 업데이트)
 - [ ] [BE] **Render 환경변수 `DATABASE_URL` 끝에 `?connection_limit=3` 적용** — PrismaClient가 2개라 BE 하나가 최대 6개 → 운영 6 + 로컬 4 = 10 ≤ 15(Supabase 세션 풀러 슬롯). 환경변수를 바꾸면 서비스가 재시작된다. 적용 뒤 Supabase SQL Editor에서 `select usename, state, count(*) from pg_stat_activity group by 1, 2`로 운영 BE의 연결 수가 줄었는지 센다(로컬을 껐을 때 9개였음, Render의 코어 수가 다르니 다시 센다). 풀이 모자라 요청이 줄 서는 일(`P2024`)이 없는지 보고 값을 조정한다. 로컬 `.env`에는 `connection_limit=2`를 이미 적용했다. (출처: DB 연결 분석 2026-10-27, 사이트 글 "고아 파일이 생겼다"의 `EMAXCONNSESSION` 절)
 
@@ -50,6 +50,7 @@
 
 ## 3. 임베딩·검색 [BE][AI]
 - [ ] [AI] **KURE 모델을 도커 이미지에 포함(굽기)** — 지금 `inote-embedder/Dockerfile`은 모델을 이미지에 넣지 않고 시작할 때 `HF_HOME=/models`로 내려받는다(로컬 측정: 새로 받는 첫 시작 약 2분, 모델이 있을 때 재시작 약 15초). `inote-ai`의 임베딩 호출 상한이 40초라 그동안 들어온 임베딩은 빠진다. 디스크가 초기화되는 호스트(Hugging Face Spaces 등)에서는 필요하고, 디스크가 유지되는 VM(Oracle 계획)이면 우선순위가 낮을 것으로 **추측**한다(배포 후 확인). 이미지 크기 한도는 확인 못 했다. 호스트가 정해진 뒤에 결정한다. 배경: 운영 호스팅 후보는 Oracle Cloud Always Free이고 배포는 아직 시작하지 않았으며 지금은 임베딩을 로컬 전용으로 돌린다(운영은 작업 큐에 남기고 로컬 워커가 처리). 비교는 `docs/kure/PLAN.md` 8절. (출처: KURE 호스팅 2026-11-03)
+- [ ] [BE] **KURE 후속 BE 작업** — A7 평가용 후보 쌍 목록 스크립트(공개 글만), FE(B4)가 시작되면 계약 변경 요청 대응, C 단계(카테고리 제안·유사 글 알림)는 UX 승인 후. (출처: `inote-server` HANDOFF 2026-10-29, `docs/kure/PLAN.md`)
 - [ ] [BE] **`totalPages` 계산 공통화** — `Math.max(1, Math.ceil(total / pageSize))`가 `admin-users.service.ts`와 `admin-embeddings.service.ts`에 있다. **세 번째 목록 API가 생기면 그 자리에서 공통 헬퍼로 뽑는다**(프로젝트 규칙).
 - [ ] [BE] **`AdminEmbeddingsService.list` 분해** — 한 함수가 조회·AI 호출·판정·행 조립·정렬·필터·페이지·응답 조립을 한다(약 60줄). 행 조립(`NO_EMBEDDING` 폴백 포함)과 `summarize`를 순수 함수로 빼면 Prisma·AI mock 없이 테스트할 수 있다. 다음에 이 파일을 크게 고칠 때 같이 판단한다.
 - [ ] [BE] **spec 3개의 `beforeEach/afterEach` 공통화** — `inote-ai-embeddings.spec.ts`·`similar-posts.spec.ts`의 `it.todo`가 채워지면 같은 fetch spy·env 복원이 spec 3개에 생긴다. 그때 공통 헬퍼로 모은다(세 번째 반복).
@@ -99,6 +100,9 @@
 - [ ] JS 미디어쿼리 문자열이 Tailwind 분기점과 따로 적혀 있다(`MemoPad.tsx`의 `(min-width: 1024px)`, `PostEditor.tsx`의 `(max-width: 639px)`). 세 번째가 생기면 `shared/lib`에 모은다.
 
 ## 6. 채팅·AI [FE][AI]
+**채팅 업데이트 1차 (결정·계약 승인됨, 구현 미착수 — 2026-11-13 코드로 확인)**
+- [ ] [AI][BE][FE] **채팅 업데이트 1차** — 세션 구조 개편(채팅을 글과 독립된 개체로, 글 화면에서 가장 최근 채팅을 열고 자동 연결), LLM이 글 읽기(본문 전송), "글에 넣기", 채팅 이름(AI가 1회 생성 후 수정)·삭제, 연결 변경. 구현 순서는 `inote-ai` → `inote-server` → FE. 결정·계약은 `docs/adr/0006-chat-update.md`, 레포별 인수인계·프롬프트와 11개 체크리스트는 `docs/handoff/chat-update/README.md`. 확인한 근거: FE에 "글에 넣기"·연결 UI 코드가 없고, `inote-ai`에 이름 수정 API·연결 컬럼·제목 생성이 없다. 시작할 때 `/start`로 작업 지시서를 만들고 `chat-update/` 문서를 지시서로 흡수한다. (세션별 동시 진행(PR #21)은 이 작업의 상태 구조 변경 일부를 FE 훅 범위에서 앞당긴 것이다.)
+
 **채팅 업데이트 후속** (출처: 채팅 업데이트 기획 2026-10-23 — 1차 범위에서 일부러 뺀 것, `docs/adr/0006-chat-update.md`)
 - [ ] **채팅 이미지 첨부 + AI 이미지 분석** — 비전 모델 가용성·품질(특히 한국어)이 가장 큰 변수라 마지막으로 미룬다. 착수 전 Groq 문서로 비전 모델부터 확인한다. 이미지는 `inote-server`의 `/uploads/image`(R2)로 올리고 URL만 AI에 전달(Vercel 요청 본문 4.5MB 제한), 메시지에 URL을 jsonb로 저장해 다시 열어도 보이게 한다. 이미지 첨부 요청에서만 비전 모델을 쓰고 평소엔 기존 모델을 유지한다. 한도(안): 메시지당 3장·장당 5MB, 모델 한도 확인 후 확정.
 - [ ] **채팅에서 "넣어줘"라고 말하면 AI가 글에 넣기** — 1차는 답변마다 "글에 넣기" 버튼(글 맨 아래 추가). 말로 하는 방식은 `inote-ai`가 에디터 조작 명령(도구 호출)을 돌려주는 구조가 필요하고 1차의 삽입 동작을 호출하는 형태로 얹는다. (`inote-ai` 이전 계획의 "7. 에디터에 삽입 tool-call"과 같은 일)
@@ -134,7 +138,6 @@
 - [ ] [BE][FE] **한 그룹의 메모는 최대 10장이라 응답에 전부 담는다** — 상한이 늘면 그룹 안 페이지네이션이 필요하다.
 
 ## 8. 문서·정리
-- [ ] **`docs/handoff/HANDOFF.md` 현행화** — 10/7 기준 본문이 낡았다(헤더가 스스로 "낡았을 수 있다"고 적는다). 운영(Vercel·Render) 반영 여부, "다음 할 일" 각 항목의 현재 상태를 확인한다. `inote-server/docs/handoff/HANDOFF.md`도 날짜·카테고리 이름 수정·`Post.categoryId`·이미지 업로드·글 삭제 이미지 정리가 빠져 있다. 진행 중 문서는 끝나면 지우는 원칙(ADR 0008)에 맞춰 최소화하는 것이 다음 정리 단계다.
 - [ ] **`docs/kure/` 위치 정리** — `PLAN.md`(설계)·`HANDOFF.md`(인수인계)·`DOCKER-SETUP-GUIDE.md`(세팅)가 한 폴더에 섞여 있다. `adr/`·`handoff/`·`runbooks/`로 나눌 수 있지만 **`inote-server/CLAUDE.md`가 `inote/docs/kure/HANDOFF.md`·`PLAN.md` 경로를 가리키므로** 옮길 때 그 링크도 같이 고친다. `docs/kure/HANDOFF.md`의 "브랜치 `docs/kure-handoff`, main 병합 전"은 이미 PR #3으로 병합돼 낡았다.
 - [ ] [FE] **코드 안의 `inote-blog` 문자열** — `DesktopChatPanel.tsx`의 localStorage 키(`inote-blog:llm-panel-width` 등)와 `MandalartGrid.tsx` 화면 문구. 키를 바꾸면 저장된 패널 너비가 초기화된다.
 - [ ] **문서 안의 `src/...` 경로를 `apps/web/src/...`로 통일** (2026-09-10 모노레포 전환 후 남은 정리).
@@ -146,11 +149,44 @@
 - **에디터 체크리스트 드래그 순서 변경** — 사용자 결정으로 제외(별도 드래그 핸들 확장이 필요).
 - **채팅 답변 도중 새 대화 시 MQ(큐) 도입** — 2026-10-28 검토 후 도입하지 않기로 했다. (가) 다음 질문 대기는 브라우저 배열로 충분, (나) 이전 답변을 백그라운드에서 완성하려면 생성과 연결을 분리하는 큐·워커가 필요한데 `inote-ai`가 Vercel(서버리스)이라 상시 워커를 둘 수 없다. 대신 세션별 동시 진행(PR #21)으로 풀었다. 응답을 기다릴 필요가 없는 진짜 비동기 작업이 생길 때 다시 꺼낸다.
 
+## 10. 운영 확인·안정화·`inote-money` (HANDOFF에서 옮김, 2026-11-13)
+**운영 확인 (사람이 한다 — 2026-10-07·10-29 기준이라 이미 했을 수 있다. 확인되면 지운다)**
+- [ ] [BE] **카테고리 이동(#8) BE 운영 배포 여부** — BE PR #8은 병합, 운영 DB 마이그레이션은 적용됨. 배포는 **BE 먼저, FE 나중**.
+- [ ] [BE] **Render `INOTE_AI_URL`이 Vercel AI 주소인지 확인** — 옛 Render AI 주소면 글 삭제·탈퇴 시 AI 세션 삭제가 조용히 실패한다.
+- [ ] [AI] **Vercel(AI)에 `KAKAO_REST_API_KEY`가 있는지 확인** — 없으면 책 검색이 조용히 실패한다.
+- [ ] **cron-job.org "Inote Server" 작업 켜기**(10분 간격, `/api/v1/health`) — Render 월 750시간 한도가 거의 차 있으니 이 작업 1개만 둔다.
+- [ ] [AI] **운영 FE에서 AI 채팅 확인** — 기존 대화 이력(세션 5건)이 보이는지, 새 메시지가 저장되는지, Vercel AI 로그에 에러가 없는지.
+- [ ] [FE] **로그인한 운영 화면에서 확인**(10/7 작업은 비로그인으로만 확인함): ① 글 상세 `학습 > AI`가 나의 글 목록 링크인지(남의 글·비로그인은 글자만) ② 사이드바 폴더 줄 오른쪽 external-link 버튼 ③ 목록 카드 경로 배지 ④ 카테고리 관리 '글 이동' 탭이 글로 채워지고 드래그로 옮겨지는지(드래그는 자동 테스트 불가) ⑤ 글 이동 탭의 폴더 추가(최상위·하위, 중복 이름 안내, 새 폴더로 끌어놓기) ⑥ 목록 카드에서 작성자 클릭 → `/users/[id]`(제목만 클릭되는지, 그 페이지의 검색·페이지네이션) ⑦ 작성자 페이지의 카테고리 목록(공개 글 수, 필터, 비공개만 있는 카테고리는 안 보임) ⑧ 남의 글 상세에서 왼쪽이 그 작성자의 카테고리로 바뀌는지, 내 글이면 내 카테고리인지, 작성자 이름 클릭(남 → `/users/[id]`, 내 글 → `/my-posts`) ⑨ 사이드바 이동 아이콘이 호버할 때만 나타나는지 ⑩ 표 열 너비(`/write`에서 열 경계 끌기, 최소 너비 → 저장 후 상세·재수정에서 유지, 크게 넓히면 상세 카드 안에서 가로 스크롤) ⑪ 콜아웃이 든 글의 수정 화면(`/write/[id]`)에서 콘솔·오버레이에 flushSync 오류가 없는지. 그리고 `/write`의 **표 편집 툴바**(표 삽입, 행·열 추가/삭제, 드래그로 여러 칸 선택 → 병합/분할, 표 삭제, 저장 후 병합 유지, `/reading/write`도 같은 에디터).
+
+**안정화 후 정리** (문제가 없는 것을 며칠 확인한 뒤에)
+- [ ] [BE] BE 프로젝트의 `ai` 스키마(합치기 시도 사본) 삭제, Neon 두 DB 삭제(백업 `~/inote-backups/2026-10-02/` 보관 후), 쓰지 않는 Supabase 프로젝트 삭제.
+- [ ] Supabase 비밀번호 로테이션(BE 프로젝트는 한 번 노출된 적 있음). 바꾸면 Render·로컬 `.env`를 같이 갱신한다.
+- [ ] [AI] AI 프로젝트의 **1주 미사용 일시중지 방지** — cron-job으로 AI `/health/db`(내부 시크릿 헤더 필요)를 주기 호출.
+- [ ] [AI] `render.yaml`·`runtime.txt` 삭제(더 이상 쓰지 않음), README·CLAUDE.md의 DB 정보가 최신인지 확인.
+
+**보안·설계 (사람 승인 후 진행 — AI가 임의로 정하지 않는다)**
+- [ ] 운영 Swagger(`/api/docs`) 공개 범위, Cloudflare R2 설정(이미지 업로드), Render 750시간 한도 대응(낮 시간대만 핑 vs 유료). AI 요청자 검증은 1절 "채팅 API 인증".
+- [ ] [BE] **BE를 Vercel(NestJS zero-config)로 옮길지 결정** — 필요한 조정: 시작 시 migrate를 빌드 단계로, 업로드 4.5MB 제한, Prisma `binaryTargets`, 풀러.
+
+**`inote-money`** (같은 BE를 쓰는 자산관리 FE, `https://inote-money.vercel.app`) — 변경이 필요하다고 했고 **구체 범위는 사용자가 정한다**
+- [ ] 인프라가 바뀌었으니 점검한다: 배포 환경의 `NEXT_PUBLIC_API_URL`이 현재 BE(Render)인지, 로그인·가계부·주식·미니게임이 새 DB(Supabase)에서 정상인지. `CLAUDE.md`의 기술 스택·배포 전략 표가 낡았다(DB를 Neon, Render를 "영구 무료"로 적음 → Supabase, 월 750시간 한도로 정정, "현재 단계"·"미결정 항목"도 갱신). BE의 `trustedOrigins`에는 이미 `https://inote-money.vercel.app`이 있다.
+- [ ] 모바일 앱(`apps/app`, RN+WebView)은 별도 협업 모드(사람이 코딩, Claude는 가이드)이고 `inote-money/CLAUDE.md`의 "모바일 앱" 절이 기준이다. 로그인 쿠키 교환 방식은 BE 쿠키 정책(`SameSite=None; Secure`, `NODE_ENV=production`)과 맞물린다.
+
+**카테고리 경로 작업의 남은 것 (2026-10-07)**
+- [ ] [BE] **BE 테스트를 사용자가 직접 작성** — 목록은 `inote-server/src/blog/blog.service.spec.ts`의 `TODO(테스트)` 주석: 상세 `categoryPath`, 목록 `categoryPath`(`withCategoryPaths`), category 필터의 하위 포함(`categoryFilter`, 검색과 합칠 때 `AND`), 내 글 목록(`findMyOutline`), 작성자별 공개 글 목록(`findAll`의 `userId`+`author`+`categories`·`categoryCounts`), 다른 사람의 글 상세 트리(`findUserOutline`). 전체 `it.todo`는 124개이고 각 spec 맨 위 주석에 준비·약속·함정이 있다.
+- [ ] [FE] **내 글을 열었을 때 왼쪽 목록**은 아직 '내 카테고리 + 전체 공개 글(+내 비공개 글)'이다. 남의 글처럼 '내 글만'으로 정리할지는 정하지 않았다(요청 없음).
+- [ ] [FE][BE] **미결정: 사이드바 개수** — 내 글 사이드바·카테고리 관리의 개수는 직속 글만 센다(작성자 페이지·남의 글 상세는 하위 합계라 서로 다르다). 상위 카테고리를 하위 합계로 보여줄지(FE에서 합산, BE 변경 없음) 사용자가 정한다.
+- [ ] [FE] 글 상세 사이드바(카테고리·목차) 접기는 **독서 기록 상세에는 아직 없다**. 카테고리 이동에서 이름 중복을 미리 검사해 드롭을 막는 것도 후속이다(지금은 BE가 409를 돌려주고 FE가 처리한다).
+
+**기타**
+- [ ] Notion `Inote-server` 하위 페이지 5개(DB 문서, API 문서, devlog, 학습 노트, planning)가 낡았다(2026-10-02 기준) — 정리하거나 버린다. 포트폴리오 사이트(`portfolio-site`)는 **사용자가 직접 수정 중이라 건드리지 않는다.**
+
 ## 정리하며 지운 것 (2026-11-13) — 추적용
 합친 파일: `inote/docs/todo/`의 `archive-posts`·`chat-update`·`editor-image-upload`·`editor-scroll`·`editor-shortcut-tooltip`·`editor-task-list`·`kure-hosting`·`write-autosave-redundant-patch`·`write-editor-refactor-followups`·`readme-update`·`docs-cleanup`·`feature-backlog-and-direction`·`chat-concurrent-streams-qa`, `inote-server/docs/todo/`의 6개 전부, `inote-ai/CLAUDE.md`의 "다음 할 일" 미완료 항목. 이 정리 커밋 **직전**에 원문이 있다(`git log -- docs/todo/<파일>`로 찾는다).
 
 일부러 옮기지 않은 항목과 이유:
 - 글 보관함 "후보": 휴지통, 자동 보관 규칙, 보관함 개수 뱃지, 일반 검색에 보관 글 포함 옵션, 일괄 처리 상한(100개) 조정 — 착수 조건이 없는 아이디어. 필요해지면 다시 쓴다.
 - 사소한 P2 리팩토링: 필터 값 한 곳 정의, spec 주석의 "구현 예정" 표현, `shortcut.ts` 상수 정리, `FloatingPanel`·`MemoBottomSheet` 헤더 마크업 중복, `MEMO_AUTOSAVE_MS` export 위치, 메모 캐시 prefix 상수, `GENERAL_TARGET_ID`가 빈 문자열인 점(DTO가 `@IsNotEmpty`로 막아 문제 없음).
-- 이미 끝났거나 무효가 된 것: FE `.env.local`이 운영 BE를 가리키는 점의 README 안내(README에 반영됨), cron-job·AI 서버 위치 확인(2026-10-29 확인 완료), 보관함 "배포 순서 지키기"(배포 완료), `inote-ai` README의 cron-job.org 등록 TODO(Render → Vercel 이전으로 무효), 체크리스트 "진행률 표시"·"독서 상세 화면 테스트", 채팅 업데이트 1차(PR로 병합됨).
+- 이미 끝났거나 무효가 된 것: FE `.env.local`이 운영 BE를 가리키는 점의 README 안내(README에 반영됨), cron-job·AI 서버 위치 확인(2026-10-29 확인 완료), 보관함 "배포 순서 지키기"(배포 완료), `inote-ai` README의 cron-job.org 등록 TODO(Render → Vercel 이전으로 무효), 체크리스트 "진행률 표시"·"독서 상세 화면 테스트".
+- HANDOFF에서 옮기지 않은 것: 통합 테스트 대상 DB 정하기(개발 DB `scripts/dev-db.sh`가 생겨 해소), VS Code의 `categories.rename.spec.ts` 빨간 밑줄(CLI 오류 0개), 개발 서버 첫 화면이 느리다는 메모, `PostMover`/`buildOutline` 폴더 트리 코드 일부 중복, 표 편집 툴바가 바로 위 문단을 가린다는 메모.
 - 방향 문서(`feature-backlog-and-direction`)의 결정 부분은 `docs/adr/0008-direction-and-working-model.md`로 옮겼다.
