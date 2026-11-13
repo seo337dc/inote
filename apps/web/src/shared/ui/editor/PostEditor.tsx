@@ -28,6 +28,9 @@ import { SelectionBubbleMenu } from "./SelectionBubbleMenu";
 import { ToolbarMoreMenu } from "./ToolbarMoreMenu";
 import { buildMoreItems, type ToolbarMoreState } from "./toolbar-items";
 import { toolbarButtonClass } from "./toolbar-button-style";
+import { TOOLBAR_SHORTCUTS } from "./toolbar-shortcuts";
+import { ShortcutTooltip } from "./ShortcutTooltip";
+import { TooltipProvider } from "@/shared/ui/tooltip";
 import { Callout } from "./CalloutView";
 import { TABLE_OPTIONS } from "./table-commands";
 import { ResizableImage } from "./image-extension";
@@ -83,6 +86,7 @@ function ToolbarButton({
   active,
   disabled,
   label,
+  hint,
   children,
 }: {
   onClick: () => void;
@@ -90,13 +94,15 @@ function ToolbarButton({
   disabled?: boolean;
   // 아이콘만 있는 버튼의 접근 가능한 이름·툴팁 (글자 버튼은 생략)
   label?: string;
+  // 마우스를 올리면 이름과 단축키를 보여주는 말풍선. 있으면 브라우저 기본 툴팁(title)은 쓰지 않아 두 번 뜨지 않는다
+  hint?: { label: string; shortcut: string };
   children: React.ReactNode;
 }) {
-  return (
+  const button = (
     <button
       type="button"
       aria-label={label}
-      title={label}
+      title={hint ? undefined : label}
       onClick={onClick}
       disabled={disabled}
       aria-pressed={Boolean(active)}
@@ -107,13 +113,27 @@ function ToolbarButton({
       {children}
     </button>
   );
+  return hint ? (
+    <ShortcutTooltip label={hint.label} shortcut={hint.shortcut}>
+      {button}
+    </ShortcutTooltip>
+  ) : (
+    button
+  );
 }
 
 // 툴바 뒤쪽 아이콘 버튼 9개. 넓은 화면은 툴바에 펼쳐 보이고(ToolbarIconButtons), 좁은 화면은 `…` 팝오버에 담긴다(ToolbarMore).
 // 항목 정의는 buildMoreItems 한 곳이고, 링크 팝업을 여는 함수(ref를 쓴다)를 렌더 중에 함수 인자로 넘기지 않도록 컴포넌트 props로 받는다.
 function ToolbarIconButtons({ editor, state }: { editor: Editor; state: ToolbarMoreState }) {
-  return buildMoreItems(editor, state).map(({ key, label, icon: Icon, onClick, active, disabled }) => (
-    <ToolbarButton key={key} label={label} onClick={onClick} active={active} disabled={disabled}>
+  return buildMoreItems(editor, state).map(({ key, label, icon: Icon, onClick, active, disabled, shortcut }) => (
+    <ToolbarButton
+      key={key}
+      label={label}
+      hint={shortcut ? { label, shortcut } : undefined}
+      onClick={onClick}
+      active={active}
+      disabled={disabled}
+    >
       <Icon className="size-4" aria-hidden />
     </ToolbarButton>
   ));
@@ -306,6 +326,8 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
       <div ref={wrapperRef} className="relative rounded border border-zinc-200">
         {/* 글이 길어져 스크롤해도 서식 버튼이 항상 보이도록 위에 고정한다 (스크롤 컨테이너는 main).
             좁은 화면에서는 여러 줄로 줄바꿈하면 고정 영역이 커지므로 한 줄 가로 스크롤로 둔다 */}
+        {/* 단축키 말풍선은 마우스를 올리고 0.4초 뒤에 뜬다 (Provider는 DOM을 만들지 않는다) */}
+        <TooltipProvider delay={400}>
         <div className="sticky top-0 z-20 flex rounded-t border-b border-zinc-200 bg-white">
           <div className="hide-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
           <ToolbarButton
@@ -335,18 +357,21 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBold().run()}
             active={active.bold}
+            hint={{ label: "굵게", shortcut: TOOLBAR_SHORTCUTS.bold.key }}
           >
             B
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
             active={active.italic}
+            hint={{ label: "기울임", shortcut: TOOLBAR_SHORTCUTS.italic.key }}
           >
             I
           </ToolbarButton>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleStrike().run()}
             active={active.strike}
+            hint={{ label: "취소선", shortcut: TOOLBAR_SHORTCUTS.strike.key }}
           >
             취소선
           </ToolbarButton>
@@ -357,6 +382,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
           </div>
           {isNarrow && <ToolbarMore editor={editor} state={moreState} />}
         </div>
+        </TooltipProvider>
         <EditorContent editor={editor} className="px-4 py-3" />
         <SelectionBubbleMenu editor={editor} onLink={openLinkPopup} />
         <TableToolbar editor={editor} wrapperRef={wrapperRef} />

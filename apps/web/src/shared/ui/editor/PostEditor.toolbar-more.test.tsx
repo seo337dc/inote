@@ -44,9 +44,12 @@ async function setup(initial = "<p>본문</p>") {
 describe("툴바 뒤쪽 버튼 (아이콘)", () => {
   it("넓은 화면: 9개가 모두 아이콘 버튼(이름은 aria-label)으로 툴바에 펼쳐지고 `…`는 없다", async () => {
     await setup();
+    // 단축키가 있는 버튼은 단축키 말풍선(ShortcutTooltip)이 대신하므로 브라우저 기본 툴팁(title)이 없다 — 두 번 뜨지 않게
+    const WITH_SHORTCUT = ["목록", "체크박스", "인용", "인라인 코드", "코드 블록"];
     for (const name of MORE_LABELS) {
       const button = screen.getByRole("button", { name });
-      expect(button).toHaveAttribute("title", name);
+      if (WITH_SHORTCUT.includes(name)) expect(button).not.toHaveAttribute("title");
+      else expect(button).toHaveAttribute("title", name);
       expect(button.querySelector("svg")).not.toBeNull();
       expect(button.textContent).toBe("");
     }
