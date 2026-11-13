@@ -8,13 +8,9 @@ import { makePost } from "@/test/fixtures/posts";
 import { createTestQueryClient, renderWithQueryClient } from "@/test/render";
 
 let mockPathname = "/";
-let mockSearch = "";
 let mockSession: { data: { user: { id: string } } | null; isPending: boolean } = { data: { user: { id: "u1" } }, isPending: false };
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => mockPathname,
-  useSearchParams: () => new URLSearchParams(mockSearch),
-}));
+vi.mock("next/navigation", () => ({ usePathname: () => mockPathname }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: () => mockSession }));
 
 // 메모장 본체는 따로 테스트한다 — 여기서는 어떤 대상으로 몇 번 마운트되는지만 본다
@@ -22,12 +18,11 @@ const mounts: string[] = [];
 const unmounts: string[] = [];
 vi.mock("@/entities/memo", async () => {
   const actual = await vi.importActual<typeof import("@/entities/memo")>("@/entities/memo");
-  const { useEffect, useState } = await import("react");
+  const { useEffect } = await import("react");
   return {
     ...actual,
-    MemoPad: ({ target, openMemoId }: { target: { type: string; id?: string }; openMemoId?: string }) => {
-      // 실제 MemoPad처럼 openMemoId는 마운트 때 한 번만 읽는다 (이후 prop이 비워져도 열린 상태는 그대로)
-      const [label] = useState(() => `${target.type}:${target.id ?? ""}${openMemoId ? `@${openMemoId}` : ""}`);
+    MemoPad: ({ target }: { target: { type: string; id?: string } }) => {
+      const label = `${target.type}:${target.id ?? ""}`;
       useEffect(() => {
         mounts.push(label);
         return () => {
@@ -65,7 +60,6 @@ describe("GlobalMemoPad", () => {
   beforeEach(() => {
     mockSession = { data: { user: { id: "u1" } }, isPending: false };
     mockPathname = "/";
-    mockSearch = "";
     mounts.length = 0;
     unmounts.length = 0;
   });
@@ -192,71 +186,6 @@ describe("GlobalMemoPad", () => {
 
     expect(mounts).toEqual(["general:"]);
     expect(unmounts).toEqual([]);
-  });
-
-  describe("?memo=ID (메모 관리 화면의 일반 메모 카드)", () => {
-    it("일반 메모 화면에서는 그 메모를 열도록 메모장에 id를 넘긴다", () => {
-      mockSearch = "memo=g1";
-      renderWithQueryClient(<GlobalMemoPad />);
-
-      expect(pad()).toHaveTextContent("general:@g1");
-    });
-
-    it("글·독서 화면에서는 무시한다 (그 대상의 메모가 아니다)", () => {
-      mockSearch = "memo=g1";
-      setPath("/reading/r9");
-      renderWithQueryClient(<GlobalMemoPad />);
-
-      expect(pad()).toHaveTextContent("reading:r9");
-      expect(pad()).not.toHaveTextContent("@");
-    });
-
-    it("이미 떠 있던 메모장도 나중에 ?memo=ID로 이동해 오면(클라이언트 이동) 그 메모를 열도록 새로 마운트한다", () => {
-      setPath("/my-posts");
-      const view = renderWithRerender();
-      expect(pad()).toHaveTextContent("general:");
-      expect(pad()).not.toHaveTextContent("@");
-
-      setPath("/");
-      mockSearch = "memo=g1";
-      view.rerender();
-
-      expect(pad()).toHaveTextContent("general:@g1");
-    });
-
-    it("같은 카드를 다시 눌러 또 들어와도 다시 연다 (주소에서 memo가 지워진 뒤라면)", () => {
-      mockSearch = "memo=g1";
-      const view = renderWithRerender();
-      mockSearch = "";
-      view.rerender();
-      mockSearch = "memo=g1";
-      view.rerender();
-
-      expect(mounts.filter((m) => m === "general:@g1")).toHaveLength(2);
-    });
-
-    it("열어 준 뒤 다른 화면으로 갔다 돌아와도 저절로 다시 열리지 않는다", () => {
-      mockSearch = "memo=g1";
-      const view = renderWithRerender();
-      mockSearch = "";
-      view.rerender();
-
-      setPath("/reading/r9");
-      view.rerender();
-      setPath("/");
-      view.rerender();
-
-      expect(pad()).toHaveTextContent("general:");
-      expect(pad()).not.toHaveTextContent("@");
-    });
-
-    it("한 번 열면 주소에서 memo를 지운다 (새로고침해도 다시 열리지 않게)", async () => {
-      window.history.replaceState(null, "", "/?memo=g1&keep=1");
-      mockSearch = "memo=g1&keep=1";
-      renderWithQueryClient(<GlobalMemoPad />);
-
-      await waitFor(() => expect(window.location.search).toBe("?keep=1"));
-    });
   });
 
   it("버튼은 데스크톱에서만 보인다 (좁은 화면은 도크의 + 메뉴로 연다)", () => {

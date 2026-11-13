@@ -39,6 +39,12 @@ describe("slot-actions", () => {
     expect(result.current).toHaveLength(0);
   });
 
+  it("useRegisterSlotAction에 null을 주면 등록하지 않는다 (조건부로 건너뛸 때)", () => {
+    const list = renderHook(() => useSlotActions());
+    renderHook(() => useRegisterSlotAction(null));
+    expect(list.result.current).toHaveLength(0);
+  });
+
   it("useRegisterSlotAction은 마운트 중에만 등록한다", () => {
     const action = make("memo");
     const list = renderHook(() => useSlotActions());

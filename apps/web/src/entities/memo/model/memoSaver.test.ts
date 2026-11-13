@@ -97,3 +97,42 @@ describe("MemoSaver — 제목·내용 (메모 한 장)", () => {
     expect(statuses.at(-1)).toBe("saved");
   });
 });
+
+describe("MemoSaver — flush가 저장 완료를 알려준다", () => {
+  it("flush()가 돌려준 프라미스는 서버 저장이 끝난 뒤에 풀린다", async () => {
+    const { saver, writes } = setup(memo());
+    saver.update({ content: "닫기 직전 입력" });
+
+    await saver.flush();
+
+    expect(writes).toEqual([{ method: "PATCH", id: "m1", body: { content: "닫기 직전 입력" } }]);
+  });
+
+  it("저장할 것이 없으면 바로 풀린다", async () => {
+    const { saver, writes } = setup(memo());
+
+    await saver.flush();
+
+    expect(writes).toHaveLength(0);
+  });
+
+  it("저장이 진행 중일 때 flush하면 그 저장(과 이어지는 최신 값 저장)이 끝난 뒤에 풀린다", async () => {
+    const { saver, writes } = setup(memo());
+    saver.update({ content: "1" });
+    const first = saver.flush();
+    saver.update({ content: "12" });
+    await saver.flush();
+    await first;
+
+    expect(writes.at(-1)).toEqual({ method: "PATCH", id: "m1", body: { content: "12" } });
+  });
+
+  it("저장이 실패해도 프라미스는 풀린다 (닫기가 막히지 않는다)", async () => {
+    const { saver, statuses } = setup(memo());
+    server.use(http.patch(`${URL}/:id`, () => HttpResponse.json({ message: "boom" }, { status: 500 })));
+    saver.update({ content: "실패할 입력" });
+
+    await expect(saver.flush()).resolves.toBeUndefined();
+    expect(statuses.at(-1)).toBe("error");
+  });
+});
