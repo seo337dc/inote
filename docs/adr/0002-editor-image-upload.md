@@ -2,7 +2,7 @@
 
 > 2026-10-21 작성. **계약(API)·키 구조는 사용자 승인 전 초안**이다. 승인되기 전에는 코드에 손대지 않는다.
 > 진행 순서는 `CLAUDE.md`의 원칙대로 **계약 → FE → BE(테스트는 사용자가 작성) → 통합**.
-> 이번에 하지 않고 남긴 것은 [`docs/todo/editor-image-upload.md`](../todo/editor-image-upload.md)에 기록한다.
+> 이번에 하지 않고 남긴 것은 [`docs/todo/backlog.md`](../todo/backlog.md)에 기록한다.
 > 배경: R2 고아 파일 설계 https://inote-main.vercel.app/posts/cmwelwehj000pgj39b4j5o7vy (tmp 폴더 → 저장 때 승격, 참조 기반 정리)
 
 ## 1. 요구사항 (사용자)
@@ -70,7 +70,7 @@
 2. **FE**: 이미지 노드·리사이즈·삽입 경로 4가지·업로드 상태(MSW로 업로드 API를 흉내). 단위 테스트(비율 계산, 업로드 성공·실패 처리).
 3. **BE**: `POST /uploads/post-image`, `R2Service`에 복사·삭제 추가, 저장 시 승격. **테스트는 사용자가 작성**.
 4. **통합**: 개발 환경에서 올리기 → 임시저장 → 저장(승격) → 다시 열어 크기가 유지되는지.
-5. 남긴 것은 `docs/todo/editor-image-upload.md`에서 다음 작업으로.
+5. 남긴 것은 `docs/todo/backlog.md`에서 다음 작업으로.
 
 ## 8. 열린 질문
 - `postId`를 영구 키에 넣을지(제안: 넣음) — 승인 필요.

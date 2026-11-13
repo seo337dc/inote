@@ -1,7 +1,7 @@
 # LLM 채팅 업데이트 — 결정과 API 계약 (2026-10-23)
 
 > **상태: 결정 합의됨, API 계약 승인됨 (2026-10-23, 구현 미착수).** 3절의 세 가지(`DELETE /conversations/{id}` 경로, `PATCH /sessions/{id}` 하나로 이름·연결 처리, 제목 생성 별도 `POST`)를 포함해 사용자가 승인했다.
-> 후속으로 미룬 것은 [`docs/todo/chat-update.md`](../todo/chat-update.md). 레포별 인수인계·프롬프트는 [`docs/handoff/chat-update/`](../handoff/chat-update/README.md).
+> 후속으로 미룬 것은 [`docs/todo/backlog.md`](../todo/backlog.md). 레포별 인수인계·프롬프트는 [`docs/handoff/chat-update/`](../handoff/chat-update/README.md).
 
 ## 1. 확정된 결정
 

@@ -535,7 +535,7 @@ UI 의사결정 위주로 기록.
 
 ## 2026-10-21 — 글쓰기 에디터 이미지 업로드 (커서 위치 삽입 + 노션식 크기 조절)
 
-설계·계약은 `docs/adr/0002-editor-image-upload.md`, 남긴 것은 `docs/todo/editor-image-upload.md`. 여기는 FE에서 한 일과 이유.
+설계·계약은 `docs/adr/0002-editor-image-upload.md`, 남긴 것은 `docs/todo/backlog.md`. 여기는 FE에서 한 일과 이유.
 
 ### 작업 내용
 
@@ -577,7 +577,7 @@ UI 의사결정 위주로 기록.
 
 ## 2026-10-27 — 글 보관함(아카이브) FE
 
-설계·계약은 `docs/adr/0007-archive-posts.md`, 남긴 것은 `docs/todo/archive-posts.md`. 순서는 계약 → FE → BE → 통합이라 FE는 MSW로 계약을 흉내 내서 먼저 만들고 테스트했고, 이후 BE(`inote-server` `DEV_LOG.md` 참고)를 만들어 로컬에서 통합 확인까지 했다.
+설계·계약은 `docs/adr/0007-archive-posts.md`, 남긴 것은 `docs/todo/backlog.md`. 순서는 계약 → FE → BE → 통합이라 FE는 MSW로 계약을 흉내 내서 먼저 만들고 테스트했고, 이후 BE(`inote-server` `DEV_LOG.md` 참고)를 만들어 로컬에서 통합 확인까지 했다.
 
 ### 작업 내용
 | # | 작업 | 상태 |
@@ -608,7 +608,7 @@ UI 의사결정 위주로 기록.
 
 ## 2026-10-27 — 에디터 체크리스트(할 일 목록) 1단계
 
-글쓰기 에디터에서 `[ ]`를 쳐도 체크박스가 되지 않아 추가했다. 노션처럼 **줄 맨 앞에서 `[] `·`[ ] `·`[x] `를 치거나 슬래시 메뉴(`/todo`·`/체크리스트`)로 만들고**, 체크하면 회색 + 취소선이 된다. BE 변경은 없다 — 본문은 HTML 그대로 저장되고 BE는 가공하지 않는다. 남긴 것은 `docs/todo/editor-task-list.md`.
+글쓰기 에디터에서 `[ ]`를 쳐도 체크박스가 되지 않아 추가했다. 노션처럼 **줄 맨 앞에서 `[] `·`[ ] `·`[x] `를 치거나 슬래시 메뉴(`/todo`·`/체크리스트`)로 만들고**, 체크하면 회색 + 취소선이 된다. BE 변경은 없다 — 본문은 HTML 그대로 저장되고 BE는 가공하지 않는다. 남긴 것은 `docs/todo/backlog.md`.
 
 ### 작업 내용
 | # | 작업 | 상태 |
@@ -685,7 +685,7 @@ UI 의사결정 위주로 기록.
 - 브라우저(headless Chromium, 1280×720)에서 **임시 페이지**로 확인했다(`main` 스크롤 + sticky 저장 바 구조를 흉내냄, 확인 후 삭제). 실제 `/write` 화면은 로그인이 필요해 확인하지 못했다.
   - 60줄 타이핑+엔터: 저장 바와 최소 84px, 가려진 횟수 0
   - 방향키로 위로 이동: 툴바와 최소 12px
-- **붙여넣기 직후는 정상이 아니다**: 붙여넣은 뒤 화면이 커서를 따라가지 않는다. 원래 코드와 수정 후 모두 같다(이번 수정과 무관). 합성 `ClipboardEvent`로 재현했으므로 실제 붙여넣기와 다를 수 있다. 후속은 `docs/todo/editor-scroll.md`.
+- **붙여넣기 직후는 정상이 아니다**: 붙여넣은 뒤 화면이 커서를 따라가지 않는다. 원래 코드와 수정 후 모두 같다(이번 수정과 무관). 합성 `ClipboardEvent`로 재현했으므로 실제 붙여넣기와 다를 수 있다. 후속은 `docs/todo/backlog.md`.
 
 ---
 
@@ -702,13 +702,13 @@ UI 의사결정 위주로 기록.
 | 4 | 대화 목록 각 행의 카테고리 글자 옆에 붉은 "답변 중" 점 (`answeringSessionIds`) | ✅ |
 
 ### 결정과 이유
-- **FE만 고침.** inote-ai는 서버리스(Vercel)라 큐·WebSocket·백그라운드 생성·새로고침 후 이어받기는 이번 범위가 아니다 (`docs/todo/feature-backlog-and-direction.md`에 보류 사유 기록).
+- **FE만 고침.** inote-ai는 서버리스(Vercel)라 큐·WebSocket·백그라운드 생성·새로고침 후 이어받기는 이번 범위가 아니다 (보류 사유는 `docs/todo/backlog.md` 9절).
 - **세션 선택 로직은 건드리지 않음.** ADR 0006(대화 update)이 이 로직을 바꿀 예정이라서.
 - **표시는 목록 행에만.** 사용자가 스크린샷으로 위치를 정했다. 기록 버튼에는 달지 않았다.
 - 독서 채팅은 세션이 없어 빈 `answeringSessionIds`를 돌려준다(두 훅의 반환 타입을 맞추기 위함).
 
 ### 검증
 - 훅 테스트 5개(`useChatMessages.test.ts`), 패널 테스트 3개(`ChatSessionPanel.test.tsx`). vitest 92개 파일 / 729개 통과, `eslint`·`tsc`·`next build` 통과.
-- 로컬 QA(가짜 AI 서버 사용): 두 스트림이 모두 끝까지 오고 저장 100/100, 클라이언트 끊김 없음. 항목은 `docs/todo/chat-concurrent-streams-qa.md`.
+- 로컬 QA(가짜 AI 서버 사용): 두 스트림이 모두 끝까지 오고 저장 100/100, 클라이언트 끊김 없음. QA 결과는 `docs/portfolio/chat-concurrent-streams.md` 6절.
 - **실제 AI 서버로는 확인하지 못했다.** Groq 청크 모양과 서버 저장 시점은 한 번 확인이 필요하다.
 - 알려진 한계: 새로고침·탭 닫기 시 진행 중 답변 유실, 목록이 닫혀 있으면 점이 안 보임, `JSON.parse` 예외 처리 없음.
