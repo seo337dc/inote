@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
 import { makeGroupPage, makeMemo, makeMemoGroup, MEMO_GROUPS_URL, MEMOS_URL } from "@/test/fixtures/memo";
 import { ApiError } from "@/shared/lib/api";
-import { createMemo, getMemoGroups, getMemos } from "./memos";
+import { createMemo, deleteMemo, getMemoGroups, getMemos, updateMemo } from "./memos";
 
 // 계약: docs/todo/memo.md 3차 — general(일반) 메모는 targetId 없이 부른다
 describe("getMemos", () => {
@@ -156,5 +156,31 @@ describe("createMemo", () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect((error as ApiError).status).toBe(409);
+  });
+});
+
+// 서버 없이 확인하던 목 모드는 없앴다 — 예전 환경변수(Vercel 등)가 남아 있어도 가짜 데이터를 쓰지 않고 항상 서버로 요청한다
+describe("목 모드 제거 후", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("NEXT_PUBLIC_MEMOS_MOCK=true가 남아 있어도 모든 메모 API가 서버로 요청한다", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MEMOS_MOCK", "true");
+    vi.stubEnv("NEXT_PUBLIC_MEMOS_MOCK_EXTRA", "1000");
+    const calls: string[] = [];
+    server.use(
+      http.get(MEMO_GROUPS_URL, () => (calls.push("groups"), HttpResponse.json(makeGroupPage([])))),
+      http.get(MEMOS_URL, () => (calls.push("get"), HttpResponse.json([]))),
+      http.post(MEMOS_URL, () => (calls.push("post"), HttpResponse.json(makeMemo(), { status: 201 }))),
+      http.patch(`${MEMOS_URL}/:id`, () => (calls.push("patch"), HttpResponse.json(makeMemo()))),
+      http.delete(`${MEMOS_URL}/:id`, () => (calls.push("delete"), new HttpResponse(null, { status: 204 }))),
+    );
+
+    await getMemoGroups();
+    await getMemos({ type: "general" });
+    await createMemo({ type: "general" }, {});
+    await updateMemo("m1", { content: "x" });
+    await deleteMemo("m1");
+
+    expect(calls).toEqual(["groups", "get", "post", "patch", "delete"]);
   });
 });
