@@ -11,6 +11,8 @@ const Rnd = dynamic(() => import("react-rnd").then((m) => m.Rnd), { ssr: false }
 
 const MIN_SIZE = { width: 240, height: 160 };
 const DEFAULT_SIZE = { width: 320, height: 360 };
+// large: 메모 관리에서 카드를 눌러 열 때처럼 내용을 크게 볼 때 — 화면 가운데에 크게 연다
+const LARGE_SIZE = { width: 640, height: 520 };
 // 화면 오른쪽 아래의 고정 버튼(메모 버튼) 위로 패널이 뜨도록 아래쪽을 더 띄운다.
 const BOTTOM_INSET = 64;
 const HANDLE_CLASS = "floating-panel-handle";
@@ -28,6 +30,8 @@ type Props = {
   children: React.ReactNode;
   /** 열기 버튼 같은 기준 요소의 오른쪽·위쪽 끝(뷰포트 좌표). 주면 그 바로 위에 뜬다. */
   anchor?: { right: number; top: number };
+  /** true면 기본보다 큰 크기로 화면 가운데에 연다(anchor는 무시). */
+  large?: boolean;
 };
 
 /**
@@ -36,28 +40,28 @@ type Props = {
  * 위치·크기는 저장하지 않는다(열 때마다 기준 요소 위, 없으면 오른쪽 아래 기본값). 닫혀도 children의 상태는
  * 부모가 들고 있으므로 입력 내용은 유지된다.
  */
-export function FloatingPanel({ open, onClose, title, header, children, anchor }: Props) {
+export function FloatingPanel({ open, onClose, title, header, children, anchor, large }: Props) {
   if (!open) return null;
   return (
-    <OpenPanel onClose={onClose} title={title} header={header} anchor={anchor}>
+    <OpenPanel onClose={onClose} title={title} header={header} anchor={anchor} large={large}>
       {children}
     </OpenPanel>
   );
 }
 
-function OpenPanel({ onClose, title, header, children, anchor }: Omit<Props, "open">) {
+function OpenPanel({ onClose, title, header, children, anchor, large }: Omit<Props, "open">) {
   // 열린 상태에서만 마운트되므로(클라이언트 상호작용 뒤) window를 안전하게 읽을 수 있다.
   const [rect] = useState(() =>
     initialPanelRect(
       { width: window.innerWidth, height: window.innerHeight },
-      DEFAULT_SIZE,
-      { min: MIN_SIZE, bottomInset: BOTTOM_INSET, anchor },
+      large ? LARGE_SIZE : DEFAULT_SIZE,
+      { min: MIN_SIZE, bottomInset: BOTTOM_INSET, anchor, centered: large },
     ),
   );
 
   // body로 포털 — 부모(sticky 바 등)의 쌓임 맥락에 갇혀 다른 패널 아래로 가려지는 것을 막는다.
   return createPortal(
-    <div className="pointer-events-none fixed inset-0 z-50">
+    <div className="pointer-events-none fixed inset-0 z-50" data-size={large ? "large" : "default"}>
       <Rnd
         default={rect}
         minWidth={MIN_SIZE.width}

@@ -72,6 +72,7 @@ export function useSlotActions(slot: Slot = "dock"): SlotAction[] {
 }
 
 /** action은 참조가 안정적이어야 한다(useMemo) — 바뀔 때마다 해제 후 다시 등록된다. */
-export function useRegisterSlotAction(action: SlotAction) {
-  useEffect(() => registerSlotAction(action), [action]);
+export function useRegisterSlotAction(action: SlotAction | null) {
+  // null이면 등록하지 않는다 — 훅은 조건부로 못 부르므로 "이번에는 건너뛴다"를 null로 표현한다
+  useEffect(() => (action ? registerSlotAction(action) : undefined), [action]);
 }
