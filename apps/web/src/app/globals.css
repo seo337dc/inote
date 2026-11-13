@@ -568,6 +568,14 @@
   from { opacity: 1; }
   to { opacity: 0; }
 }
+/* 메모 관리 카드에서 ‹ › 로 메모를 넘길 때 옆에서 스르륵 들어오는 효과 (다음은 오른쪽에서, 이전은 왼쪽에서) */
+@keyframes memo-slide-next { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes memo-slide-prev { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.memo-slide-next { animation: memo-slide-next 220ms ease-out both; }
+.memo-slide-prev { animation: memo-slide-prev 220ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .memo-slide-next, .memo-slide-prev { animation: none; }
+}
 .memo-sheet-in { animation: memo-sheet-up 300ms ease-out both; }
 .memo-sheet-out { animation: memo-sheet-down 300ms ease-out both; }
 .memo-overlay-in { animation: memo-overlay-in 300ms ease-out both; }

@@ -1,6 +1,6 @@
 import { api } from "@/shared/lib/api";
 import { isMemosMock, mockMemoApi } from "../model/mock";
-import type { Memo, MemoTarget } from "../model/types";
+import type { Memo, MemoGroupPage, MemoTarget, MemoTargetType } from "../model/types";
 
 // 서버는 항상 최근 수정순으로 준다. 메모장의 탭은 만든 순서여야 하므로 대상별 조회는 여기서 createdAt 오름차순으로 다시 정렬한다
 // (같은 시각이면 서버 순서 유지 — 정렬은 안정적이다). 메모 관리용 전체 조회는 서버 순서 그대로 쓴다.
@@ -37,8 +37,15 @@ export function deleteMemo(id: string) {
   return api.delete<void>(`/memos/${id}`);
 }
 
-/** 내 메모 전체 — 최근 수정순. 각 메모에는 대상 글·독서의 제목(targetTitle)이 붙는다(일반 메모는 null). 계약: docs/todo/memo.md 3차 */
-export function getAllMemos() {
-  if (isMemosMock()) return mockMemoApi.getAll();
-  return api.get<Memo[]>("/memos");
+export type MemoGroupsQuery = { targetType?: MemoTargetType; cursor?: string; limit?: number };
+
+/** 메모 관리용 — 대상별로 묶은 그룹을 최근 수정순으로 한 페이지. nextCursor가 null이면 마지막 페이지. 계약: docs/todo/memo.md 4차 */
+export function getMemoGroups(query: MemoGroupsQuery = {}): Promise<MemoGroupPage> {
+  if (isMemosMock()) return mockMemoApi.getGroups(query);
+  const params = new URLSearchParams();
+  if (query.targetType) params.set("targetType", query.targetType);
+  if (query.cursor) params.set("cursor", query.cursor);
+  if (query.limit !== undefined) params.set("limit", String(query.limit));
+  const qs = params.toString();
+  return api.get<MemoGroupPage>(`/memos/groups${qs ? `?${qs}` : ""}`);
 }
