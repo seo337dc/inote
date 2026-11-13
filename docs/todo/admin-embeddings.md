@@ -2,12 +2,12 @@
 
 > 2026-11-04 1단계 FE(목록 화면)를 끝내면서 정리. 어드민에서 임베딩 상태를 보고, 버튼으로 실행하고, 진행 상황을 실시간으로 보는 기능을 **단계별로 하나씩** 만든다.
 > 순서는 이 프로젝트의 규칙대로 **계약 합의 → FE(MSW) → BE(사용자가 테스트 작성) → 통합 확인(개발 DB, 로컬)**.
-> 임베딩 서버(KURE)는 지금 ngrok 터널로 로컬에 연결돼 있고, 호스팅은 미정이다(`docs/todo/kure-hosting.md`).
+> 임베딩 서버(KURE)는 지금 ngrok 터널로 로컬에 연결돼 있고, 호스팅은 미정이다(`docs/todo/backlog.md` 3절).
 
 ## 단계
-- [x] **1단계 FE**: 목록·상태 배지 8종·요약 카드·상태 탭·페이지네이션 (MSW 테스트까지)
-- [x] **1단계 API — AI**: `inote-ai`의 `POST /embeddings/status`·`GET /embeddings/health`(읽기 전용, 운영 SQL 불필요) — 구현·커밋 완료(`inote-ai` 브랜치 `feat/embedding-status-api`, push·PR 전)
-- [ ] **1단계 API — BE**: `inote-server`의 `GET /admin/embeddings` — 계약은 아래 "1단계 계약(확정)". 테스트는 사용자가 직접 작성(Claude는 목록·골격)
+- [x] **1단계 FE**: 목록·상태 배지 8종·요약 카드·상태 탭·페이지네이션 (MSW 테스트까지) — 병합됨(`inote` PR #39, 2026-11-13)
+- [x] **1단계 API — AI**: `inote-ai`의 `POST /embeddings/status`·`GET /embeddings/health`(읽기 전용, 운영 SQL 불필요) — 구현 완료, **PR `inote-ai` #6 열림(미병합, 2026-11-13 확인)**
+- [x] **1단계 API — BE**: `inote-server`의 `GET /admin/embeddings` — 계약은 아래 "1단계 계약(확정)". 테스트는 사용자가 직접 작성(Claude는 목록·골격) — 병합됨(`inote-server` PR #17, 2026-11-12)
   - 응답 모양의 기준은 FE 코드의 타입(`views/admin/model/useAdminEmbeddings.ts`)이다.
 - [ ] **1단계 통합 확인**: 로컬 BE(개발 DB, `scripts/dev-db.sh`)와 FE를 함께 띄워 화면 확인 — ⚠️ 로컬 BE의 기본 `DATABASE_URL`은 운영 DB라서 개발 DB로만 띄운다
 - [ ] **2단계**: 버튼으로 임베딩 실행(글별 + 미완료 전체), 실패 재시도, 실행(run) 상태 조회(`GET /admin/embeddings/runs/:id`, 우선 폴링)
