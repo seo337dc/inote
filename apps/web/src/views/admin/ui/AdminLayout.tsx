@@ -7,7 +7,10 @@ import { toast } from "sonner";
 import { useSession } from "@/shared/lib/auth-client";
 import { PageLoading } from "@/shared/ui/page-loading";
 
-const ADMIN_NAV = [{ href: "/admin/members", label: "회원 정보" }];
+const ADMIN_NAV = [
+  { href: "/admin/members", label: "회원 정보" },
+  { href: "/admin/embeddings", label: "임베딩" },
+];
 
 // 실제 권한은 서버가 강제하지 않음(관리자 전용 API가 아직 없음) — 지금은 화면 접근만 막는
 // 클라이언트 가드. 관리자 전용 API가 생기면 그쪽에서도 role 검증을 반드시 추가할 것.

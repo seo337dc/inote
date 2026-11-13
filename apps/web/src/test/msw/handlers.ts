@@ -15,4 +15,21 @@ export const handlers = [
       totalPages: 1,
     });
   }),
+  // 기본은 빈 목록 — 상황별 응답(상태 종류, AI 서버 응답 없음, 에러)은 테스트에서 server.use로 덮어쓴다.
+  http.get(`${TEST_API_URL}/api/v1/admin/embeddings`, () => {
+    return HttpResponse.json({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      totalPages: 1,
+      summary: {
+        eligible: 0,
+        excluded: 0,
+        counts: { done: 0, incomplete: 0, outdated: 0, pending: 0, processing: 0, failed: 0 },
+      },
+      embedder: { reachable: true },
+      aiAvailable: true,
+    });
+  }),
 ];
