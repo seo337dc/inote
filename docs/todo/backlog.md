@@ -138,6 +138,11 @@
 - [ ] [BE][FE] **한 그룹의 메모는 최대 10장이라 응답에 전부 담는다** — 상한이 늘면 그룹 안 페이지네이션이 필요하다.
 
 ## 8. 문서·정리
+**다른 PC에서 처리하기로 한 것 (2026-11-13 사용자 결정 — 이 PC에서는 하지 않음)**
+- [ ] ⚠️ [FE] **이 PC의 로컬 `main`에만 있는 할일 탭 커밋 4개를 살릴지 결정** — 이 커밋들은 `origin`의 어떤 브랜치에도 없다. **`inote` 레포의 이 PC 로컬 `main`에만 있어서 다른 PC에서는 볼 수 없다.** 커밋: `c15b309` 한국 날짜 헬퍼(`todayKst`·`addDays`·`formatDayHeader`), `2320cbc` MSW 브라우저 워커와 할일 가짜 서버(개발 전용), `a9ef883` 할일 페이지를 탭 구조로 바꾸고 "오늘의 할일" 탭 구현, `6a38a63` 할일 기능 기획 결정 기록과 API 계약. 원래 브랜치 `feat/todo-redesign`(브랜치 이름으로 보아 할일 목록 재설계 작업)은 이 4개 위에 `eec1c70`("다른 PC에서 이어가기 안내와 최근 작업 현황을 handoff에 추가") 하나가 더 있었고, 2026-11-13에 "병합 안 된 브랜치는 버린다"는 결정에 따라 로컬·원격 모두 삭제했다. 다른 브랜치에는 이 커밋들이 없는 것을 `git branch --contains`로 확인했다. **살리려면 이 PC에서**: `git branch backup/todo-redesign eec1c70`(`eec1c70` 객체는 아직 로컬에 있다) → `git push origin backup/todo-redesign`. **버리기로 하면** 로컬 `main`을 `origin/main`에 맞춰도 된다. 로컬 `main`을 되돌리거나 이 PC를 정리하기 전에 결정한다. (`/start`·`/wrap`의 점검이 "로컬 main이 origin/main보다 4커밋 앞섬"으로 계속 경고한다.)
+- [ ] **Cursor 규칙을 작업 지시서 모델에 맞출지 결정** — [ADR 0008](../adr/0008-direction-and-working-model.md)은 세션 인수인계를 작업 지시서가 맡는다고 하는데, `inote-server/.cursor/rules/*handoff*.mdc`는 「현재 상태」를 매번 갱신하라고 요구해 두 모델이 겹친다. 바꾼다면 `handoff-session.mdc`·`qa-handoff.mdc`·`cursor-role.mdc`·`be-context.mdc`와 `inote-server/docs/CURSOR.md`를 함께 고친다. 지금은 `inote-server/docs/handoff/HANDOFF.md`의 "규칙" 부분이 그대로라 규칙끼리 어긋나지는 않는다. Cursor는 QA·리뷰 담당이다(`inote/CLAUDE.md` 협업 규칙).
+- 10절의 **운영 확인 항목**(cron-job 활성화, Neon 삭제 여부, 카테고리 이동 BE 운영 배포 등)도 다른 PC에서 확인할 예정이다.
+
 - [ ] **`docs/kure/` 위치 정리** — `PLAN.md`(설계)·`HANDOFF.md`(인수인계)·`DOCKER-SETUP-GUIDE.md`(세팅)가 한 폴더에 섞여 있다. `adr/`·`handoff/`·`runbooks/`로 나눌 수 있지만 **`inote-server/CLAUDE.md`가 `inote/docs/kure/HANDOFF.md`·`PLAN.md` 경로를 가리키므로** 옮길 때 그 링크도 같이 고친다. `docs/kure/HANDOFF.md`의 "브랜치 `docs/kure-handoff`, main 병합 전"은 이미 PR #3으로 병합돼 낡았다.
 - [ ] [FE] **코드 안의 `inote-blog` 문자열** — `DesktopChatPanel.tsx`의 localStorage 키(`inote-blog:llm-panel-width` 등)와 `MandalartGrid.tsx` 화면 문구. 키를 바꾸면 저장된 패널 너비가 초기화된다.
 - [ ] **문서 안의 `src/...` 경로를 `apps/web/src/...`로 통일** (2026-09-10 모노레포 전환 후 남은 정리).
