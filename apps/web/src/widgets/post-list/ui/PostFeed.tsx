@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Star } from "lucide-react";
 import type { PostListPage } from "@/entities/post";
+import ListUrlRecorder from "./ListUrlRecorder";
 import PostList, { type PostSelection } from "./PostList";
 import PostListEmpty from "./PostListEmpty";
 import PostPagination from "./PostPagination";
@@ -23,8 +24,22 @@ type Props = {
 export default function PostFeed({ data, basePath, categoryId, q = null, emptyMessage, emptyState, selection }: Props) {
   const { pinned, pinnedPage, pinnedTotal, pinnedTotalPages, items, total, page, totalPages } = data;
 
+  // 마지막으로 본 목록 주소 기록(글 상세의 "← 목록으로"용) — 빈 목록 화면에서도 기록한다
+  const recorder = (
+    <Suspense fallback={null}>
+      <ListUrlRecorder />
+    </Suspense>
+  );
+
   // 아무 조건 없이 글이 0개일 때만 "첫 글을 써 보세요" 화면 — 필터·검색 결과가 0개인 건 목록 안에서 안내
-  if (total === 0 && !categoryId && !q) return <>{emptyState ?? <PostListEmpty />}</>;
+  if (total === 0 && !categoryId && !q) {
+    return (
+      <>
+        {recorder}
+        {emptyState ?? <PostListEmpty />}
+      </>
+    );
+  }
 
   const listEmptyMessage = q ? "검색 결과가 없습니다." : emptyMessage;
 
@@ -32,6 +47,7 @@ export default function PostFeed({ data, basePath, categoryId, q = null, emptyMe
 
   return (
     <>
+      {recorder}
       {hasPinned && (
         <section className="mb-10">
           <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-zinc-500">
