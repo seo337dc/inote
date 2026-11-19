@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { toast } from "sonner";
 import PostEditor from "./PostEditor";
 import { api } from "@/shared/lib/api";
@@ -152,5 +152,60 @@ describe("PostEditor 이미지 업로드", () => {
     await waitFor(() => expect(imageNodes(el)[0].width).toBe(60));
     expect(el.editor.getHTML()).toContain("width: 60%");
     vi.restoreAllMocks();
+  });
+});
+
+describe("PostEditor 이미지 크기 프리셋 툴바", () => {
+  function selectImage(el: El) {
+    let imagePos = -1;
+    el.editor.state.doc.descendants((n, pos) => {
+      if (n.type.name === "image") imagePos = pos;
+    });
+    act(() => el.editor.commands.setNodeSelection(imagePos));
+  }
+
+  it("이미지를 선택하지 않으면 툴바가 없다", async () => {
+    await setup(`<p>글</p><img src="${TMP_URL}">`);
+    expect(screen.queryByRole("toolbar", { name: "이미지 크기" })).not.toBeInTheDocument();
+  });
+
+  it("이미지를 선택하면 25·50·75·100% 버튼이 뜬다", async () => {
+    const { el } = await setup(`<p>글</p><img src="${TMP_URL}">`);
+    selectImage(el);
+
+    const bar = await screen.findByRole("toolbar", { name: "이미지 크기" });
+    ["25%", "50%", "75%", "100%"].forEach((label) => expect(within(bar).getByRole("button", { name: label })).toBeInTheDocument());
+  });
+
+  it("100%로 꽉 찬 이미지도 [50%]를 누르면 너비가 50으로 바뀌어 저장된다", async () => {
+    const { el } = await setup(`<p>글</p><img src="${TMP_URL}" style="width: 100%">`);
+    selectImage(el);
+    const bar = await screen.findByRole("toolbar", { name: "이미지 크기" });
+
+    fireEvent.click(within(bar).getByRole("button", { name: "50%" }));
+
+    await waitFor(() => expect(imageNodes(el)[0].width).toBe(50));
+    expect(el.editor.getHTML()).toContain("width: 50%");
+  });
+
+  it("현재 너비와 같은 프리셋이 눌린 상태로 표시된다 (너비가 없으면 100%)", async () => {
+    const { el } = await setup(`<p>글</p><img src="${TMP_URL}">`);
+    selectImage(el);
+    const bar = await screen.findByRole("toolbar", { name: "이미지 크기" });
+
+    expect(within(bar).getByRole("button", { name: "100%" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(bar).getByRole("button", { name: "50%" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("버튼을 눌러도 이미지 선택이 풀리지 않아 연달아 바꿀 수 있다", async () => {
+    const { el } = await setup(`<p>글</p><img src="${TMP_URL}">`);
+    selectImage(el);
+    const bar = await screen.findByRole("toolbar", { name: "이미지 크기" });
+
+    fireEvent.click(within(bar).getByRole("button", { name: "25%" }));
+    await waitFor(() => expect(imageNodes(el)[0].width).toBe(25));
+    fireEvent.click(within(bar).getByRole("button", { name: "75%" }));
+
+    await waitFor(() => expect(imageNodes(el)[0].width).toBe(75));
   });
 });
