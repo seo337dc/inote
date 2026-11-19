@@ -2,6 +2,8 @@
 
 export const MIN_WIDTH_PERCENT = 10;
 export const MAX_WIDTH_PERCENT = 100;
+// 이미지를 선택하면 뜨는 크기 버튼의 값(%)
+export const WIDTH_PRESETS = [25, 50, 75, 100] as const;
 
 // 정수로 반올림하고 10~100 사이로 맞춘다. 숫자가 아니면 100(꽉 채움).
 export function clampWidthPercent(value: number): number {
