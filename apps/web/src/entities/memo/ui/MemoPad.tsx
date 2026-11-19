@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, NotebookText } from "lucide-react";
 import { FloatingPanel } from "@/shared/ui/floating-panel";
 import { useRegisterSlotAction, type SlotAction } from "@/shared/lib/slot-actions";
 import { useMediaQuery } from "@/shared/lib/useMediaQuery";
-import { MEMO_MAX_LENGTH } from "../model/constants";
+import { hasOpenModalLayer } from "@/shared/lib/modal-layer";
+import { MEMO_ESC_OWNER_SELECTOR, MEMO_MAX_LENGTH } from "../model/constants";
 import { useMemoDraft } from "../model/useMemoDraft";
 import type { MemoTarget } from "../model/types";
 import { MemoBottomSheet } from "./MemoBottomSheet";
@@ -27,11 +28,12 @@ const MOVE_BUTTON =
  * - standalone: 메모 관리처럼 버튼 없이 다른 곳에서 띄울 때 — 열린 채로 시작하고, 데스크톱에서는 큰 패널을 화면 가운데에 연다.
  *   모바일 도크에는 등록하지 않는다(그 화면에서는 전역 메모장이 숨겨져 있다). 부모가 onClose에서 이 컴포넌트를 내린다.
  * - onClose: 패널을 닫고 기다리던 입력의 저장이 끝난 뒤에 불린다(저장 뒤에 목록을 다시 불러올 수 있게).
+ * - hidden: 다른 화면이 위를 덮는 동안(글쓰기의 발행 창 등) 메모 버튼을 숨긴다 — 데스크톱 버튼도, 모바일 도크 등록도. 입력 내용·열린 패널은 건드리지 않는다.
  * 내용은 target(글·독서 기록)에 붙은 내 메모 한 장으로 서버에 자동저장된다(useMemoDraft) — 패널을 닫으면 바로 저장한다.
  */
-type Props = { target: MemoTarget; openMemoId?: string; standalone?: boolean; onClose?: () => void };
+type Props = { target: MemoTarget; openMemoId?: string; standalone?: boolean; hidden?: boolean; onClose?: () => void };
 
-export function MemoPad({ target, openMemoId, standalone = false, onClose }: Props) {
+export function MemoPad({ target, openMemoId, standalone = false, hidden = false, onClose }: Props) {
   const [open, setOpen] = useState(standalone);
   const memo = useMemoDraft(target, { initialMemoId: openMemoId });
   const { text, setText, ready, flush } = memo;
@@ -48,6 +50,22 @@ export function MemoPad({ target, openMemoId, standalone = false, onClose }: Pro
     setOpen(false);
     void flush().then(() => onClose?.());
   }, [flush, onClose]);
+  // 열려 있는 동안 Esc는 에디터 팝업 같은 뒤쪽 요소보다 메모장이 먼저 받아 닫는다. 캡처 단계에서 받고 전파를 막아 그쪽은 동시에 닫히지 않는다.
+  // 다만 시트·대화상자·출간 설정 화면 같은 모달이 메모장 앞에 열려 있으면 Esc를 받지 않는다 — 맨 앞의 것부터 하나씩 닫혀야 하므로
+  // 그 모달이 먼저 닫히고, 그다음 Esc가 메모장을 닫는다(hasOpenModalLayer).
+  // 한글 조합 중의 Esc(조합 취소)와, Esc를 스스로 처리하는 요소(탭 이름 입력창·넘친 탭 목록) 안의 Esc는 건너뛴다.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.isComposing) return;
+      if (e.target instanceof Element && e.target.closest(MEMO_ESC_OWNER_SELECTOR)) return;
+      if (hasOpenModalLayer()) return;
+      e.stopPropagation();
+      close();
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [open, close]);
   const dockAction = useMemo<SlotAction>(
     () => ({
       id: "memo",
@@ -59,7 +77,7 @@ export function MemoPad({ target, openMemoId, standalone = false, onClose }: Pro
     }),
     [openFromDock],
   );
-  useRegisterSlotAction(standalone ? null : dockAction);
+  useRegisterSlotAction(standalone || hidden ? null : dockAction);
 
   function openFromButton() {
     // 열기 직전의 버튼 위치를 기억해 둔다 — 열린 동안 버튼은 숨겨지지만 패널은 그 자리 위에 뜬다.
@@ -130,7 +148,7 @@ export function MemoPad({ target, openMemoId, standalone = false, onClose }: Pro
 
   return (
     <>
-      {!open && !standalone && (
+      {!open && !standalone && !hidden && (
         <button
           ref={buttonRef}
           type="button"
