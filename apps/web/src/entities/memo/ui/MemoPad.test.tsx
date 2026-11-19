@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoPad } from "./MemoPad";
 import { MEMO_MAX_LENGTH } from "../model/constants";
@@ -8,6 +9,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "@/test/msw/server";
 import { makeMemo, MEMOS_URL } from "@/test/fixtures/memo";
 import { renderWithQueryClient as render } from "@/test/render";
+import { resetViewport, setViewport } from "@/test/viewport";
 import type { Memo } from "../model/types";
 
 const TARGET = { type: "post", id: "p1" } as const;
@@ -28,16 +30,6 @@ vi.mock("react-rnd", () => ({
   Rnd: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-// jsdom에는 matchMedia가 없다 — 데스크톱(lg 이상)/좁은 화면을 흉내 낸다.
-function setViewport(desktop: boolean) {
-  window.matchMedia = ((query: string) => ({
-    matches: desktop,
-    media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-  })) as unknown as typeof window.matchMedia;
-}
-
 // 모바일 도크가 하는 일: 슬롯에 등록된 버튼을 그린다
 function DockProbe() {
   const actions = useSlotActions();
@@ -52,10 +44,7 @@ function DockProbe() {
   );
 }
 
-afterEach(() => {
-  // @ts-expect-error 테스트 간 오염 방지
-  delete window.matchMedia;
-});
+afterEach(resetViewport);
 
 describe("MemoPad (데스크톱)", () => {
   it("처음에는 메모장이 닫혀 있고 버튼을 누르면 열린다", async () => {
@@ -149,6 +138,231 @@ describe("MemoPad (좁은 화면)", () => {
     const overlay = document.querySelector('[aria-hidden="true"].bg-black\\/30') as HTMLElement;
     await userEvent.click(overlay);
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+});
+
+// hidden을 바깥에서 켜고 끄는 부모 — 발행 창이 열리고 닫히는 것을 흉내 낸다
+function HiddenHarness() {
+  const [hidden, setHidden] = useState(true);
+  return (
+    <>
+      <MemoPad target={TARGET} hidden={hidden} />
+      <DockProbe />
+      <button type="button" onClick={() => setHidden((h) => !h)}>
+        숨김 전환
+      </button>
+    </>
+  );
+}
+
+describe("MemoPad — hidden (다른 화면이 위를 덮는 동안 버튼 숨김)", () => {
+  it("데스크톱: hidden이면 메모 버튼이 보이지 않고, 풀리면 다시 보이고, 다시 켜면 또 숨는다", async () => {
+    setViewport(true);
+    render(<HiddenHarness />);
+    expect(screen.queryByRole("button", { name: "메모" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "숨김 전환" }));
+    expect(screen.getByRole("button", { name: "메모" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "숨김 전환" }));
+    expect(screen.queryByRole("button", { name: "메모" })).not.toBeInTheDocument();
+  });
+
+  it("좁은 화면: hidden이면 도크에 메모 버튼을 등록하지 않고, 풀리면 등록한다", async () => {
+    setViewport(false);
+    render(<HiddenHarness />);
+    expect(screen.queryByRole("button", { name: "도크:메모" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "숨김 전환" }));
+    expect(screen.getByRole("button", { name: "도크:메모" })).toBeInTheDocument();
+  });
+
+  it("hidden이 아니면 기본대로 버튼이 보인다", () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    expect(screen.getByRole("button", { name: "메모" })).toBeInTheDocument();
+  });
+});
+
+describe("MemoPad — Esc로 닫기", () => {
+  it("데스크톱: 메모장이 열려 있을 때 Esc를 누르면 닫히고 메모 버튼이 다시 보인다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await screen.findByRole("dialog", { name: "메모" });
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "메모" })).toBeInTheDocument();
+  });
+
+  it("입력 칸에 커서가 있어도 Esc로 닫히고, 쓰던 내용은 바로 서버에 저장된다", async () => {
+    setViewport(true);
+    let saved: unknown = null;
+    server.use(
+      http.post(MEMOS_URL, async ({ request }) => {
+        saved = await request.json();
+        return HttpResponse.json(makeMemo({ content: "esc" }), { status: 201 });
+      }),
+    );
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await userEvent.type(await memoTextarea(), "esc");
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(saved).toMatchObject({ content: "esc" }));
+  });
+
+  it("다른 곳(바깥 요소)에서 먼저 Esc를 처리하려 해도 메모장이 먼저 닫히고, 그 요소로는 Esc가 전달되지 않는다", async () => {
+    setViewport(true);
+    const outside = vi.fn();
+    document.addEventListener("keydown", outside);
+    try {
+      render(<MemoPad target={TARGET} />);
+      await userEvent.click(screen.getByRole("button", { name: "메모" }));
+      await screen.findByRole("dialog", { name: "메모" });
+
+      await userEvent.keyboard("{Escape}");
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(outside).not.toHaveBeenCalled();
+    } finally {
+      document.removeEventListener("keydown", outside);
+    }
+  });
+
+  it("닫혀 있을 때의 Esc는 건드리지 않는다 (다른 곳으로 그대로 전달된다)", async () => {
+    setViewport(true);
+    const outside = vi.fn();
+    document.addEventListener("keydown", outside);
+    try {
+      render(<MemoPad target={TARGET} />);
+
+      await userEvent.keyboard("{Escape}");
+
+      expect(outside).toHaveBeenCalledTimes(1);
+    } finally {
+      document.removeEventListener("keydown", outside);
+    }
+  });
+
+  it("Esc가 아닌 키로는 닫히지 않는다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await screen.findByRole("dialog", { name: "메모" });
+
+    await userEvent.keyboard("{Enter}a");
+
+    expect(screen.getByRole("dialog", { name: "메모" })).toBeInTheDocument();
+  });
+
+  it("한글 조합 중(IME)의 Esc는 조합 취소용이라 메모장을 닫지 않는다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    const textarea = await memoTextarea();
+
+    fireEvent.keyDown(textarea, { key: "Escape", isComposing: true });
+
+    expect(screen.getByRole("dialog", { name: "메모" })).toBeInTheDocument();
+  });
+
+  it("탭 이름을 고치는 중의 Esc는 이름 편집만 끝내고 메모장은 열어 둔다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await memoTextarea();
+    await userEvent.dblClick(screen.getAllByRole("tab")[0]);
+    expect(screen.getByRole("textbox", { name: "메모 제목" })).toBeInTheDocument();
+
+    await userEvent.keyboard("{Escape}");
+
+    expect(screen.queryByRole("textbox", { name: "메모 제목" })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "메모" })).toBeInTheDocument();
+  });
+
+  it("Esc를 스스로 처리하는 요소(data-memo-esc-owner) 안에서 누른 Esc는 메모장을 닫지 않는다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await screen.findByRole("dialog", { name: "메모" });
+    const owner = document.createElement("button");
+    owner.setAttribute("data-memo-esc-owner", "");
+    document.body.appendChild(owner);
+    try {
+      owner.focus();
+
+      await userEvent.keyboard("{Escape}");
+
+      expect(screen.getByRole("dialog", { name: "메모" })).toBeInTheDocument();
+    } finally {
+      owner.remove();
+    }
+  });
+
+  it("좁은 화면: 하단 패널도 Esc로 닫힌다", async () => {
+    setViewport(false);
+    render(
+      <>
+        <MemoPad target={TARGET} />
+        <DockProbe />
+      </>,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "도크:메모" }));
+    await memoTextarea();
+
+    await userEvent.keyboard("{Escape}");
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
+  it("닫은 뒤에는 Esc 처리가 풀려서, 다시 열기 전의 Esc는 다른 곳으로 전달된다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await screen.findByRole("dialog", { name: "메모" });
+    await userEvent.keyboard("{Escape}");
+    const outside = vi.fn();
+    document.addEventListener("keydown", outside);
+    try {
+      await userEvent.keyboard("{Escape}");
+
+      expect(outside).toHaveBeenCalledTimes(1);
+    } finally {
+      document.removeEventListener("keydown", outside);
+    }
+  });
+});
+
+describe("MemoPad — 앞에 있는 레이어가 먼저 닫힌다", () => {
+  it("시트·대화상자 같은 모달이 메모장 앞에 열려 있으면 Esc는 그쪽으로 넘기고, 모달이 닫힌 뒤의 Esc에 메모장이 닫힌다", async () => {
+    setViewport(true);
+    render(<MemoPad target={TARGET} />);
+    await userEvent.click(screen.getByRole("button", { name: "메모" }));
+    await screen.findByRole("dialog", { name: "메모" });
+    const modal = document.createElement("div");
+    modal.setAttribute("data-slot", "sheet-content");
+    document.body.appendChild(modal);
+    const modalEsc = vi.fn();
+    document.addEventListener("keydown", modalEsc);
+    try {
+      await userEvent.keyboard("{Escape}");
+
+      expect(modalEsc).toHaveBeenCalledTimes(1); // 모달 쪽으로 전달됨
+      expect(screen.getByRole("dialog", { name: "메모" })).toBeInTheDocument();
+
+      modal.remove(); // 모달이 닫힘
+      await userEvent.keyboard("{Escape}");
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    } finally {
+      document.removeEventListener("keydown", modalEsc);
+      modal.remove();
+    }
   });
 });
 

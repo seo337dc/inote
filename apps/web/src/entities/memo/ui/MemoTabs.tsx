@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Plus, X } from "lucide-react";
 import { FLOATING_PANEL_CANCEL_CLASS as CANCEL } from "@/shared/ui/floating-panel";
-import { MEMO_MAX_COUNT, MEMO_TITLE_MAX_LENGTH } from "../model/constants";
+import { MEMO_ESC_OWNER_PROPS, MEMO_MAX_COUNT, MEMO_TITLE_MAX_LENGTH } from "../model/constants";
 
 type Props = {
   tabs: { key: string; label: string; id: string | null; title: string; content: string }[];
@@ -129,6 +129,7 @@ export function MemoTabs({ tabs, activeIndex, canAdd, disabled, error, onSelect,
                 {editing ? (
                   <input
                     autoFocus
+                    {...MEMO_ESC_OWNER_PROPS}
                     value={tab.title}
                     onChange={(e) => onTitleChange(e.target.value)}
                     onFocus={(e) => e.currentTarget.select()}
@@ -166,7 +167,7 @@ export function MemoTabs({ tabs, activeIndex, canAdd, disabled, error, onSelect,
           })}
         </div>
         {hiddenIdx.length > 0 && (
-          <div ref={menuRef} className="relative mb-1 shrink-0">
+          <div ref={menuRef} {...MEMO_ESC_OWNER_PROPS} className="relative mb-1 shrink-0">
             <button
               type="button"
               aria-haspopup="menu"

@@ -159,6 +159,12 @@ describe("MemoTabs — 이름 변경", () => {
     expect(screen.queryByRole("textbox", { name: "메모 제목" })).toBeNull();
   });
 
+  it("제목 입력창은 Esc를 스스로 처리하는 요소로 표시된다 (메모장의 Esc 닫기가 건너뛴다)", async () => {
+    setup();
+    await userEvent.dblClick(screen.getAllByRole("tab")[0]);
+    expect(screen.getByRole("textbox", { name: "메모 제목" })).toHaveAttribute("data-memo-esc-owner");
+  });
+
   it("제목은 30자까지만 받는다", async () => {
     setup();
     await userEvent.dblClick(screen.getAllByRole("tab")[0]);
@@ -214,6 +220,15 @@ describe("MemoTabs — 안 보이는 탭 뱃지", () => {
     await userEvent.click(within(menu).getByRole("menuitem", { name: "메모 3" }));
     expect(p.onSelect).toHaveBeenCalledWith(2);
     expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("뱃지와 목록은 Esc를 스스로 처리하는 요소 안에 있다 (메모장의 Esc 닫기가 건너뛴다)", async () => {
+    setup();
+    reportCutOff([0]);
+    const badge = screen.getByRole("button", { name: /안 보이는 메모/ });
+    expect(badge.closest("[data-memo-esc-owner]")).not.toBeNull();
+    await userEvent.click(badge);
+    expect(screen.getByRole("menu").closest("[data-memo-esc-owner]")).not.toBeNull();
   });
 
   it("Esc를 누르거나 바깥을 누르면 목록이 닫힌다", async () => {

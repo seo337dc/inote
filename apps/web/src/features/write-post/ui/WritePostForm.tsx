@@ -302,9 +302,10 @@ export default function WritePostForm({ id }: Props) {
               </p>
             )}
             {/* 메모 버튼은 데스크톱에서만 중앙 영역(이 바)의 오른쪽 끝에 둔다 — AI 패널 폭에 따라 같이 움직임.
-              좁은 화면에서는 오른쪽 아래 도크의 + 메뉴로 열린다(MemoPad가 등록) */}
+              좁은 화면에서는 오른쪽 아래 도크의 + 메뉴로 열린다(MemoPad가 등록).
+              출간 설정 화면이 열려 있는 동안은 두 버튼 모두 숨긴다(hidden) */}
             <div className="hidden lg:ml-auto lg:block">
-              <MemoPad target={{ type: "post", id }} />
+              <MemoPad target={{ type: "post", id }} hidden={publishOpen} />
             </div>
           </div>
         </div>
