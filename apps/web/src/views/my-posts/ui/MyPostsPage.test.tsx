@@ -9,7 +9,11 @@ import { TEST_API_URL } from "@/test/msw/handlers";
 import { makePost, makePostListPage } from "@/test/fixtures/posts";
 import { useSession } from "@/shared/lib/auth-client";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn(), push: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), refresh: vi.fn(), push: vi.fn() }),
+  usePathname: () => "/my-posts",
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/shared/lib/auth-client", () => ({ useSession: vi.fn() }));
 // next/form은 라우터 컨텍스트가 필요해서 검색 폼은 비워 둔다 (이 테스트의 관심사가 아님)
