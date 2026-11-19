@@ -228,7 +228,7 @@ FE 유닛 테스트만으로 충분** — 전 단계는 새 기능 단위에만 
       있는지"만 확인한 것이라 커버리지가 충분한지는 확인 필요.
   - 로직이 복잡한데 테스트 파일이 없음 (`auth-errors.ts`부터 추천, mock 불필요)
     - [ ] `shared/lib/auth-errors.ts` — 에러 코드 → 한글 메시지 매핑
-    - [ ] `features/write-post/WritePostForm` — draft 이어쓰기 분기, 저장/발행 분기
+    - [ ] `features/write-post/WritePostForm` — draft 이어쓰기 분기, 저장/발행 분기 (일부 테스트 있음: 메모 버튼 숨김·Esc 순서만 — `WritePostForm.test.tsx`)
     - [ ] `features/edit-profile/ProfileForm` — 비밀번호 생성/변경 분기, 계정 연결 목록
     - [ ] `widgets/nav/AuthNavAction` — 로그인/로그아웃 상태 분기
   - E2E: 글쓰기 → 발행 → 목록 노출 흐름 1개 추가 검토 (회원 삭제는 파괴적 액션이라 자동화 제외) —

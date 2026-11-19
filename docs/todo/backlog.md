@@ -61,7 +61,7 @@
 - [ ] [BE] **보관한 글의 이미지·AI 요약 정책** — 보관 중인 글의 R2 이미지를 어떻게 둘지, 요약을 다시 만들지. (출처: 글 보관함)
 - [ ] [FE][BE] **보관 해제 시 고정 복원** — 지금은 보관하면 고정이 풀리고 복원하지 않는다. (출처: 글 보관함)
 - [ ] [FE] **글 상세 "← 목록으로"의 남은 두 가지** — ① `router.push`라서 누를 때마다 브라우저 기록이 쌓인다(목록→상세→"목록으로" 뒤 브라우저 뒤로가기를 누르면 그 상세로 다시 감). `replace`로 바꾸면 줄지만 목록이 기록에 두 번 남아서 정하지 않았다. ② 기록해 둔 목록 주소가 이미 비어 있을 수 있다(예: 글이 줄어 없어진 페이지 번호). 기록 위치는 `widgets/post-list/ui/ListUrlRecorder.tsx`, 읽는 곳은 `views/post-detail/ui/BackToListButton.tsx`. (출처: 글 상세 목록으로 버튼 수정, PR #45)
-- [ ] ⏸ [FE] **글 리스트 화면의 선택 기능·보관함 이동 UX를 어떻게 바꿀지 의논** — 2026-11-19 사용자가 보류했다. **메모 이슈(`docs/todo/memo-ux-issues.md`)를 고친 뒤에** 시작한다. 구체적인 문제·방향은 아직 정해지지 않았고, 시작할 때 현재 동작(`PostList`의 선택 모드 `PostSelection`, 보관함 이동)부터 같이 확인한다. 화면은 한 번에 하나씩 의논한다(CLAUDE.md FE 작업 원칙).
+- [ ] ⏸ [FE] **글 리스트 화면의 선택 기능·보관함 이동 UX를 어떻게 바꿀지 의논** — 2026-11-19 사용자가 보류했다. 메모 수정(Esc 닫기·발행 창 중 버튼 숨김, PR #47)이 끝나서 이제 시작할 수 있다. 구체적인 문제·방향은 아직 정해지지 않았고, 시작할 때 현재 동작(`PostList`의 선택 모드 `PostSelection`, 보관함 이동)부터 같이 확인한다. 화면은 한 번에 하나씩 의논한다(CLAUDE.md FE 작업 원칙).
 
 ## 5. 에디터 [FE]
 **이미지 업로드** (출처: 에디터 이미지 업로드 `docs/adr/0002-editor-image-upload.md`, PR #8; 설계 글은 사이트 "R2 업로드 정리 전략 설계기")
@@ -95,6 +95,8 @@
 **글쓰기·메모 화면** (출처: 에디터 업데이트 2026-11-05, `refactor-advisor` 점검)
 - [ ] **입력 없이 나가는 임시 저장 PATCH** (2026-11-05 발견, 보류, 기존 동작) — `/write`로 새 글을 열면 `POST /blog/posts/draft` 직후 아무것도 입력하지 않았는데 약 1.5초 뒤 `PATCH /blog/posts/:id`가 한 번 더 나가고 "임시 저장됨"이 뜬다. 원인(코드 추정, 네트워크 탭 미확인): `WritePostForm.tsx`의 `skipNextAutosave`가 effect를 한 번만 건너뛰는데, draft 로드 커밋에서 그 플래그가 먼저 소비되고 이어서 `setTitle/setCategoryId/setContent` 반영으로 재실행되면 값이 바뀐 경우 타이머가 걸린다. 바뀌는 후보: ① 새 글의 `categoryId`가 `""` → 첫 카테고리 id, ② 에디터가 빈 내용을 `<p></p>`로 정규화. 데이터 손상은 없고 호출 1회 낭비다. 순서: PATCH body의 `categoryId`·`content` 확인 → 실패하는 테스트로 재현(MSW) → "마지막 저장/불러온 body"와 같으면 PATCH 생략.
 - [ ] **`shared/lib/slot-actions.ts` 모듈 레벨 가변 상태** — 테스트 간 상태가 샐 수 있다. (A) 테스트용 reset 함수, 또는 (B) `app` 레이어 Context Provider로 이동(구조 변경이라 사람이 정한다). 사용처 5곳이라 당장은 유지.
+- [ ] **글쓰기 "저장"으로 발행 창이 뜰 때 메모 패널이 이미 열려 있으면 그대로 열려 있다** — 메모 버튼만 숨기고(PR #47) 열린 패널은 건드리지 않았다. 발행 창이 열릴 때 패널도 닫을지 사용자가 정한다(`MemoPad`의 `hidden` 속성, `WritePostForm`).
+- [ ] **모달 감지(`shared/lib/modal-layer.ts`)는 `data-slot="sheet-content"`·`"dialog-content"`와 `aria-modal`에 기댄다** — 메모장이 Esc를 앞에 있는 모달에 넘기려고 쓴다. 새 모달 컴포넌트를 만들 때는 이 선택자에 걸리는지 확인한다(안 걸리면 메모장이 그 모달보다 먼저 닫힌다). `Dialog` 경로는 단위 테스트만 있고 실제 컴포넌트로 확인하지 않았다(`Sheet`·발행 창은 `WritePostForm.test`로 확인). (출처: 메모 UX 수정, PR #47)
 - [ ] **오른쪽 헤더 버튼(알림 벨·☰) 테두리** — 왼쪽 ghost 아이콘 버튼과 모양이 다르다. 맞출지 사용자가 정한다(`DraftNotificationBell`).
 - [ ] **공용 시트 닫기 버튼의 스크린리더 이름이 영어 "Close"** (`shared/ui/sheet.tsx`), **`ToolbarMoreMenu` 팝오버의 키보드 이동·포커스 관리**는 점검하지 않았다.
 - [ ] **`useMemoDraft`의 `status`·`loadFailed`와 `MemoSaveStatus` 공개 export가 UI에서 안 쓰인다**(테스트만 사용) — 저장 상태 표시·불러오기 실패 안내를 만들지 정하고, 안 만들면 걷어낸다(`docs/todo/memo.md`).
