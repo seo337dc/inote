@@ -33,7 +33,7 @@ const components: Components = {
     </pre>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="mb-3 border-l-2 border-zinc-300 pl-3 text-zinc-500 last:mb-0">
+    <blockquote className="mb-3 border-l-2 border-zinc-300 pl-3 text-muted-foreground last:mb-0">
       {children}
     </blockquote>
   ),

@@ -67,10 +67,10 @@ export default async function ReadingLogDetailPage({ id }: Props) {
             <div>
               <h1 className="mb-1 text-3xl font-bold">{readingLog.title}</h1>
               {readingLog.author && (
-                <p className="mb-1 text-zinc-500">{readingLog.author}</p>
+                <p className="mb-1 text-muted-foreground">{readingLog.author}</p>
               )}
               {(started || finished) && (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-muted-foreground">
                   {started ?? "?"} ~ {finished ?? "읽는 중"}
                 </p>
               )}
@@ -88,7 +88,7 @@ export default async function ReadingLogDetailPage({ id }: Props) {
               dangerouslySetInnerHTML={{ __html: html }}
             />
           ) : (
-            <p className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center text-zinc-500">
+            <p className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center text-muted-foreground">
               아직 독후감이 없어요.
             </p>
           )}

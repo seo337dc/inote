@@ -50,7 +50,7 @@ export default function PostFeed({ data, basePath, categoryId, q = null, emptyMe
       {recorder}
       {hasPinned && (
         <section className="mb-10">
-          <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-zinc-500">
+          <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
             <Star className="size-3.5 fill-amber-400 text-amber-400" />
             고정 글
           </h2>
@@ -72,7 +72,7 @@ export default function PostFeed({ data, basePath, categoryId, q = null, emptyMe
       )}
 
       <section>
-        {hasPinned && <h2 className="mb-1 text-sm font-semibold text-zinc-500">전체 글</h2>}
+        {hasPinned && <h2 className="mb-1 text-sm font-semibold text-muted-foreground">전체 글</h2>}
         <PostList posts={items} emptyMessage={hasPinned ? "다른 글이 없습니다." : listEmptyMessage} selection={selection} />
         <PostPagination
           page={page}

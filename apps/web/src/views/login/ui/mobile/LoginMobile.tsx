@@ -44,7 +44,7 @@ export default function LoginMobile({ form }: Props) {
               <p className="mb-1 flex justify-center">
                 <InoteWordmark className="text-2xl" />
               </p>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 노션처럼 쓰고, LLM과 함께 정리하는
                 <br />
                 나만의 기록 공간
@@ -56,7 +56,7 @@ export default function LoginMobile({ form }: Props) {
               이메일로 시작
             </Button>
 
-            <div className="my-6 flex items-center gap-3 text-xs text-zinc-500">
+            <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
               <span className="h-px flex-1 bg-zinc-200" />
               또는
               <span className="h-px flex-1 bg-zinc-200" />
@@ -141,7 +141,7 @@ export default function LoginMobile({ form }: Props) {
               <button
                 type="button"
                 onClick={toggleMode}
-                className="text-center text-sm text-zinc-500"
+                className="text-center text-sm text-muted-foreground"
               >
                 {mode === "signup" ? "이미 계정이 있으신가요? " : "계정이 없으신가요? "}
                 <span className="font-semibold text-primary hover:underline">
@@ -151,7 +151,7 @@ export default function LoginMobile({ form }: Props) {
               <button
                 type="button"
                 onClick={goToIdle}
-                className="text-xs text-zinc-500 hover:text-zinc-600 hover:underline"
+                className="text-xs text-muted-foreground hover:text-zinc-600 hover:underline"
               >
                 ← 다른 방법으로 로그인
               </button>
@@ -160,7 +160,7 @@ export default function LoginMobile({ form }: Props) {
         )}
       </div>
 
-      <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-xs text-zinc-500">
+      <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-xs text-muted-foreground">
         <p className="mb-1.5">둘러보고 싶으신가요? 테스트 계정으로 로그인해보세요.</p>
         <p className="mb-2 font-mono text-zinc-700">
           {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}

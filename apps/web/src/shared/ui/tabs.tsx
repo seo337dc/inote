@@ -55,7 +55,7 @@ export function Tabs({ tabs, value, onChange, ariaLabel, idPrefix }: Props) {
               "-mb-px border-b-2 px-4 py-2 text-sm",
               selected
                 ? "border-zinc-900 font-medium text-zinc-900"
-                : "border-transparent text-zinc-500 hover:text-zinc-800",
+                : "border-transparent text-muted-foreground hover:text-zinc-800",
             )}
           >
             {tab.label}

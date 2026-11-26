@@ -154,13 +154,13 @@ export default function PostMover() {
   }
 
   if (categoriesQuery.isPending || postsQuery.isPending) {
-    return <p className="text-sm text-zinc-500">불러오는 중...</p>;
+    return <p className="text-sm text-muted-foreground">불러오는 중...</p>;
   }
 
   if (postsQuery.isError) {
     return (
       <div className="rounded border border-dashed border-zinc-200 py-10 text-center">
-        <p className="text-sm text-zinc-500">내 글 목록을 불러오지 못했어요.</p>
+        <p className="text-sm text-muted-foreground">내 글 목록을 불러오지 못했어요.</p>
         <button
           type="button"
           onClick={() => void postsQuery.refetch()}
@@ -174,7 +174,7 @@ export default function PostMover() {
 
   if ((postsQuery.data ?? []).length === 0) {
     return (
-      <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-zinc-500">
+      <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-muted-foreground">
         아직 옮길 글이 없어요.
       </p>
     );
@@ -209,21 +209,21 @@ export default function PostMover() {
       )}
 
       <div className="mb-3 mt-4 flex items-center justify-between">
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           폴더의 + 로 글을 열고, 글 왼쪽 손잡이(⋮⋮)를 다른 폴더로 끌어 놓으면 옮겨져요.
         </p>
         <div className="flex gap-1 text-xs">
           <button
             type="button"
             onClick={() => setExpanded(new Set(expandableKeys(folders)))}
-            className="rounded px-2 py-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+            className="rounded px-2 py-1 text-muted-foreground hover:bg-zinc-100 hover:text-zinc-800"
           >
             모두 펼치기
           </button>
           <button
             type="button"
             onClick={() => setExpanded(new Set())}
-            className="rounded px-2 py-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+            className="rounded px-2 py-1 text-muted-foreground hover:bg-zinc-100 hover:text-zinc-800"
           >
             모두 접기
           </button>
@@ -258,7 +258,7 @@ export default function PostMover() {
           {activePost && (
             <div className="flex w-fit max-w-xs items-center gap-2 rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm shadow-lg">
               <FileText
-                className="size-3.5 shrink-0 text-zinc-500"
+                className="size-3.5 shrink-0 text-muted-foreground"
                 aria-hidden
               />
               <span className="truncate">
@@ -347,7 +347,7 @@ function FolderItem({
             aria-label={
               isOpen ? `${folder.name} 접기` : `${folder.name} 펼치기`
             }
-            className="flex size-4 shrink-0 items-center justify-center rounded border border-zinc-300 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+            className="flex size-4 shrink-0 items-center justify-center rounded border border-zinc-300 text-muted-foreground hover:bg-zinc-100 hover:text-zinc-800"
           >
             {isOpen ? (
               <Minus className="size-3" aria-hidden />
@@ -365,7 +365,7 @@ function FolderItem({
         >
           {folder.name}
         </span>
-        <span className="text-xs text-zinc-500">{folder.total}</span>
+        <span className="text-xs text-muted-foreground">{folder.total}</span>
         {folder.isOrphan && (
           <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-600">
             목록에 없는 카테고리
@@ -381,7 +381,7 @@ function FolderItem({
                 : `${folder.name}의 하위 폴더 추가`
             }
             // 마우스를 쓸 수 있는 환경에선 줄에 올렸을 때만 보이고, 터치 기기에선 항상 보인다
-            className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
+            className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-zinc-100 hover:text-zinc-800 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
           >
             {isAddingHere ? (
               "취소"
@@ -511,11 +511,11 @@ function PostRow({
         {...listeners}
         {...attributes}
         aria-label={`${post.title || "제목 없음"} 이동`}
-        className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 active:cursor-grabbing [@media(hover:hover)]:opacity-40 group-hover:opacity-100 focus-visible:opacity-100"
+        className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground hover:bg-zinc-100 hover:text-zinc-700 active:cursor-grabbing [@media(hover:hover)]:opacity-40 group-hover:opacity-100 focus-visible:opacity-100"
       >
         <GripVertical className="size-4" aria-hidden />
       </button>
-      <FileText className="size-3.5 shrink-0 text-zinc-500" aria-hidden />
+      <FileText className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
       <Link
         // 발행 전 글은 상세가 아니라 이어 쓰기 화면으로
         href={isDraft ? `/write/${post.id}` : `/posts/${post.id}`}
@@ -524,12 +524,12 @@ function PostRow({
         {post.title || "제목 없음"}
       </Link>
       {isDraft && (
-        <span className="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-zinc-500">
+        <span className="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-muted-foreground">
           임시저장
         </span>
       )}
       {post.isPrivate && (
-        <span className="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-zinc-500">
+        <span className="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] text-muted-foreground">
           비공개
         </span>
       )}

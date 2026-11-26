@@ -55,7 +55,7 @@ const markdownComponents: Components = {
   ),
   td: ({ children }) => <td className="border border-zinc-300 px-2 py-1 align-top">{children}</td>,
   blockquote: ({ children }) => (
-    <blockquote className="mb-2 border-l-2 border-zinc-300 pl-2 text-zinc-500 last:mb-0">
+    <blockquote className="mb-2 border-l-2 border-zinc-300 pl-2 text-muted-foreground last:mb-0">
       {children}
     </blockquote>
   ),
@@ -101,7 +101,7 @@ function AssistantBubble({ text }: { text: string }) {
       <button
         type="button"
         onClick={handleCopy}
-        className="mt-1 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 hover:text-zinc-600"
+        className="mt-1 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-zinc-200 hover:text-zinc-600"
       >
         {copied ? (
           <>

@@ -164,10 +164,12 @@ describe("헤더 줄의 아이콘 버튼 모양", () => {
 
   it("펼침일 때와 접힘일 때 아이콘 색이 다르다 (펼침 색을 따로 바꿀 수 있는 자리)", async () => {
     const { user, outlineButton } = setup();
-    const openColor = outlineButton(true).className.match(/text-zinc-\d+/)![0];
+    // 기본 글자색 클래스(hover: 변형이 아닌 첫 번째). 접힘 색은 토큰(text-muted-foreground)이라 둘 다 찾는다.
+    const baseColor = (el: HTMLElement) => el.className.match(/(?<![\w:-])text-(?:zinc-\d+|muted-foreground)/)![0];
+    const openColor = baseColor(outlineButton(true));
 
     await user.click(outlineButton(true));
-    const closedColor = outlineButton(false).className.match(/text-zinc-\d+/)![0];
+    const closedColor = baseColor(outlineButton(false));
 
     expect(openColor).not.toBe(closedColor);
   });

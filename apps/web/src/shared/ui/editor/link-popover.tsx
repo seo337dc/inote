@@ -286,7 +286,7 @@ export function LinkEditButton({ state, onEdit, onEnter, onLeave }: EditButtonPr
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={onEdit}
-      className="absolute z-10 flex items-center justify-center rounded border border-zinc-200 bg-white text-zinc-500 shadow-sm hover:bg-zinc-100 hover:text-zinc-800"
+      className="absolute z-10 flex items-center justify-center rounded border border-zinc-200 bg-white text-muted-foreground shadow-sm hover:bg-zinc-100 hover:text-zinc-800"
     >
       <Pencil className="size-3" aria-hidden />
     </button>

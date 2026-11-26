@@ -215,7 +215,7 @@ export default function WriteReadingLogForm({ id }: Props) {
           ) : (
             <label
               htmlFor="cover-image-input"
-              className="flex size-32 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-500"
+              className="flex size-32 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-zinc-300 text-muted-foreground hover:border-zinc-400 hover:text-muted-foreground"
             >
               <ImagePlus className="size-6" />
               <span className="text-xs">
@@ -244,7 +244,7 @@ export default function WriteReadingLogForm({ id }: Props) {
             placeholder="작가"
             className="w-full min-w-0 rounded border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-zinc-500"
           />
-          <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <input
               type="date"
               value={startedAt}
@@ -292,7 +292,7 @@ export default function WriteReadingLogForm({ id }: Props) {
             </button>
           </div>
           {(autosaveMutation.isPending || autosavedAt) && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-muted-foreground">
               {autosaveMutation.isPending
                 ? "임시 저장 중..."
                 : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}

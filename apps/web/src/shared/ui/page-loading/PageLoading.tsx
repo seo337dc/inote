@@ -52,8 +52,8 @@ export default function PageLoading({ compact = false }: { compact?: boolean }) 
         {waking ? (
           <div className="flex flex-col items-center gap-2">
             <p className="text-sm font-medium text-zinc-700">서버가 잠들어 있어요</p>
-            <p className="text-xs text-zinc-500">깨우는 중이에요. 보통 30~60초 걸려요.</p>
-            <p className="mt-1 font-mono text-xs text-zinc-500">{elapsed}초 경과</p>
+            <p className="text-xs text-muted-foreground">깨우는 중이에요. 보통 30~60초 걸려요.</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">{elapsed}초 경과</p>
             <div className="relative mt-4 h-1 w-full overflow-hidden rounded-full bg-zinc-200">
               <motion.div
                 className="absolute top-0 h-full w-2/5 rounded-full bg-zinc-900"
@@ -72,7 +72,7 @@ export default function PageLoading({ compact = false }: { compact?: boolean }) 
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
                   transition={{ duration: 0.25 }}
-                  className="font-mono text-xs tracking-wide text-zinc-500"
+                  className="font-mono text-xs tracking-wide text-muted-foreground"
                 >
                   {MESSAGES[msgIdx]}
                 </motion.p>

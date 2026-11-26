@@ -50,7 +50,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
 
     if (items.length === 0) {
       return (
-        <div className="w-64 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-500 shadow-lg">
+        <div className="w-64 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-muted-foreground shadow-lg">
           일치하는 명령어가 없습니다
         </div>
       );
@@ -73,7 +73,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
             }`}
           >
             <span className="font-medium">{item.title}</span>
-            <span className="text-xs text-zinc-500">{item.description}</span>
+            <span className="text-xs text-muted-foreground">{item.description}</span>
           </button>
         ))}
       </div>

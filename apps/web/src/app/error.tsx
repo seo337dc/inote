@@ -17,7 +17,7 @@ export default function ErrorBoundary({
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center gap-6 px-6 text-center">
       <h1 className="text-2xl font-bold leading-snug">문제가 발생했습니다.</h1>
-      <p className="text-sm text-zinc-500">페이지를 불러오는 중 오류가 발생했어요.</p>
+      <p className="text-sm text-muted-foreground">페이지를 불러오는 중 오류가 발생했어요.</p>
       <div className="flex gap-2">
         <button
           type="button"

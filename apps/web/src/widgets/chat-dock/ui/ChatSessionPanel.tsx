@@ -25,7 +25,7 @@ export default function ChatSessionPanel({ chat }: Props) {
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-zinc-200 p-3">
         <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-zinc-500" />
+          <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             value={chat.sessionSearch}
             onChange={(e) => chat.setSessionSearch(e.target.value)}
@@ -37,7 +37,7 @@ export default function ChatSessionPanel({ chat }: Props) {
           type="button"
           onClick={chat.toggleSessionPanel}
           aria-label="닫기"
-          className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+          className="rounded p-1.5 text-muted-foreground hover:bg-zinc-100 hover:text-zinc-700"
         >
           <X className="size-4" />
         </button>
@@ -54,7 +54,7 @@ export default function ChatSessionPanel({ chat }: Props) {
 
       <ul className="flex-1 overflow-y-auto">
         {chat.sessions.length === 0 && (
-          <li className="px-3 py-6 text-center text-sm text-zinc-500">
+          <li className="px-3 py-6 text-center text-sm text-muted-foreground">
             {chat.sessionSearch ? "검색 결과가 없어요." : "대화 기록이 없어요."}
           </li>
         )}
@@ -72,7 +72,7 @@ export default function ChatSessionPanel({ chat }: Props) {
                 } ${active ? "bg-zinc-100" : "hover:bg-zinc-50"}`}
               >
                 <div className="flex items-center gap-1.5">
-                  <p className="truncate text-[11px] text-zinc-500">{kicker}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{kicker}</p>
                   {answering && (
                     <span
                       role="img"
@@ -88,7 +88,7 @@ export default function ChatSessionPanel({ chat }: Props) {
                 <Link
                   href={`/posts/${session.post_id}`}
                   aria-label="그 글로 이동"
-                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1.5 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+                  className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-1.5 text-muted-foreground hover:bg-zinc-200 hover:text-zinc-700"
                 >
                   <ArrowUpRight className="size-4" />
                 </Link>

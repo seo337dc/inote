@@ -88,7 +88,7 @@ export default async function UserPostsPage({ userId, categoryId, page, pinnedPa
           q={q}
           emptyMessage="이 카테고리에는 공개된 글이 없어요."
           emptyState={
-            <p className="py-24 text-center text-sm text-zinc-500">아직 공개된 글이 없어요.</p>
+            <p className="py-24 text-center text-sm text-muted-foreground">아직 공개된 글이 없어요.</p>
           }
         />
       </div>

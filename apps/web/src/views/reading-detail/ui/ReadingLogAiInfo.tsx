@@ -35,7 +35,7 @@ export default function ReadingLogAiInfo({ summary }: Props) {
         <dl className="mt-2 space-y-1.5 text-sm text-zinc-600">
           {rows.map((r) => (
             <div key={r.label} className="flex gap-2">
-              <dt className="shrink-0 font-medium text-zinc-500">{r.label}</dt>
+              <dt className="shrink-0 font-medium text-muted-foreground">{r.label}</dt>
               <dd>{r.value}</dd>
             </div>
           ))}

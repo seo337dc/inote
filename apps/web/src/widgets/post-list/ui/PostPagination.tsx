@@ -49,7 +49,7 @@ export default function PostPagination({
       ) : (
         <span className={cn(buttonClass, "pointer-events-none opacity-40")}>이전</span>
       )}
-      <span className="text-sm text-zinc-500">
+      <span className="text-sm text-muted-foreground">
         {page} / {totalPages}
       </span>
       {page < totalPages ? (

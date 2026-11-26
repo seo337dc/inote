@@ -16,7 +16,7 @@ export default function EditPostLink({ postId, authorId }: Props) {
   return (
     <Link
       href={`/write/${postId}`}
-      className="text-xs text-zinc-500 underline hover:text-zinc-600"
+      className="text-xs text-muted-foreground underline hover:text-zinc-600"
     >
       수정
     </Link>

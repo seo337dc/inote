@@ -12,7 +12,7 @@ export default function GlobalError({
     <html lang="ko">
       <body className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white px-6 text-center text-zinc-900">
         <h1 className="text-2xl font-bold">문제가 발생했습니다.</h1>
-        <p className="text-sm text-zinc-500">앱을 불러오는 중 오류가 발생했어요.</p>
+        <p className="text-sm text-muted-foreground">앱을 불러오는 중 오류가 발생했어요.</p>
         <button
           type="button"
           onClick={reset}

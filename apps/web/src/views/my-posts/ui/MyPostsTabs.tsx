@@ -15,7 +15,7 @@ const TABS: { key: MyPostsTab; label: string; href: string }[] = [
 export default function MyPostsTabs({ current }: Props) {
   const base = "border-b-2 px-1 pb-2 text-sm";
   const active = "border-zinc-900 font-semibold text-zinc-900";
-  const idle = "border-transparent text-zinc-500 hover:text-zinc-600";
+  const idle = "border-transparent text-muted-foreground hover:text-zinc-600";
   return (
     <nav aria-label="나의 글 보기" className="flex gap-4">
       {TABS.map((tab) => (

@@ -60,7 +60,7 @@ function SummaryCards({ summary }: { summary: AdminEmbeddingsPage["summary"] }) 
     <dl className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
       {summaryCards(summary).map((card) => (
         <div key={card.label} className="rounded border border-zinc-200 px-4 py-3">
-          <dt className="text-xs text-zinc-500">{card.label}</dt>
+          <dt className="text-xs text-muted-foreground">{card.label}</dt>
           <dd
             className={`mt-1 text-2xl font-bold ${
               card.tone === "danger" && card.value ? "text-red-600" : "text-zinc-900"
@@ -93,7 +93,7 @@ export default function AdminEmbeddingsPage() {
       <div className="mb-4 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">임베딩</h1>
         {data && data.aiAvailable && (
-          <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span
               aria-hidden
               className={`inline-block size-2 rounded-full ${
@@ -134,7 +134,7 @@ export default function AdminEmbeddingsPage() {
         aria-labelledby={`${TABS_ID_PREFIX}-tab-${filter}`}
       >
         {data && data.items.length === 0 && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted-foreground">
             {data.aiAvailable ? "해당하는 글이 없습니다." : "상태를 확인할 수 없어 이 탭은 볼 수 없습니다."}
           </p>
         )}
@@ -144,7 +144,7 @@ export default function AdminEmbeddingsPage() {
             <div className="overflow-x-auto rounded border border-zinc-200">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+                  <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-muted-foreground">
                     <th className="px-4 py-2 font-medium">제목</th>
                     <th className="px-4 py-2 font-medium">카테고리</th>
                     <th className="px-4 py-2 font-medium">공개</th>
@@ -158,15 +158,15 @@ export default function AdminEmbeddingsPage() {
                     <tr key={item.postId} className="border-b border-zinc-100 last:border-0">
                       <td className="px-4 py-2 font-medium">{item.title}</td>
                       <td className="px-4 py-2 text-zinc-600">{item.category}</td>
-                      <td className="px-4 py-2 text-zinc-500">{visibilityLabel(item)}</td>
+                      <td className="px-4 py-2 text-muted-foreground">{visibilityLabel(item)}</td>
                       <td className="px-4 py-2">
                         <EmbeddingStatusBadge status={item.status} detail={item.job?.lastError} />
                         {item.status === "failed" && item.job && (
-                          <div className="mt-1 text-xs text-zinc-500">시도 {item.job.attempts}회</div>
+                          <div className="mt-1 text-xs text-muted-foreground">시도 {item.job.attempts}회</div>
                         )}
                       </td>
-                      <td className="px-4 py-2 text-zinc-500">{item.chunkCount > 0 ? item.chunkCount : "-"}</td>
-                      <td className="px-4 py-2 text-zinc-500">
+                      <td className="px-4 py-2 text-muted-foreground">{item.chunkCount > 0 ? item.chunkCount : "-"}</td>
+                      <td className="px-4 py-2 text-muted-foreground">
                         {item.embeddedAt ? formatDateTime(item.embeddedAt) : "-"}
                       </td>
                     </tr>
@@ -185,7 +185,7 @@ export default function AdminEmbeddingsPage() {
               >
                 이전
               </Button>
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-muted-foreground">
                 {data.page} / {data.totalPages}
               </span>
               <Button

@@ -15,7 +15,7 @@ export default function InoteBlogBrand() {
             <div className="h-2 w-4/6 rounded bg-zinc-900/10" />
           </div>
           <div className="mt-auto flex items-center justify-end">
-            <PenLine className="h-3.5 w-3.5 text-zinc-500" />
+            <PenLine className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
         </div>
       </div>
