@@ -79,7 +79,7 @@ export default function MemosPage() {
               aria-selected={selected}
               onClick={() => setTab(key)}
               className={`-mb-px cursor-pointer border-b-2 px-1 pb-2 text-sm ${
-                selected ? "border-zinc-900 font-semibold text-zinc-900" : "border-transparent text-zinc-400 hover:text-zinc-600"
+                selected ? "border-zinc-900 font-semibold text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-600"
               }`}
             >
               {label}

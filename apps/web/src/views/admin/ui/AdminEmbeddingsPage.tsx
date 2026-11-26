@@ -134,7 +134,7 @@ export default function AdminEmbeddingsPage() {
         aria-labelledby={`${TABS_ID_PREFIX}-tab-${filter}`}
       >
         {data && data.items.length === 0 && (
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-zinc-500">
             {data.aiAvailable ? "해당하는 글이 없습니다." : "상태를 확인할 수 없어 이 탭은 볼 수 없습니다."}
           </p>
         )}
@@ -162,7 +162,7 @@ export default function AdminEmbeddingsPage() {
                       <td className="px-4 py-2">
                         <EmbeddingStatusBadge status={item.status} detail={item.job?.lastError} />
                         {item.status === "failed" && item.job && (
-                          <div className="mt-1 text-xs text-zinc-400">시도 {item.job.attempts}회</div>
+                          <div className="mt-1 text-xs text-zinc-500">시도 {item.job.attempts}회</div>
                         )}
                       </td>
                       <td className="px-4 py-2 text-zinc-500">{item.chunkCount > 0 ? item.chunkCount : "-"}</td>

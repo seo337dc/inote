@@ -44,7 +44,7 @@ export default function WriteSettingsContent({
 
       <h3 className="mb-1.5 px-1 text-xs font-medium text-zinc-500">카테고리</h3>
       {categories.length === 0 ? (
-        <p className="px-1 text-xs text-zinc-400">카테고리가 없어요.</p>
+        <p className="px-1 text-xs text-zinc-500">카테고리가 없어요.</p>
       ) : (
         <ul className="flex flex-col gap-0.5">
           {categories.map((node) => (
@@ -89,7 +89,7 @@ function CategoryItem({
             onClick={() => setExpanded((v) => !v)}
             aria-label={`${node.name} ${expanded ? "접기" : "펼치기"}`}
             aria-expanded={expanded}
-            className="flex size-6 shrink-0 items-center justify-center text-zinc-400 hover:text-zinc-600"
+            className="flex size-6 shrink-0 items-center justify-center text-zinc-500 hover:text-zinc-600"
           >
             {expanded ? (
               <ChevronDown className="size-3.5" aria-hidden="true" />
@@ -141,7 +141,7 @@ function VisibilityButton({
         "flex items-center justify-center gap-1 rounded border px-1 py-1.5 text-xs",
         active
           ? "border-zinc-900 bg-white font-medium text-zinc-900"
-          : "border-zinc-200 bg-white text-zinc-400 hover:text-zinc-600",
+          : "border-zinc-200 bg-white text-zinc-500 hover:text-zinc-600",
       )}
     >
       {icon}

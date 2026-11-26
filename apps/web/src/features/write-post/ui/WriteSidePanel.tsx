@@ -29,7 +29,7 @@ export default function WriteSidePanel(props: Props) {
             aria-controls={PANEL_ID}
             className={cn(
               "size-[22px] shrink-0 rounded p-1 hover:bg-zinc-100",
-              open ? "text-zinc-600" : "text-zinc-400 hover:text-zinc-600",
+              open ? "text-zinc-600" : "text-zinc-500 hover:text-zinc-600",
             )}
           >
             <ToggleIcon className="size-3.5" aria-hidden="true" />

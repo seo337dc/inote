@@ -295,7 +295,7 @@ export default function WritePostForm({ id }: Props) {
               </button>
             </div>
             {(autosaveMutation.isPending || autosavedAt) && (
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-zinc-500">
                 {autosaveMutation.isPending
                   ? "임시 저장 중..."
                   : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}

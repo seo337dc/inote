@@ -21,7 +21,7 @@ export default function ReadingLogList({ logs, emptyMessage = "기록이 없습�
               />
             )}
             <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-400">
+              <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-500">
                 <span className="truncate">{log.author || "작가 미상"}</span>
                 <span className="shrink-0">
                   {new Date(log.createdAt).toLocaleDateString("ko-KR")}
@@ -38,7 +38,7 @@ export default function ReadingLogList({ logs, emptyMessage = "기록이 없습�
         </li>
       ))}
       {logs.length === 0 && (
-        <li className="py-10 text-center text-sm text-zinc-400">{emptyMessage}</li>
+        <li className="py-10 text-center text-sm text-zinc-500">{emptyMessage}</li>
       )}
     </ul>
   );

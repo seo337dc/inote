@@ -16,7 +16,7 @@ export default function EditReadingLogLink({ readingLogId, authorId }: Props) {
   return (
     <Link
       href={`/reading/write?id=${readingLogId}`}
-      className="text-xs text-zinc-400 underline hover:text-zinc-600"
+      className="text-xs text-zinc-500 underline hover:text-zinc-600"
     >
       수정
     </Link>

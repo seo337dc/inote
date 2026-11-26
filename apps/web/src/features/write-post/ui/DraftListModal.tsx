@@ -77,11 +77,11 @@ export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }
                       <span className="font-medium text-zinc-900">
                         {draft.title.trim() || "제목 없음"}
                       </span>
-                      <span className="shrink-0 text-xs text-zinc-400">
+                      <span className="shrink-0 text-xs text-zinc-500">
                         {new Date(draft.updatedAt).toLocaleDateString("ko-KR")}
                       </span>
                     </div>
-                    <div className="mb-1 text-xs text-zinc-400">
+                    <div className="mb-1 text-xs text-zinc-500">
                       {draft.category || "카테고리 없음"}
                     </div>
                     <p className="line-clamp-2 text-sm text-zinc-500">
@@ -92,7 +92,7 @@ export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }
                     type="button"
                     onClick={() => setConfirmId(draft.id)}
                     aria-label="draft 삭제"
-                    className="absolute right-3 bottom-3 rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600"
+                    className="absolute right-3 bottom-3 rounded p-1 text-zinc-500 hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 className="size-4" />
                   </button>

@@ -154,7 +154,7 @@ export default function PostMover() {
   }
 
   if (categoriesQuery.isPending || postsQuery.isPending) {
-    return <p className="text-sm text-zinc-400">불러오는 중...</p>;
+    return <p className="text-sm text-zinc-500">불러오는 중...</p>;
   }
 
   if (postsQuery.isError) {
@@ -174,7 +174,7 @@ export default function PostMover() {
 
   if ((postsQuery.data ?? []).length === 0) {
     return (
-      <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-zinc-400">
+      <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-zinc-500">
         아직 옮길 글이 없어요.
       </p>
     );
@@ -209,7 +209,7 @@ export default function PostMover() {
       )}
 
       <div className="mb-3 mt-4 flex items-center justify-between">
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-zinc-500">
           폴더의 + 로 글을 열고, 글 왼쪽 손잡이(⋮⋮)를 다른 폴더로 끌어 놓으면 옮겨져요.
         </p>
         <div className="flex gap-1 text-xs">
@@ -258,7 +258,7 @@ export default function PostMover() {
           {activePost && (
             <div className="flex w-fit max-w-xs items-center gap-2 rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm shadow-lg">
               <FileText
-                className="size-3.5 shrink-0 text-zinc-400"
+                className="size-3.5 shrink-0 text-zinc-500"
                 aria-hidden
               />
               <span className="truncate">
@@ -365,7 +365,7 @@ function FolderItem({
         >
           {folder.name}
         </span>
-        <span className="text-xs text-zinc-400">{folder.total}</span>
+        <span className="text-xs text-zinc-500">{folder.total}</span>
         {folder.isOrphan && (
           <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[11px] text-amber-600">
             목록에 없는 카테고리
@@ -511,11 +511,11 @@ function PostRow({
         {...listeners}
         {...attributes}
         aria-label={`${post.title || "제목 없음"} 이동`}
-        className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 active:cursor-grabbing [@media(hover:hover)]:opacity-40 group-hover:opacity-100 focus-visible:opacity-100"
+        className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 active:cursor-grabbing [@media(hover:hover)]:opacity-40 group-hover:opacity-100 focus-visible:opacity-100"
       >
         <GripVertical className="size-4" aria-hidden />
       </button>
-      <FileText className="size-3.5 shrink-0 text-zinc-400" aria-hidden />
+      <FileText className="size-3.5 shrink-0 text-zinc-500" aria-hidden />
       <Link
         // 발행 전 글은 상세가 아니라 이어 쓰기 화면으로
         href={isDraft ? `/write/${post.id}` : `/posts/${post.id}`}

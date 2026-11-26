@@ -49,7 +49,7 @@ export default function PostArticle({ post }: { post: Post }) {
         </p>
       )}
       <h1 className="mb-3 text-3xl font-bold">{post.title}</h1>
-      <div className="mb-6 flex items-start justify-between gap-4 text-sm text-zinc-400">
+      <div className="mb-6 flex items-start justify-between gap-4 text-sm text-zinc-500">
         {/* 작성자를 누르면 그 사람의 홈(/users/[id]) — 내 글이면 나의 글로 (목록 카드와 같은 규칙) */}
         <p className="flex min-w-0">
           <PostAuthor post={post} />

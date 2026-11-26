@@ -32,7 +32,7 @@ export default function AdminMembersPage() {
       )}
 
       {data && data.items.length === 0 && (
-        <p className="text-sm text-zinc-400">회원이 없습니다.</p>
+        <p className="text-sm text-zinc-500">회원이 없습니다.</p>
       )}
 
       {data && data.items.length > 0 && (
@@ -59,7 +59,7 @@ export default function AdminMembersPage() {
                     <td className="px-4 py-2">
                       <div className="font-medium">{user.nickname ?? user.name}</div>
                       {user.nickname && (
-                        <div className="text-xs text-zinc-400">{user.name}</div>
+                        <div className="text-xs text-zinc-500">{user.name}</div>
                       )}
                     </td>
                     <td className="px-4 py-2 text-zinc-600">{user.email}</td>
@@ -69,7 +69,7 @@ export default function AdminMembersPage() {
                           ADMIN
                         </span>
                       ) : (
-                        <span className="text-zinc-400">일반</span>
+                        <span className="text-zinc-500">일반</span>
                       )}
                     </td>
                     <td className="px-4 py-2">

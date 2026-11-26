@@ -80,7 +80,7 @@ export default function DesktopChatPanel({ chat }: Props) {
           type="button"
           onClick={() => setCollapsed(false)}
           aria-label="AI 어시스턴트 펼치기"
-          className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+          className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
         >
           <PanelRightOpen className="size-4" />
         </button>
@@ -111,7 +111,7 @@ export default function DesktopChatPanel({ chat }: Props) {
             type="button"
             onClick={() => setCollapsed(true)}
             aria-label="AI 어시스턴트 접기"
-            className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+            className="shrink-0 rounded p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
           >
             <PanelRightOpen className="size-4 rotate-180" />
           </button>

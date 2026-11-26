@@ -59,7 +59,7 @@ function ProfileIdentity({
           <p className="font-semibold">{nickname}</p>
           <div className="flex items-center gap-1.5">
             {hasGoogle && <GoogleIcon />}
-            <p className="text-sm text-zinc-400">{profile.email}</p>
+            <p className="text-sm text-zinc-500">{profile.email}</p>
           </div>
         </div>
       </div>
@@ -230,7 +230,7 @@ function PasswordSection({ hasCredential }: { hasCredential: boolean }) {
       <h2 className="mb-1 text-sm font-semibold">
         {hasCredential ? "비밀번호 변경" : "비밀번호 생성"}
       </h2>
-      <p className="mb-4 text-xs text-zinc-400">
+      <p className="mb-4 text-xs text-zinc-500">
         {hasCredential
           ? "이메일 계정으로 로그인한 경우에만 해당됩니다. Google 계정은 Google에서 비밀번호를 관리합니다."
           : "Google 계정으로 가입하셨네요. 비밀번호를 만들어두면 이메일/비밀번호로도 로그인할 수 있어요."}
@@ -257,7 +257,7 @@ export default function ProfileForm() {
   });
 
   if (isProfilePending || !profile || isAccountsPending || !accounts) {
-    return <p className="text-sm text-zinc-400">불러오는 중...</p>;
+    return <p className="text-sm text-zinc-500">불러오는 중...</p>;
   }
 
   const hasGoogle = accounts.some((a) => a.providerId === "google");
@@ -271,7 +271,7 @@ export default function ProfileForm() {
 
       <div className="mt-8 border-t border-zinc-200 pt-8">
         <h2 className="mb-1 text-sm font-semibold text-red-600">위험 구역</h2>
-        <p className="mb-4 text-xs text-zinc-400">
+        <p className="mb-4 text-xs text-zinc-500">
           회원 탈퇴 시 계정과 로그인 정보는 즉시 삭제됩니다. 작성한 글은 삭제되지 않고
           작성자 없음으로 남습니다. 되돌릴 수 없습니다.
         </p>

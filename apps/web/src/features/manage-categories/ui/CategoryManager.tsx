@@ -206,7 +206,7 @@ export default function CategoryManager() {
   }
 
   if (isPending) {
-    return <p className="text-sm text-zinc-400">불러오는 중...</p>;
+    return <p className="text-sm text-zinc-500">불러오는 중...</p>;
   }
 
   return (
@@ -235,7 +235,7 @@ export default function CategoryManager() {
       )}
 
       {tree.length === 0 ? (
-        <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-zinc-400">
+        <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-zinc-500">
           아직 카테고리가 없어요. 위에서 첫 카테고리를 추가해 보세요.
         </p>
       ) : (
@@ -293,7 +293,7 @@ export default function CategoryManager() {
           </DragOverlay>
         </DndContext>
       )}
-      <p className="mt-3 text-xs text-zinc-400">
+      <p className="mt-3 text-xs text-zinc-500">
         줄 왼쪽의 손잡이를 끌어 순서를 바꾸거나 다른 카테고리 안으로 옮길 수
         있어요.
       </p>
@@ -385,7 +385,7 @@ function CategoryItem(props: ItemProps) {
           {...listeners}
           {...attributes}
           aria-label={`${node.name} 이동`}
-          className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 active:cursor-grabbing [@media(hover:hover)]:opacity-40 group-hover:opacity-100 focus-visible:opacity-100"
+          className="flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 active:cursor-grabbing [@media(hover:hover)]:opacity-40 group-hover:opacity-100 focus-visible:opacity-100"
         >
           <GripVertical className="size-4" aria-hidden />
         </button>
@@ -452,7 +452,7 @@ function CategoryItem(props: ItemProps) {
           </span>
         )}
         {counts && (
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-zinc-500">
             {subtreeCount(node, counts)}
           </span>
         )}

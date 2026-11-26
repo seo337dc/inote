@@ -152,7 +152,7 @@
 
 /* Tiptap Placeholder 확장은 data-placeholder 속성만 달아주고 CSS는 직접 넣어야 함 */
 .tiptap p.is-editor-empty:first-child::before {
-  color: var(--color-zinc-400, #a1a1aa);
+  color: var(--color-zinc-500, #71717a);
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -425,7 +425,7 @@
 /* 체크한 항목은 노션처럼 회색 + 취소선. 글자(p)에만 걸어서, 안에 들여쓴 하위 항목까지 줄이 그어지지 않게 한다 */
 .tiptap ul[data-type="taskList"] > li[data-checked="true"] > div > p,
 .prose ul[data-type="taskList"] > li[data-checked="true"] > div > p {
-  color: var(--color-zinc-400, #a1a1aa);
+  color: var(--color-zinc-500, #71717a);
   text-decoration: line-through;
 }
 
