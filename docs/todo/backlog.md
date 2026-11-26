@@ -156,6 +156,9 @@
 - [ ] **문서 안의 `src/...` 경로를 `apps/web/src/...`로 통일** (2026-09-10 모노레포 전환 후 남은 정리).
 - [ ] [BE] **`DEV_LOG.md` 전체를 레포에 둘지** — `docs/devlog/be.md`로 이름이 바뀐 개발 로그를 레포에 둘지, `docs/archive/`로 보낼지, 사이트에만 둘지(최근 항목만 남기고 앞부분을 archive하는 절충도 가능). `docs/learning/LEARNING.md`(1,764줄)가 이전 Notion 원본과 같은지도 확인해 같다면 레포에서 뺀다(학습 문서의 사이트 이전은 별도 단계).
 - [ ] [FE] **README의 "구현된 기능" 한 줄**은 기능이 늘면 같이 고쳐야 한다 — 길어지기 전에 devlog 링크로만 두는 것도 고려한다.
+- [ ] [FE] **"마우스에서만 숨기고 포커스·hover 때 보인다" 클래스 묶음 5곳 상수화** — `[@media(hover:hover)]:opacity-0 focus-visible:opacity-100 group-hover:opacity-100`이 `TodosPage.tsx`(삭제 버튼)·`PostOutline.tsx`·`PostMover.tsx`·`CategoryManager.tsx`(2곳)에 복붙돼 있다. 이미 갈라졌다: `TodosPage`만 `group-focus-within:opacity-100`이 없다(행 안의 다른 요소에 포커스가 있을 때 버튼이 안 보임, 버튼 자체에 포커스가 가면 보인다). 합치기 전에 이 동작 차이를 정하고, `TodosPage.test.tsx`·`PostOutline.test.tsx`가 클래스 문자열로 검증하는 부분도 같이 바꾼다. 이 파일들을 다시 건드릴 때 한다. (출처: Impeccable 점검 커밋 전 리팩토링 점검, 2026-11-26)
+- [ ] [FE] **테스트의 `useSession` mock·캐스팅 헬퍼** — `vi.mock("next/navigation")`이 17개, `vi.mock("@/shared/lib/auth-client")`가 19개 테스트 파일에 있고 `as unknown as ReturnType<typeof useSession>` 캐스팅이 31곳이다. `vi.mock`은 호이스팅 때문에 헬퍼로 못 옮기므로 `src/test/`에 캐스팅·반환값 구성만 맡는 `mockSession()` 같은 헬퍼를 두는 방식이다. 25곳 이상을 건드리니 그 폴더의 테스트를 다시 고칠 때 한다. (출처: 같은 점검)
+- [ ] [FE] **`ReadingLogList.test.tsx`의 `makeLog` 팩토리** — 지금은 복사본이 1개라 그대로 둔다. 다른 테스트가 `ReadingLog`를 만들 일이 생기면 `test/fixtures/reading-logs.ts`로 옮긴다(`test/fixtures/`에는 `posts.ts`·`memo.ts`가 있다). (출처: 같은 점검)
 
 ## 9. 하지 않기로 한 것 (다시 꺼내지 않기 위한 기록)
 - **글 상세 화면에서 작성자가 바로 체크하고 저장(체크리스트 2단계)** — 2026-10-27 사용자 결정으로 하지 않는다. 상세의 체크박스는 보기 전용이고 체크는 수정 화면에서 한다. 다시 하게 되면: 본문 HTML에서 n번째 체크 항목의 `data-checked`·`checked`만 바꾼 새 HTML을 `PATCH /blog/posts/:id`에 `{ content }`만 보낸다(`publish` 없이 — `lastEditedAt`·AI 요약은 안 바뀌어 BE 변경은 필요 없을 가능성이 크지만 실제로 확인한 적은 없다). 다른 탭의 오래된 자동 저장이 체크 상태를 덮어쓸 위험이 있다.
