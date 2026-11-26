@@ -79,6 +79,13 @@ pnpm test && pnpm lint && pnpm build
 - [ ] (선택) `/impeccable audit` 재실행으로 점수 변화 확인 (13/20에서 얼마나 오르는지)
 - [ ] 다크 모드를 도입할지 결정 → 5번 진행 여부 (결정 전)
 - [ ] **색을 토큰으로 정리 (5번의 1단계, 다크 모드 결정과 무관하게 먼저 진행)** — 별도 브랜치에서 한다(이 브랜치의 변경을 커밋한 뒤 그 위에서 분기). 2026-11-26 코드 확인: `zinc-*` 클래스 718곳·94개 파일, 토큰 클래스는 30곳 안팎, `.dark` 변수는 있지만 `.dark` 클래스를 붙이는 코드는 찾지 못했다. 1단계는 값이 같거나 거의 같은 토큰만 바꾼다(화면 변화 없음): `text-zinc-500`(183곳)→`text-muted-foreground`, `border-zinc-200`(77)→`border-border`, `bg-zinc-100`·`hover:bg-zinc-100`(32+41)→`bg-muted`, `bg-white`(42)→`bg-background`. **`bg-primary`·`bg-accent`는 초록이라 검은 버튼·hover에 쓰면 안 된다.** 2단계(토큰이 없는 `bg-zinc-900` 버튼 64곳, `border-zinc-300` 52곳, 글자색 600/700 단계 합치기)는 새 토큰 이름부터 따로 의논한다.
+  - **1단계 진행 (브랜치 `refactor/color-tokens`)**: `text-zinc-500`→`text-muted-foreground` 183줄·71파일 완료, `border-zinc-200`→`border-border` 78줄·46파일 완료. 남음: `bg-zinc-100`·`hover:bg-zinc-100`→`bg-muted`(73곳), `bg-white`→`bg-background`(42곳). 값 차이: `text-zinc-500`→`muted-foreground`는 흰 배경 4.83→4.73:1, 회색 배경(`bg-zinc-100`/`bg-muted`) 4.39→4.34:1(원래도 4.5 미만).
+  - `globals.css`의 `var(--color-zinc-500·200, …)` 6곳(155·428·235·299·491·505줄)은 클래스가 아니라 CSS 값이라 1단계 치환에서 뺐다. `var(--muted-foreground)`·`var(--border)`로 맞출지 정한다.
+  - **2단계 입력 목록 (커밋 전 리팩토링 점검, 2026-11-26)**
+    - `text-muted-foreground` 옆에 `hover:text-zinc-600/700/800/900`이 같은 줄에 있는 곳 43줄(`tabs.tsx:58`, `content-toc.tsx:124`, `PostMover.tsx`·`CategoryManager.tsx` 아이콘 버튼 등) — hover 색도 토큰으로 옮긴다. `grep -rE "text-muted-foreground" src --include='*.tsx' | grep "hover:text-zinc"`로 다시 뽑을 수 있다.
+    - `WriteReadingLogForm.tsx:218`의 `hover:text-muted-foreground`는 치환 전부터 기본색과 같아서 효과가 없던 중복이다(화면 변화 없음). hover 색을 정리할 때 지운다.
+    - 한 요소 안에서 열림은 `text-zinc-600`, 닫힘은 `text-muted-foreground`로 두 색 체계가 섞인 곳(`PostArticleLayout.tsx:70`, `WriteSidePanel.tsx:32`, `MandalartContent.tsx:63`, `TodosPage.tsx:72`) — 열림 색도 토큰으로 맞추면 `PostArticleLayout.test.tsx`의 `baseColor` 정규식이 `text-[\w-]+` 한 가지로 줄어든다.
+    - 클래스 이름으로 색을 검사하는 테스트는 토큰을 더 옮기면 다시 깨진다: `EmbeddingStatusBadge.test.tsx:9-14`, `CategoryFilter.test.tsx:95-96`(`bg-zinc-900`), `Markdown.test.tsx:13,19`(`bg-zinc-100`), `ChatMessages.test.tsx:18,33`(`bg-zinc-200`), `SlashCommandMenu.test.tsx:60,72,82`(`bg-zinc-100`). 깨지면 `toHaveClass` 대신 role·`data-*`로 바꾸는 쪽을 검토한다.
 - [ ] 입력 focus 클래스(`outline-none focus:border-zinc-500`, 29곳) 공통화 여부 — 리팩토링 점검 결과 "지금은 유지" 권장. 입력 스타일을 다시 바꿀 일이 생기면 `globals.css` 공통 규칙으로 별도 작업
 
 ## 막힌 것·결정 대기
