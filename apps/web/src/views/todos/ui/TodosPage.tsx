@@ -89,7 +89,7 @@ export default function TodosPage() {
           type="button"
           onClick={() => deleteTodo.mutate(todo.id)}
           aria-label="삭제"
-          className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 opacity-0 transition-opacity hover:bg-zinc-100 hover:text-zinc-700 group-hover:opacity-100"
+          className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-500 transition-opacity hover:bg-zinc-100 hover:text-zinc-700 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
         >
           <X className="size-3.5" />
         </button>

@@ -18,8 +18,8 @@ const PanelsContext = createContext<PanelsState | null>(null);
 // 아이콘이 들어갈 왼쪽 자리는 각 영역의 headerClassName으로 비운다 (PostOutline / ContentToc).
 // - 카테고리: 아이콘(0~22px) 다음에 제목. 아이콘 왼쪽이 영역의 왼쪽 끝
 // - 목차: 영역 왼쪽의 세로선(2px) 바로 오른쪽에 아이콘(8~30px), 그 다음에 제목
-export const OUTLINE_HEADER_CLASS = "min-h-[22px] pl-7";
-export const TOC_HEADER_CLASS = "flex min-h-[22px] items-center pl-[34px]";
+export const OUTLINE_HEADER_CLASS = "min-h-6 pl-[30px]";
+export const TOC_HEADER_CLASS = "flex min-h-6 items-center pl-9";
 
 const OUTLINE_PANEL_ID = "post-outline-panel";
 const TOC_PANEL_ID = "post-toc-panel";
@@ -67,7 +67,7 @@ function SidePanelToggle({
       aria-expanded={open}
       aria-controls={panelId}
       // 펼침(open=true)일 때와 접힘일 때의 아이콘 색은 여기서 정한다 (펼침 색을 바꾸려면 아래 줄의 첫 번째 색)
-      className={cn("size-[22px] rounded p-1", open ? "text-zinc-600" : "text-zinc-400 hover:text-zinc-600")}
+      className={cn("size-6 rounded p-1", open ? "text-zinc-600" : "text-zinc-500 hover:text-zinc-600")}
     >
       <Icon className="size-3.5" aria-hidden="true" />
     </button>
