@@ -45,12 +45,12 @@ export default function CategoryFilter({
   return (
     <aside className={cn("w-40 shrink-0", className)}>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">카테고리</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">카테고리</p>
         {showManage && (
           <Link
             href="/categories"
             onClick={onNavigate}
-            className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+            className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-zinc-200 hover:text-zinc-700"
           >
             관리
           </Link>

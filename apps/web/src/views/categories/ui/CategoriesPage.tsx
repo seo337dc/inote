@@ -39,7 +39,7 @@ export default function CategoriesPage() {
   return (
     <div className="mx-auto max-w-xl px-6 py-10">
       <h1 className="mb-1 text-2xl font-bold">카테고리 관리</h1>
-      <p className="mb-5 text-sm text-zinc-500">{DESCRIPTIONS[tab]}</p>
+      <p className="mb-5 text-sm text-muted-foreground">{DESCRIPTIONS[tab]}</p>
       <Tabs
         tabs={TABS}
         value={tab}

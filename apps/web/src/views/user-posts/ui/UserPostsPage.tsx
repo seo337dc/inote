@@ -52,7 +52,7 @@ export default async function UserPostsPage({ userId, categoryId, page, pinnedPa
       <div className="min-w-0 flex-1">
         {filter && (
           // 좁은 화면에는 왼쪽 열이 없어서 목록 위에 접어 두고 펼치게 한다
-          <details className="mb-4 rounded border border-zinc-200 px-3 py-2 lg:hidden">
+          <details className="mb-4 rounded border border-border px-3 py-2 lg:hidden">
             <summary className="cursor-pointer text-sm text-zinc-600">
               카테고리{activeName ? ` · ${activeName}` : ""}
             </summary>
@@ -88,7 +88,7 @@ export default async function UserPostsPage({ userId, categoryId, page, pinnedPa
           q={q}
           emptyMessage="이 카테고리에는 공개된 글이 없어요."
           emptyState={
-            <p className="py-24 text-center text-sm text-zinc-500">아직 공개된 글이 없어요.</p>
+            <p className="py-24 text-center text-sm text-muted-foreground">아직 공개된 글이 없어요.</p>
           }
         />
       </div>

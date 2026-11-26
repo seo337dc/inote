@@ -67,7 +67,7 @@ function SidePanelToggle({
       aria-expanded={open}
       aria-controls={panelId}
       // 펼침(open=true)일 때와 접힘일 때의 아이콘 색은 여기서 정한다 (펼침 색을 바꾸려면 아래 줄의 첫 번째 색)
-      className={cn("size-6 rounded p-1", open ? "text-zinc-600" : "text-zinc-500 hover:text-zinc-600")}
+      className={cn("size-6 rounded p-1", open ? "text-zinc-600" : "text-muted-foreground hover:text-zinc-600")}
     >
       <Icon className="size-3.5" aria-hidden="true" />
     </button>

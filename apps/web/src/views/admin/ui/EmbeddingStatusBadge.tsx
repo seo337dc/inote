@@ -1,8 +1,8 @@
 import type { EmbeddingStatus } from "../model/useAdminEmbeddings";
 
 const STATUS_VIEW: Record<EmbeddingStatus, { label: string; className: string; hint?: string }> = {
-  excluded: { label: "대상 아님", className: "bg-zinc-100 text-zinc-500", hint: "임시저장·비공개·보관 글은 임베딩하지 않습니다." },
-  unknown: { label: "확인 불가", className: "bg-zinc-100 text-zinc-500", hint: "임베딩 관리 서버가 응답하지 않아 상태를 알 수 없습니다." },
+  excluded: { label: "대상 아님", className: "bg-zinc-100 text-muted-foreground", hint: "임시저장·비공개·보관 글은 임베딩하지 않습니다." },
+  unknown: { label: "확인 불가", className: "bg-zinc-100 text-muted-foreground", hint: "임베딩 관리 서버가 응답하지 않아 상태를 알 수 없습니다." },
   processing: { label: "처리 중", className: "bg-blue-50 text-blue-700" },
   pending: { label: "대기", className: "bg-yellow-50 text-yellow-700" },
   failed: { label: "실패", className: "bg-red-50 text-red-600" },

@@ -39,7 +39,7 @@ export default function PostList({
               />
             )}
             <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center justify-between gap-2 text-xs text-zinc-500">
+              <div className="mb-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2 overflow-hidden">
                   {showPinIcon && post.pinned && <Star className="size-3 shrink-0 fill-amber-400 text-amber-400" />}
                   <span className="shrink-0 rounded bg-zinc-100 px-2 py-0.5">{getCategoryPath(post).map((c) => c.name).join(" > ")}</span>
@@ -55,7 +55,7 @@ export default function PostList({
                   {post.title}
                 </Link>
               </h2>
-              {post.excerpt && <p className="mt-1 text-sm text-zinc-500">{post.excerpt}</p>}
+              {post.excerpt && <p className="mt-1 text-sm text-muted-foreground">{post.excerpt}</p>}
             </div>
             {post.thumbnailUrl && (
               // eslint-disable-next-line @next/next/no-img-element -- 외부(R2) 이미지, next/image 도메인 설정 없이 바로 표시
@@ -71,7 +71,7 @@ export default function PostList({
         </li>
       ))}
       {posts.length === 0 && (
-        <li className="py-10 text-center text-sm text-zinc-500">{emptyMessage}</li>
+        <li className="py-10 text-center text-sm text-muted-foreground">{emptyMessage}</li>
       )}
     </ul>
   );

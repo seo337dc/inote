@@ -23,7 +23,7 @@ function formatDateTime(iso: string) {
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4 py-1.5 text-sm">
-      <span className="text-zinc-500">{label}</span>
+      <span className="text-muted-foreground">{label}</span>
       <span className="text-right text-zinc-900">{value}</span>
     </div>
   );
@@ -101,7 +101,7 @@ export default function AdminUserDetailModal({
                       className="h-16 w-16 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-zinc-500">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-muted-foreground">
                       <UserRound className="size-8" aria-hidden="true" />
                       <span className="sr-only">프로필 이미지 없음</span>
                     </div>
@@ -109,7 +109,7 @@ export default function AdminUserDetailModal({
                   <div>
                     <p className="font-semibold">{user.nickname ?? user.name}</p>
                     {user.nickname && (
-                      <p className="text-sm text-zinc-500">{user.name}</p>
+                      <p className="text-sm text-muted-foreground">{user.name}</p>
                     )}
                   </div>
                 </div>
@@ -155,10 +155,10 @@ export default function AdminUserDetailModal({
                 <h3 className="mb-2 text-sm font-semibold text-zinc-700">
                   앱 이용 현황
                 </h3>
-                <div className="overflow-x-auto rounded border border-zinc-200">
+                <div className="overflow-x-auto rounded border border-border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+                      <tr className="border-b border-border bg-zinc-50 text-left text-muted-foreground">
                         <th className="px-4 py-2 font-medium">iNote</th>
                         <th className="px-4 py-2 font-medium">iNote-Money</th>
                       </tr>

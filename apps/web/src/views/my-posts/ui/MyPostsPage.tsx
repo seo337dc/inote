@@ -93,7 +93,7 @@ export default function MyPostsPage({ categoryId, page, pinnedPage, q, archived 
             <button
               type="button"
               onClick={() => (selecting ? closeSelecting() : setSelecting(true))}
-              className="pb-2 text-sm text-zinc-500 hover:text-zinc-800"
+              className="pb-2 text-sm text-muted-foreground hover:text-zinc-800"
             >
               {selecting ? "선택 취소" : "선택"}
             </button>
@@ -135,8 +135,8 @@ export default function MyPostsPage({ categoryId, page, pinnedPage, q, archived 
 function ArchiveEmpty() {
   return (
     <div className="py-20 text-center">
-      <p className="text-zinc-500">보관한 글이 없어요.</p>
-      <p className="mt-1 text-sm text-zinc-500">나의 글에서 [선택]을 눌러 글을 보관함으로 옮길 수 있어요.</p>
+      <p className="text-muted-foreground">보관한 글이 없어요.</p>
+      <p className="mt-1 text-sm text-muted-foreground">나의 글에서 [선택]을 눌러 글을 보관함으로 옮길 수 있어요.</p>
     </div>
   );
 }

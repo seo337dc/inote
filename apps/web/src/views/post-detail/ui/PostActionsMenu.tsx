@@ -97,7 +97,7 @@ export default function PostActionsMenu({ post }: Props) {
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="글 관리 메뉴"
-          className="flex size-7 cursor-pointer items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
+          className="flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-zinc-600"
         >
           <Ellipsis className="size-4" />
         </DropdownMenuTrigger>
@@ -115,7 +115,7 @@ export default function PostActionsMenu({ post }: Props) {
               <DropdownMenuItem disabled={archived} onClick={() => setDialog("unpublish")} className="gap-2">
                 <Undo2 className="size-4" />
                 임시저장으로 변경
-                {archived && <span className="ml-auto pl-3 text-xs text-zinc-500">보관 해제 후 가능</span>}
+                {archived && <span className="ml-auto pl-3 text-xs text-muted-foreground">보관 해제 후 가능</span>}
               </DropdownMenuItem>
               <div role="separator" className="my-1 h-px bg-zinc-100" />
             </>

@@ -19,13 +19,13 @@ export default function ChatComposer({ chat }: Props) {
   }
 
   return (
-    <form onSubmit={chat.handleSend} className="flex items-end gap-2 border-t border-zinc-200 p-3">
+    <form onSubmit={chat.handleSend} className="flex items-end gap-2 border-t border-border p-3">
       {chat.isLoggedIn && (
         <button
           type="button"
           onClick={chat.toggleSessionPanel}
           aria-label="대화 목록"
-          className="flex size-9 shrink-0 items-center justify-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+          className="flex size-9 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-zinc-100 hover:text-zinc-700"
         >
           <History className="size-4" />
         </button>

@@ -19,7 +19,7 @@ export default function ReadingLogAiInfo({ summary }: Props) {
   if (rows.length === 0) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+    <div className="mb-6 rounded-xl border border-border bg-zinc-50 px-4 py-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -35,7 +35,7 @@ export default function ReadingLogAiInfo({ summary }: Props) {
         <dl className="mt-2 space-y-1.5 text-sm text-zinc-600">
           {rows.map((r) => (
             <div key={r.label} className="flex gap-2">
-              <dt className="shrink-0 font-medium text-zinc-500">{r.label}</dt>
+              <dt className="shrink-0 font-medium text-muted-foreground">{r.label}</dt>
               <dd>{r.value}</dd>
             </div>
           ))}

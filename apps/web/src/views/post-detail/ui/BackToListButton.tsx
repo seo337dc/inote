@@ -17,7 +17,7 @@ export default function BackToListButton() {
     <button
       type="button"
       onClick={handleClick}
-      className="mb-3 text-sm text-zinc-500 hover:text-zinc-900"
+      className="mb-3 text-sm text-muted-foreground hover:text-zinc-900"
     >
       ← 목록으로
     </button>

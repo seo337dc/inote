@@ -60,7 +60,7 @@ export default function MandalartContent({ item }: Props) {
       <div className="mb-6 flex items-center gap-2">
         <label
           className={`flex items-center gap-1.5 text-sm ${
-            isAdmin ? "cursor-pointer text-zinc-600" : "text-zinc-500"
+            isAdmin ? "cursor-pointer text-zinc-600" : "text-muted-foreground"
           }`}
         >
           <input
@@ -104,11 +104,11 @@ export default function MandalartContent({ item }: Props) {
               </Button>
             </div>
           )}
-          <div className="min-h-[8rem] rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-700 shadow-sm">
+          <div className="min-h-[8rem] rounded-2xl border border-border bg-white p-6 text-sm text-zinc-700 shadow-sm">
             {savedContent.trim() ? (
               <Markdown text={savedContent} />
             ) : (
-              <p className="text-zinc-500">아직 정리된 내용이 없어요.</p>
+              <p className="text-muted-foreground">아직 정리된 내용이 없어요.</p>
             )}
           </div>
         </div>

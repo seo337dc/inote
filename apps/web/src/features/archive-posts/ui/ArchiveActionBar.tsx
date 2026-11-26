@@ -44,7 +44,7 @@ export default function ArchiveActionBar({ archived, selectedIds, pageIds, onSel
     <div
       role="toolbar"
       aria-label="선택한 글 작업"
-      className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center gap-2 rounded border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm"
+      className="sticky bottom-0 z-10 mt-4 flex flex-wrap items-center gap-2 rounded border border-border bg-white px-3 py-2 text-sm shadow-sm"
     >
       <span className="font-medium">{count}개 선택됨</span>
       <button

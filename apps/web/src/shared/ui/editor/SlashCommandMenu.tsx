@@ -50,7 +50,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
 
     if (items.length === 0) {
       return (
-        <div className="w-64 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-500 shadow-lg">
+        <div className="w-64 rounded-lg border border-border bg-white px-3 py-2 text-sm text-muted-foreground shadow-lg">
           일치하는 명령어가 없습니다
         </div>
       );
@@ -58,7 +58,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
 
     return (
       // 항목이 10개라 그대로 펼치면 500px이 넘어 하단 고정 바·화면 아래로 넘친다 — 높이를 제한하고 스크롤
-      <div className="max-h-80 w-64 overflow-y-auto overscroll-contain rounded-lg border border-zinc-200 bg-white p-1 shadow-lg">
+      <div className="max-h-80 w-64 overflow-y-auto overscroll-contain rounded-lg border border-border bg-white p-1 shadow-lg">
         {items.map((item, index) => (
           <button
             key={item.title}
@@ -73,7 +73,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, Props>(
             }`}
           >
             <span className="font-medium">{item.title}</span>
-            <span className="text-xs text-zinc-500">{item.description}</span>
+            <span className="text-xs text-muted-foreground">{item.description}</span>
           </button>
         ))}
       </div>

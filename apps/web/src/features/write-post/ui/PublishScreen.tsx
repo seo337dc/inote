@@ -97,14 +97,14 @@ export default function PublishScreen({
       )}
     >
       <div className="grid w-full max-w-3xl gap-10 sm:grid-cols-2 sm:gap-0">
-        <section className="sm:border-r sm:border-zinc-200 sm:pr-10">
+        <section className="sm:border-r sm:border-border sm:pr-10">
           <h2 className="mb-3 text-lg font-bold">포스트 미리보기</h2>
           <div className="flex aspect-[1.91/1] items-center justify-center overflow-hidden rounded bg-zinc-200">
             {thumbnailUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- 외부(R2) 이미지, next/image 도메인 설정 없이 바로 표시
               <img src={thumbnailUrl} alt="썸네일 미리보기" className="size-full object-cover" />
             ) : (
-              <ImageIcon className="size-16 text-zinc-500" aria-hidden />
+              <ImageIcon className="size-16 text-muted-foreground" aria-hidden />
             )}
           </div>
           <input
@@ -132,7 +132,7 @@ export default function PublishScreen({
               <button
                 type="button"
                 onClick={() => onThumbnailChange("")}
-                className="text-sm text-zinc-500 underline hover:text-zinc-700"
+                className="text-sm text-muted-foreground underline hover:text-zinc-700"
               >
                 제거
               </button>
@@ -166,11 +166,11 @@ export default function PublishScreen({
               ))}
             </select>
             <ChevronDown
-              className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500"
+              className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden
             />
           </div>
-          <Link href="/categories" className="mt-1.5 text-xs text-zinc-500 hover:text-zinc-700">
+          <Link href="/categories" className="mt-1.5 text-xs text-muted-foreground hover:text-zinc-700">
             카테고리 관리
           </Link>
 
@@ -247,7 +247,7 @@ function VisibilityButton({
         "flex items-center justify-center gap-2 rounded border px-3 py-3 text-sm",
         active
           ? "border-zinc-900 bg-white font-medium text-zinc-900"
-          : "border-transparent bg-white text-zinc-500 hover:text-zinc-600",
+          : "border-transparent bg-white text-muted-foreground hover:text-zinc-600",
       )}
     >
       {icon}

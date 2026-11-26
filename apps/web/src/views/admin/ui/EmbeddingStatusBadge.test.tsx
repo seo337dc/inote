@@ -10,8 +10,8 @@ const CASES: [EmbeddingStatus, string, string[]][] = [
   ["processing", "처리 중", ["bg-blue-50", "text-blue-700"]],
   ["incomplete", "미완료", ["bg-orange-50", "text-orange-700"]],
   ["outdated", "재임베딩 필요", ["bg-purple-50", "text-purple-700"]],
-  ["excluded", "대상 아님", ["bg-zinc-100", "text-zinc-500"]],
-  ["unknown", "확인 불가", ["bg-zinc-100", "text-zinc-500"]],
+  ["excluded", "대상 아님", ["bg-zinc-100", "text-muted-foreground"]],
+  ["unknown", "확인 불가", ["bg-zinc-100", "text-muted-foreground"]],
 ];
 
 describe("EmbeddingStatusBadge", () => {

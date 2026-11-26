@@ -78,13 +78,13 @@ export default function PostOutline({ currentPostId, authorId = null, headerClas
       className="hide-scrollbar sticky top-6 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2"
     >
       <div className={cn("mb-2 flex items-center justify-between", headerClassName)}>
-        <p className="text-xs font-semibold tracking-wide text-zinc-500">
+        <p className="text-xs font-semibold tracking-wide text-muted-foreground">
           {author ? `${author.name}의 카테고리` : "카테고리"}
         </p>
         {!collapsed && !viewingOthers && (
           <Link
             href="/categories"
-            className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+            className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-zinc-200 hover:text-zinc-700"
           >
             관리
           </Link>
@@ -117,7 +117,7 @@ type ListProps = {
 
 function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth }: ListProps) {
   return (
-    <ul className={cn(depth > 0 && "ml-2 border-l border-zinc-200 pl-2")}>
+    <ul className={cn(depth > 0 && "ml-2 border-l border-border pl-2")}>
       {folders.map((folder) => {
         const open = isOpen(folder.key);
         return (
@@ -131,11 +131,11 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                 aria-expanded={open}
                 className="flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-[13px] font-medium text-zinc-700"
               >
-                <span className="flex size-4 shrink-0 items-center justify-center rounded border border-zinc-300 text-zinc-500">
+                <span className="flex size-4 shrink-0 items-center justify-center rounded border border-zinc-300 text-muted-foreground">
                   {open ? <Minus className="size-3" aria-hidden /> : <Plus className="size-3" aria-hidden />}
                 </span>
                 <span className="truncate">{folder.name}</span>
-                <span className="shrink-0 text-xs font-normal text-zinc-500">{folder.total}</span>
+                <span className="shrink-0 text-xs font-normal text-muted-foreground">{folder.total}</span>
               </button>
               {listHref(folder.key) && (
                 <Link
@@ -144,7 +144,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   title={`${folder.name} 목록 보기`}
                   // 마우스를 쓸 수 있는 환경에선 줄에 올렸을 때(또는 키보드로 줄 안에 포커스가 있을 때)만 보이고, 터치 기기에선 항상 보인다.
                   // 투명하게만 하고 자리는 그대로 두어서, 나타나도 줄 안의 글자가 밀리지 않는다
-                  className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
+                  className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-zinc-200 hover:text-zinc-700 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
                 >
                   <ExternalLink className="size-3.5" aria-hidden />
                 </Link>
@@ -163,7 +163,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   />
                 )}
                 {folder.posts.length > 0 && (
-                  <ul className="ml-2 border-l border-zinc-200 pl-2">
+                  <ul className="ml-2 border-l border-border pl-2">
                     {folder.posts.map((post) => {
                       const current = post.id === currentPostId;
                       return (
@@ -175,12 +175,12 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                               "flex items-center gap-1 rounded px-1 py-1 text-[13px] leading-snug",
                               current
                                 ? "bg-zinc-100 font-semibold text-zinc-900"
-                                : "text-zinc-500 hover:text-zinc-800",
+                                : "text-muted-foreground hover:text-zinc-800",
                             )}
                           >
                             <span className="line-clamp-2">{post.title || "제목 없음"}</span>
                             {post.isPrivate && (
-                              <Lock className="size-3 shrink-0 text-zinc-500" aria-label="비공개" />
+                              <Lock className="size-3 shrink-0 text-muted-foreground" aria-label="비공개" />
                             )}
                           </Link>
                         </li>
@@ -189,7 +189,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   </ul>
                 )}
                 {folder.total === 0 && (
-                  <p className="ml-2 border-l border-zinc-200 py-1 pl-2 text-xs text-zinc-500">
+                  <p className="ml-2 border-l border-border py-1 pl-2 text-xs text-muted-foreground">
                     글이 없어요
                   </p>
                 )}

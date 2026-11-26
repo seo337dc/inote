@@ -68,7 +68,7 @@ export default function MemosPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 lg:px-6 lg:py-10">
       <h1 className="mb-4 text-xl font-bold">메모 관리</h1>
-      <div role="tablist" aria-label="메모 종류" className="mb-6 flex gap-4 border-b border-zinc-200">
+      <div role="tablist" aria-label="메모 종류" className="mb-6 flex gap-4 border-b border-border">
         {TABS.map(({ key, label }) => {
           const selected = key === tab;
           return (
@@ -79,7 +79,7 @@ export default function MemosPage() {
               aria-selected={selected}
               onClick={() => setTab(key)}
               className={`-mb-px cursor-pointer border-b-2 px-1 pb-2 text-sm ${
-                selected ? "border-zinc-900 font-semibold text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-600"
+                selected ? "border-zinc-900 font-semibold text-zinc-900" : "border-transparent text-muted-foreground hover:text-zinc-600"
               }`}
             >
               {label}
@@ -93,7 +93,7 @@ export default function MemosPage() {
       ) : isError && groups.length === 0 ? (
         <LoadError onRetry={() => void refetch()} />
       ) : groups.length === 0 ? (
-        <p className="py-20 text-center text-zinc-500">메모가 없어요.</p>
+        <p className="py-20 text-center text-muted-foreground">메모가 없어요.</p>
       ) : (
         // [overflow-anchor:none]: 메모장에서 고친 카드가 맨 앞으로 옮겨질 때 브라우저의 스크롤 앵커링이 그 카드를 따라 맨 위로 끌고 가지 않게 한다
         <ul className="grid grid-cols-2 gap-x-1 gap-y-1 [overflow-anchor:none] sm:grid-cols-3 lg:grid-cols-4">
@@ -105,7 +105,7 @@ export default function MemosPage() {
         </ul>
       )}
       {ready && groups.length > 0 && (
-        <div className="py-8 text-center text-sm text-zinc-500">
+        <div className="py-8 text-center text-sm text-muted-foreground">
           {isFetchNextPageError ? (
             <div className="flex flex-col items-center gap-2">
               <p>더 불러오지 못했어요.</p>

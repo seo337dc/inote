@@ -30,7 +30,7 @@ export default function NavMobile() {
   const leftActions = useSlotActions("header-left");
 
   return (
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-zinc-200 px-4 py-3">
+    <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-border px-4 py-3">
       <div className="flex items-center gap-2">
         {leftActions.map(({ id, label, icon: Icon, onClick }) => (
           <Button key={id} variant="ghost" size="icon" aria-label={label} title={label} onClick={onClick}>
@@ -85,7 +85,7 @@ export default function NavMobile() {
           </nav>
 
           {(pathname === "/my-posts" || pathname === "/my-posts/archive") && (
-            <div className="mt-2 border-t border-zinc-200 px-4 pt-4">
+            <div className="mt-2 border-t border-border px-4 pt-4">
               <MyCategoryFilter
                 basePath={pathname}
                 archived={pathname === "/my-posts/archive"}

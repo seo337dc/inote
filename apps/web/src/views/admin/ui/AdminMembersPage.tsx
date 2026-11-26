@@ -23,7 +23,7 @@ export default function AdminMembersPage() {
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">회원 정보</h1>
-      <p className="mb-6 text-sm text-zinc-500">{data && `총 ${data.total}명`}</p>
+      <p className="mb-6 text-sm text-muted-foreground">{data && `총 ${data.total}명`}</p>
 
       {isError && (
         <p className="text-sm text-red-500">
@@ -32,15 +32,15 @@ export default function AdminMembersPage() {
       )}
 
       {data && data.items.length === 0 && (
-        <p className="text-sm text-zinc-500">회원이 없습니다.</p>
+        <p className="text-sm text-muted-foreground">회원이 없습니다.</p>
       )}
 
       {data && data.items.length > 0 && (
         <>
-          <div className="overflow-x-auto rounded border border-zinc-200">
+          <div className="overflow-x-auto rounded border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-zinc-500">
+                <tr className="border-b border-border bg-zinc-50 text-left text-muted-foreground">
                   <th className="px-4 py-2 font-medium">이름 / 닉네임</th>
                   <th className="px-4 py-2 font-medium">이메일</th>
                   <th className="px-4 py-2 font-medium">권한</th>
@@ -59,7 +59,7 @@ export default function AdminMembersPage() {
                     <td className="px-4 py-2">
                       <div className="font-medium">{user.nickname ?? user.name}</div>
                       {user.nickname && (
-                        <div className="text-xs text-zinc-500">{user.name}</div>
+                        <div className="text-xs text-muted-foreground">{user.name}</div>
                       )}
                     </td>
                     <td className="px-4 py-2 text-zinc-600">{user.email}</td>
@@ -69,7 +69,7 @@ export default function AdminMembersPage() {
                           ADMIN
                         </span>
                       ) : (
-                        <span className="text-zinc-500">일반</span>
+                        <span className="text-muted-foreground">일반</span>
                       )}
                     </td>
                     <td className="px-4 py-2">
@@ -78,7 +78,7 @@ export default function AdminMembersPage() {
                     <td className="px-4 py-2">
                       <UsageBadge used={user.usesInoteMoney} />
                     </td>
-                    <td className="px-4 py-2 text-zinc-500">{formatDate(user.createdAt)}</td>
+                    <td className="px-4 py-2 text-muted-foreground">{formatDate(user.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -95,7 +95,7 @@ export default function AdminMembersPage() {
             >
               이전
             </Button>
-            <span className="text-sm text-zinc-500">
+            <span className="text-sm text-muted-foreground">
               {data.page} / {data.totalPages}
             </span>
             <Button

@@ -69,7 +69,7 @@ export default function TodosPage() {
 
         <span
           className={`min-w-0 flex-1 truncate text-sm ${
-            todo.done ? "text-zinc-500 line-through" : "text-zinc-900"
+            todo.done ? "text-muted-foreground line-through" : "text-zinc-900"
           }`}
         >
           {todo.title}
@@ -89,7 +89,7 @@ export default function TodosPage() {
           type="button"
           onClick={() => deleteTodo.mutate(todo.id)}
           aria-label="삭제"
-          className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-500 transition-opacity hover:bg-zinc-100 hover:text-zinc-700 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
+          className="flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-opacity hover:bg-zinc-100 hover:text-zinc-700 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
         >
           <X className="size-3.5" />
         </button>
@@ -99,7 +99,7 @@ export default function TodosPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 lg:px-6 lg:py-10">
-      <div className="mb-5 flex items-baseline gap-1.5 border-b border-zinc-200 pb-3">
+      <div className="mb-5 flex items-baseline gap-1.5 border-b border-border pb-3">
         <h1 className="text-xl font-bold">할 일</h1>
         <span className="text-xl font-bold text-red-500">{activeTodos.length}</span>
       </div>
@@ -116,7 +116,7 @@ export default function TodosPage() {
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className="w-32 rounded border border-zinc-300 px-2 py-2 text-xs text-zinc-500 outline-none focus:border-zinc-500 sm:w-36 sm:text-sm"
+          className="w-32 rounded border border-zinc-300 px-2 py-2 text-xs text-muted-foreground outline-none focus:border-zinc-500 sm:w-36 sm:text-sm"
         />
         <button
           type="submit"
@@ -128,7 +128,7 @@ export default function TodosPage() {
       </form>
 
       {todos.length === 0 ? (
-        <p className="py-16 text-center text-sm text-zinc-500">
+        <p className="py-16 text-center text-sm text-muted-foreground">
           아직 할 일이 없어요.
           <br />
           위에서 첫 항목을 추가해보세요.
@@ -142,7 +142,7 @@ export default function TodosPage() {
               <button
                 type="button"
                 onClick={() => setDoneOpen((v) => !v)}
-                className="mt-2 flex w-full items-center gap-1 border-t border-zinc-200 py-3 text-left text-sm text-zinc-500 hover:text-zinc-900"
+                className="mt-2 flex w-full items-center gap-1 border-t border-border py-3 text-left text-sm text-muted-foreground hover:text-zinc-900"
               >
                 <ChevronRight
                   className={`size-3.5 transition-transform ${doneOpen ? "rotate-90" : ""}`}

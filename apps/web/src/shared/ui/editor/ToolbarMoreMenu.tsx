@@ -43,7 +43,7 @@ export function ToolbarMoreMenu({ items }: { items: ToolbarMoreItem[] }) {
   const anyActive = items.some((item) => item.active);
 
   return (
-    <div ref={rootRef} className="shrink-0 border-l border-zinc-200 px-1 py-1.5">
+    <div ref={rootRef} className="shrink-0 border-l border-border px-1 py-1.5">
       <button
         type="button"
         aria-label="더보기"
@@ -61,7 +61,7 @@ export function ToolbarMoreMenu({ items }: { items: ToolbarMoreItem[] }) {
         <div
           role="group"
           aria-label="서식 더보기"
-          className="absolute right-2 top-full z-30 mt-1 grid grid-cols-5 gap-1 rounded-md border border-zinc-200 bg-white p-1.5 shadow-lg"
+          className="absolute right-2 top-full z-30 mt-1 grid grid-cols-5 gap-1 rounded-md border border-border bg-white p-1.5 shadow-lg"
         >
           {items.map(({ key, label, icon: Icon, onClick, active, disabled }) => (
             <button

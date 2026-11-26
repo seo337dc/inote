@@ -71,20 +71,20 @@ export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }
                   <button
                     type="button"
                     onClick={() => onSelect(draft.id)}
-                    className="w-full rounded-lg border border-zinc-200 p-3 pr-10 text-left hover:bg-zinc-50"
+                    className="w-full rounded-lg border border-border p-3 pr-10 text-left hover:bg-zinc-50"
                   >
                     <div className="mb-1 flex items-start justify-between gap-2">
                       <span className="font-medium text-zinc-900">
                         {draft.title.trim() || "제목 없음"}
                       </span>
-                      <span className="shrink-0 text-xs text-zinc-500">
+                      <span className="shrink-0 text-xs text-muted-foreground">
                         {new Date(draft.updatedAt).toLocaleDateString("ko-KR")}
                       </span>
                     </div>
-                    <div className="mb-1 text-xs text-zinc-500">
+                    <div className="mb-1 text-xs text-muted-foreground">
                       {draft.category || "카테고리 없음"}
                     </div>
-                    <p className="line-clamp-2 text-sm text-zinc-500">
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
                       {previewText(draft.content)}
                     </p>
                   </button>
@@ -92,7 +92,7 @@ export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }
                     type="button"
                     onClick={() => setConfirmId(draft.id)}
                     aria-label="draft 삭제"
-                    className="absolute right-3 bottom-3 rounded p-1 text-zinc-500 hover:bg-red-50 hover:text-red-600"
+                    className="absolute right-3 bottom-3 rounded p-1 text-muted-foreground hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 className="size-4" />
                   </button>

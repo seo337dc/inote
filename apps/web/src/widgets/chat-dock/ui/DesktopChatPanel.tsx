@@ -75,12 +75,12 @@ export default function DesktopChatPanel({ chat }: Props) {
 
   if (collapsed) {
     return (
-      <div className="hidden shrink-0 border-l border-zinc-200 bg-zinc-50 lg:flex lg:w-10 lg:flex-col lg:items-center lg:py-3">
+      <div className="hidden shrink-0 border-l border-border bg-zinc-50 lg:flex lg:w-10 lg:flex-col lg:items-center lg:py-3">
         <button
           type="button"
           onClick={() => setCollapsed(false)}
           aria-label="AI 어시스턴트 펼치기"
-          className="rounded p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+          className="rounded p-1.5 text-muted-foreground hover:bg-zinc-100 hover:text-zinc-700"
         >
           <PanelRightOpen className="size-4" />
         </button>
@@ -102,8 +102,8 @@ export default function DesktopChatPanel({ chat }: Props) {
         <div className="h-8 w-1 rounded-full bg-zinc-200" />
       </div>
 
-      <div className="flex w-full flex-col border-l border-zinc-200 bg-white">
-        <div className="flex h-16 items-center justify-between gap-2 border-b border-zinc-200 px-4">
+      <div className="flex w-full flex-col border-l border-border bg-white">
+        <div className="flex h-16 items-center justify-between gap-2 border-b border-border px-4">
           <p className="truncate text-sm font-semibold">
             {chat.activeSessionTitle || "AI 어시스턴트"}
           </p>
@@ -111,7 +111,7 @@ export default function DesktopChatPanel({ chat }: Props) {
             type="button"
             onClick={() => setCollapsed(true)}
             aria-label="AI 어시스턴트 접기"
-            className="shrink-0 rounded p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+            className="shrink-0 rounded p-1 text-muted-foreground hover:bg-zinc-100 hover:text-zinc-700"
           >
             <PanelRightOpen className="size-4 rotate-180" />
           </button>
@@ -132,7 +132,7 @@ export default function DesktopChatPanel({ chat }: Props) {
           />
           <div
             aria-hidden={!chat.isSessionPanelOpen}
-            className={`absolute inset-y-0 left-0 flex w-4/5 flex-col border-r border-zinc-200 bg-white shadow-lg transition-transform duration-300 ease-out ${
+            className={`absolute inset-y-0 left-0 flex w-4/5 flex-col border-r border-border bg-white shadow-lg transition-transform duration-300 ease-out ${
               chat.isSessionPanelOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
