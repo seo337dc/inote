@@ -226,7 +226,7 @@ function ChangePasswordForm() {
 
 function PasswordSection({ hasCredential }: { hasCredential: boolean }) {
   return (
-    <div className="mt-8 border-t border-zinc-200 pt-8">
+    <div className="mt-8 border-t border-border pt-8">
       <h2 className="mb-1 text-sm font-semibold">
         {hasCredential ? "비밀번호 변경" : "비밀번호 생성"}
       </h2>
@@ -269,7 +269,7 @@ export default function ProfileForm() {
 
       <PasswordSection hasCredential={hasCredential} />
 
-      <div className="mt-8 border-t border-zinc-200 pt-8">
+      <div className="mt-8 border-t border-border pt-8">
         <h2 className="mb-1 text-sm font-semibold text-red-600">위험 구역</h2>
         <p className="mb-4 text-xs text-muted-foreground">
           회원 탈퇴 시 계정과 로그인 정보는 즉시 삭제됩니다. 작성한 글은 삭제되지 않고

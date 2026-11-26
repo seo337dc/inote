@@ -19,7 +19,7 @@ export default function ChatComposer({ chat }: Props) {
   }
 
   return (
-    <form onSubmit={chat.handleSend} className="flex items-end gap-2 border-t border-zinc-200 p-3">
+    <form onSubmit={chat.handleSend} className="flex items-end gap-2 border-t border-border p-3">
       {chat.isLoggedIn && (
         <button
           type="button"

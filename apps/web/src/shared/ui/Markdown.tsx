@@ -37,7 +37,7 @@ const components: Components = {
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="my-3 border-zinc-200" />,
+  hr: () => <hr className="my-3 border-border" />,
 };
 
 type Props = {

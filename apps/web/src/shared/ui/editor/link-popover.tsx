@@ -176,7 +176,7 @@ export function LinkPopover({ editor, state, onClose }: Props) {
       role="dialog"
       aria-label="링크 편집"
       style={{ top: state.top, left: state.left, width: POPUP_WIDTH }}
-      className="absolute z-20 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg"
+      className="absolute z-20 rounded-lg border border-border bg-white p-2 shadow-lg"
       onKeyDown={(e) => {
         if (e.key === "Escape") {
           e.stopPropagation();
@@ -286,7 +286,7 @@ export function LinkEditButton({ state, onEdit, onEnter, onLeave }: EditButtonPr
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={onEdit}
-      className="absolute z-10 flex items-center justify-center rounded border border-zinc-200 bg-white text-muted-foreground shadow-sm hover:bg-zinc-100 hover:text-zinc-800"
+      className="absolute z-10 flex items-center justify-center rounded border border-border bg-white text-muted-foreground shadow-sm hover:bg-zinc-100 hover:text-zinc-800"
     >
       <Pencil className="size-3" aria-hidden />
     </button>

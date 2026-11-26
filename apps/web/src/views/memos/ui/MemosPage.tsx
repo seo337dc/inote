@@ -68,7 +68,7 @@ export default function MemosPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 lg:px-6 lg:py-10">
       <h1 className="mb-4 text-xl font-bold">메모 관리</h1>
-      <div role="tablist" aria-label="메모 종류" className="mb-6 flex gap-4 border-b border-zinc-200">
+      <div role="tablist" aria-label="메모 종류" className="mb-6 flex gap-4 border-b border-border">
         {TABS.map(({ key, label }) => {
           const selected = key === tab;
           return (

@@ -19,7 +19,7 @@ export default function ReadingLogAiInfo({ summary }: Props) {
   if (rows.length === 0) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+    <div className="mb-6 rounded-xl border border-border bg-zinc-50 px-4 py-3">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

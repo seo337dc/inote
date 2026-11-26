@@ -11,7 +11,7 @@ export default function NavDesktop() {
   const pathname = usePathname();
 
   return (
-    <header className="border-b border-zinc-200">
+    <header className="border-b border-border">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6">
         <Link href="/" className="hover:opacity-80">
           <InoteWordmark />

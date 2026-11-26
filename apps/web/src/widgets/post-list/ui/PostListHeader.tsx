@@ -15,7 +15,7 @@ type Props = {
 // 왼쪽: 제목·개수·글쓰기 / 오른쪽: 검색. 좁은 화면에서는 검색이 아래 줄로 내려간다.
 export default function PostListHeader({ title, count, basePath, categoryId, q, showWrite = true }: Props) {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
       <div className="flex items-center gap-3">
         <div className="flex items-baseline gap-1.5">
           <h1 className="text-xl font-bold">{title}</h1>

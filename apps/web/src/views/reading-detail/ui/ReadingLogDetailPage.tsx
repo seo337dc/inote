@@ -84,11 +84,11 @@ export default async function ReadingLogDetailPage({ id }: Props) {
           {readingLog.content.trim() ? (
             // 본인만 쓰는 개인 블로그와 동일한 신뢰 경계 — 별도 sanitize 없이 그대로 렌더.
             <div
-              className="prose prose-zinc max-w-none rounded-2xl border border-zinc-200 bg-white p-8 break-words shadow-sm"
+              className="prose prose-zinc max-w-none rounded-2xl border border-border bg-white p-8 break-words shadow-sm"
               dangerouslySetInnerHTML={{ __html: html }}
             />
           ) : (
-            <p className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center text-muted-foreground">
+            <p className="rounded-2xl border border-dashed border-border bg-white p-8 text-center text-muted-foreground">
               아직 독후감이 없어요.
             </p>
           )}

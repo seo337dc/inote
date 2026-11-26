@@ -34,7 +34,7 @@ export function Tabs({ tabs, value, onChange, ariaLabel, idPrefix }: Props) {
   }
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className="flex gap-1 border-b border-zinc-200">
+    <div role="tablist" aria-label={ariaLabel} className="flex gap-1 border-b border-border">
       {tabs.map((tab, index) => {
         const selected = tab.id === value;
         return (

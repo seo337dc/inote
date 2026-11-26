@@ -37,10 +37,10 @@ export default function AdminMembersPage() {
 
       {data && data.items.length > 0 && (
         <>
-          <div className="overflow-x-auto rounded border border-zinc-200">
+          <div className="overflow-x-auto rounded border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-muted-foreground">
+                <tr className="border-b border-border bg-zinc-50 text-left text-muted-foreground">
                   <th className="px-4 py-2 font-medium">이름 / 닉네임</th>
                   <th className="px-4 py-2 font-medium">이메일</th>
                   <th className="px-4 py-2 font-medium">권한</th>

@@ -29,7 +29,7 @@ function hrefFor(
 }
 
 const buttonClass =
-  "rounded border border-zinc-200 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50";
+  "rounded border border-border px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50";
 
 // 페이지가 1개뿐이어도 "1 / 1"로 항상 보여준다 — 고정 글과 전체 글 영역이 어디서 끝나는지 구분되도록.
 export default function PostPagination({

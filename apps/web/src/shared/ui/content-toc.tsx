@@ -107,7 +107,7 @@ export function ContentToc({
     >
       {/* 세로선은 "목차" 제목부터 목록 끝까지 한 줄로 이어지게 감싸는 div의 왼쪽 테두리로 그린다.
           (스크롤되는 nav 바깥으로 삐져나가면 잘려서, 선은 nav 안쪽 div에 둠) */}
-      <div className="border-l-2 border-zinc-200">
+      <div className="border-l-2 border-border">
         <p className={cn("mb-2 pl-3 text-xs font-semibold tracking-wide text-muted-foreground", headerClassName)}>목차</p>
         <ul hidden={collapsed}>
           {items.map((item) => {

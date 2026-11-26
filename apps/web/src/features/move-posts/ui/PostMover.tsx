@@ -159,7 +159,7 @@ export default function PostMover() {
 
   if (postsQuery.isError) {
     return (
-      <div className="rounded border border-dashed border-zinc-200 py-10 text-center">
+      <div className="rounded border border-dashed border-border py-10 text-center">
         <p className="text-sm text-muted-foreground">내 글 목록을 불러오지 못했어요.</p>
         <button
           type="button"
@@ -174,7 +174,7 @@ export default function PostMover() {
 
   if ((postsQuery.data ?? []).length === 0) {
     return (
-      <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-muted-foreground">
+      <p className="rounded border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
         아직 옮길 글이 없어요.
       </p>
     );
@@ -240,7 +240,7 @@ export default function PostMover() {
           setOverFolderKey(null);
         }}
       >
-        <ul className="overflow-hidden rounded border border-zinc-200 [&>li:first-child>div:first-child]:border-t-0">
+        <ul className="overflow-hidden rounded border border-border [&>li:first-child>div:first-child]:border-t-0">
           {folders.map((folder) => (
             <FolderItem
               key={folder.key}

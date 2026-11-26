@@ -36,7 +36,7 @@ export function SelectionBubbleMenu({ editor, onLink }: Props) {
         !state.selection.empty &&
         !editor.isActive("codeBlock")
       }
-      className="z-30 flex items-center gap-0.5 rounded border border-zinc-200 bg-white p-1 shadow-md"
+      className="z-30 flex items-center gap-0.5 rounded border border-border bg-white p-1 shadow-md"
     >
       <BubbleButton
         label="선택 영역 굵게"

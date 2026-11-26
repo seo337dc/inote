@@ -146,14 +146,14 @@ export function TableToolbar({
       // 버튼을 눌러도 에디터의 커서·칸 선택이 풀리지 않게 한다
       onMouseDown={(e) => e.preventDefault()}
       style={{ top: state.position.top, left: state.position.left }}
-      className="absolute z-10 flex max-w-full flex-wrap items-center gap-x-1 gap-y-0.5 rounded border border-zinc-200 bg-white px-1.5 py-1 shadow-sm"
+      className="absolute z-10 flex max-w-full flex-wrap items-center gap-x-1 gap-y-0.5 rounded border border-border bg-white px-1.5 py-1 shadow-sm"
     >
       {GROUPS.map((group, i) => (
         <div
           key={group.label}
           role="group"
           aria-label={group.label}
-          className={`flex items-center gap-0.5 ${i > 0 ? "border-l border-zinc-200 pl-1" : ""}`}
+          className={`flex items-center gap-0.5 ${i > 0 ? "border-l border-border pl-1" : ""}`}
         >
           {group.items.map(({ action, text, name }) => (
             <button

@@ -23,7 +23,7 @@ function sessionLabel(session: ChatSession) {
 export default function ChatSessionPanel({ chat }: Props) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-zinc-200 p-3">
+      <div className="flex items-center gap-2 border-b border-border p-3">
         <div className="relative flex-1">
           <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <input

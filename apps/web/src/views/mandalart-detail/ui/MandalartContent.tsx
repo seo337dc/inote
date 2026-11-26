@@ -104,7 +104,7 @@ export default function MandalartContent({ item }: Props) {
               </Button>
             </div>
           )}
-          <div className="min-h-[8rem] rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-700 shadow-sm">
+          <div className="min-h-[8rem] rounded-2xl border border-border bg-white p-6 text-sm text-zinc-700 shadow-sm">
             {savedContent.trim() ? (
               <Markdown text={savedContent} />
             ) : (

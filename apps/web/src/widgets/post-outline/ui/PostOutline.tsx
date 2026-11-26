@@ -117,7 +117,7 @@ type ListProps = {
 
 function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth }: ListProps) {
   return (
-    <ul className={cn(depth > 0 && "ml-2 border-l border-zinc-200 pl-2")}>
+    <ul className={cn(depth > 0 && "ml-2 border-l border-border pl-2")}>
       {folders.map((folder) => {
         const open = isOpen(folder.key);
         return (
@@ -163,7 +163,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   />
                 )}
                 {folder.posts.length > 0 && (
-                  <ul className="ml-2 border-l border-zinc-200 pl-2">
+                  <ul className="ml-2 border-l border-border pl-2">
                     {folder.posts.map((post) => {
                       const current = post.id === currentPostId;
                       return (
@@ -189,7 +189,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   </ul>
                 )}
                 {folder.total === 0 && (
-                  <p className="ml-2 border-l border-zinc-200 py-1 pl-2 text-xs text-muted-foreground">
+                  <p className="ml-2 border-l border-border py-1 pl-2 text-xs text-muted-foreground">
                     글이 없어요
                   </p>
                 )}

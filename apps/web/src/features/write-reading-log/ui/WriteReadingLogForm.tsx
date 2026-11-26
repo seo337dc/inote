@@ -233,7 +233,7 @@ export default function WriteReadingLogForm({ id }: Props) {
               setIsDirty(true);
             }}
             placeholder="책 제목"
-            className="w-full min-w-0 border-b border-zinc-200 pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
+            className="w-full min-w-0 border-b border-border pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
           />
           <input
             value={author}
@@ -272,7 +272,7 @@ export default function WriteReadingLogForm({ id }: Props) {
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
+      <div className="sticky bottom-0 z-10 border-t border-border bg-white">
         <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex items-center gap-2">
             <button

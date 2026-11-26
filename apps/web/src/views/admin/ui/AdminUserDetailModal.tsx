@@ -155,10 +155,10 @@ export default function AdminUserDetailModal({
                 <h3 className="mb-2 text-sm font-semibold text-zinc-700">
                   앱 이용 현황
                 </h3>
-                <div className="overflow-x-auto rounded border border-zinc-200">
+                <div className="overflow-x-auto rounded border border-border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-muted-foreground">
+                      <tr className="border-b border-border bg-zinc-50 text-left text-muted-foreground">
                         <th className="px-4 py-2 font-medium">iNote</th>
                         <th className="px-4 py-2 font-medium">iNote-Money</th>
                       </tr>

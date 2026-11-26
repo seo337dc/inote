@@ -71,7 +71,7 @@ export default function DraftListModal({ drafts, onSelect, onStartNew, onClose }
                   <button
                     type="button"
                     onClick={() => onSelect(draft.id)}
-                    className="w-full rounded-lg border border-zinc-200 p-3 pr-10 text-left hover:bg-zinc-50"
+                    className="w-full rounded-lg border border-border p-3 pr-10 text-left hover:bg-zinc-50"
                   >
                     <div className="mb-1 flex items-start justify-between gap-2">
                       <span className="font-medium text-zinc-900">

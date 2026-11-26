@@ -97,7 +97,7 @@ export default function PublishScreen({
       )}
     >
       <div className="grid w-full max-w-3xl gap-10 sm:grid-cols-2 sm:gap-0">
-        <section className="sm:border-r sm:border-zinc-200 sm:pr-10">
+        <section className="sm:border-r sm:border-border sm:pr-10">
           <h2 className="mb-3 text-lg font-bold">포스트 미리보기</h2>
           <div className="flex aspect-[1.91/1] items-center justify-center overflow-hidden rounded bg-zinc-200">
             {thumbnailUrl ? (

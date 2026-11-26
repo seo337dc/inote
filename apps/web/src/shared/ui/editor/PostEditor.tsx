@@ -323,12 +323,12 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
     // 바깥 래퍼의 아래 여백: 마지막 줄 아래에도 스크롤할 공간을 둬서 커서가 sticky 저장 바 위로 올라오게 한다.
     // 테두리 박스 안에 넣으면 박스가 그만큼 길어 보이므로 박스 바깥에 둔다.
     <div className="pb-[40vh]">
-      <div ref={wrapperRef} className="relative rounded border border-zinc-200">
+      <div ref={wrapperRef} className="relative rounded border border-border">
         {/* 글이 길어져 스크롤해도 서식 버튼이 항상 보이도록 위에 고정한다 (스크롤 컨테이너는 main).
             좁은 화면에서는 여러 줄로 줄바꿈하면 고정 영역이 커지므로 한 줄 가로 스크롤로 둔다 */}
         {/* 단축키 말풍선은 마우스를 올리고 0.4초 뒤에 뜬다 (Provider는 DOM을 만들지 않는다) */}
         <TooltipProvider delay={400}>
-        <div className="sticky top-0 z-20 flex rounded-t border-b border-zinc-200 bg-white">
+        <div className="sticky top-0 z-20 flex rounded-t border-b border-border bg-white">
           <div className="hide-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto px-2 py-1.5 sm:flex-wrap sm:overflow-x-visible">
           <ToolbarButton
             onClick={() => toggleHeading(1)}

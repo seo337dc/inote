@@ -111,7 +111,7 @@ function CategoryItem({
         </button>
       </div>
       {hasChildren && expanded && (
-        <ul className="ml-3 flex flex-col gap-0.5 border-l border-zinc-200 pl-1">
+        <ul className="ml-3 flex flex-col gap-0.5 border-l border-border pl-1">
           {node.children.map((child) => (
             <CategoryItem key={child.id} node={child} selected={selected} onSelect={onSelect} />
           ))}
@@ -141,7 +141,7 @@ function VisibilityButton({
         "flex items-center justify-center gap-1 rounded border px-1 py-1.5 text-xs",
         active
           ? "border-zinc-900 bg-white font-medium text-zinc-900"
-          : "border-zinc-200 bg-white text-muted-foreground hover:text-zinc-600",
+          : "border-border bg-white text-muted-foreground hover:text-zinc-600",
       )}
     >
       {icon}

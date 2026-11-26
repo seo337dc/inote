@@ -67,7 +67,7 @@ export default function LoginMobile({ form }: Props) {
                 type="button"
                 onClick={handleGoogle}
                 aria-label="Google로 계속하기"
-                className="flex size-12 items-center justify-center rounded-full border border-zinc-200 hover:bg-zinc-50"
+                className="flex size-12 items-center justify-center rounded-full border border-border hover:bg-zinc-50"
               >
                 <GoogleIcon />
               </button>
@@ -160,7 +160,7 @@ export default function LoginMobile({ form }: Props) {
         )}
       </div>
 
-      <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-center text-xs text-muted-foreground">
+      <div className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
         <p className="mb-1.5">둘러보고 싶으신가요? 테스트 계정으로 로그인해보세요.</p>
         <p className="mb-2 font-mono text-zinc-700">
           {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}

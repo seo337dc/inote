@@ -59,7 +59,7 @@ function SummaryCards({ summary }: { summary: AdminEmbeddingsPage["summary"] }) 
   return (
     <dl className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
       {summaryCards(summary).map((card) => (
-        <div key={card.label} className="rounded border border-zinc-200 px-4 py-3">
+        <div key={card.label} className="rounded border border-border px-4 py-3">
           <dt className="text-xs text-muted-foreground">{card.label}</dt>
           <dd
             className={`mt-1 text-2xl font-bold ${
@@ -141,10 +141,10 @@ export default function AdminEmbeddingsPage() {
 
         {data && data.items.length > 0 && (
           <>
-            <div className="overflow-x-auto rounded border border-zinc-200">
+            <div className="overflow-x-auto rounded border border-border">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-200 bg-zinc-50 text-left text-muted-foreground">
+                  <tr className="border-b border-border bg-zinc-50 text-left text-muted-foreground">
                     <th className="px-4 py-2 font-medium">제목</th>
                     <th className="px-4 py-2 font-medium">카테고리</th>
                     <th className="px-4 py-2 font-medium">공개</th>

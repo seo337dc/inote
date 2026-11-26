@@ -250,7 +250,7 @@ export default function WritePostForm({ id }: Props) {
             setIsDirty(true);
           }}
           placeholder="제목"
-          className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
+          className="border-b border-border pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
         />
 
         {/* 수정하는 동안에도 저장돼 있는 이전 요약을 계속 보여줌 (저장하면 새 내용 기준으로 다시 생성) */}
@@ -270,7 +270,7 @@ export default function WritePostForm({ id }: Props) {
           모바일에선 버튼이 위, 안내 문구가 아래로 (좁은 폭에서 겹치는 것 방지).
           sticky를 씀 — main이 스크롤 컨테이너라 데스크톱 AI 패널 폭만큼 자동으로 좁아짐
           (fixed였다면 뷰포트 전체 폭이라 옆 패널을 덮어버림) */}
-        <div className="sticky bottom-0 z-10 border-t border-zinc-200 bg-white">
+        <div className="sticky bottom-0 z-10 border-t border-border bg-white">
           <div className="mx-auto flex max-w-4xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex items-center gap-2">
               <button

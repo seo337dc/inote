@@ -67,7 +67,7 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
             <PageLoading />
           </div>
         )}
-        <div className="mt-2 border-t border-zinc-200 pt-2">
+        <div className="mt-2 border-t border-border pt-2">
           <p className="flex items-center gap-1.5 truncate px-3 py-1 text-xs text-muted-foreground">
             {displayName}
             {isAdmin && <Badge variant="secondary">관리자</Badge>}

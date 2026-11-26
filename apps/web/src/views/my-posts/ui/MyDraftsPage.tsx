@@ -43,7 +43,7 @@ export default function MyDraftsPage() {
       <div className="mb-3">
         <MyPostsTabs current="drafts" />
       </div>
-      <div className="mb-6 flex items-baseline gap-1.5 border-b border-zinc-200 pb-3">
+      <div className="mb-6 flex items-baseline gap-1.5 border-b border-border pb-3">
         <h1 className="text-xl font-bold">임시저장</h1>
         <span className="text-xl font-bold text-red-500">{drafts.length}</span>
       </div>
@@ -71,7 +71,7 @@ function DraftCard({ draft }: { draft: Post }) {
   return (
     <Link
       href={`/write/${draft.id}`}
-      className="block rounded-2xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
+      className="block rounded-2xl border border-border bg-white p-5 transition-colors hover:border-zinc-300 hover:bg-zinc-50"
     >
       <h2 className="truncate text-lg font-semibold">{draft.title.trim() || "제목 없음"}</h2>
       <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{previewText(draft.content)}</p>

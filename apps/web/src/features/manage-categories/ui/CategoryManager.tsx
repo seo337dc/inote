@@ -235,7 +235,7 @@ export default function CategoryManager() {
       )}
 
       {tree.length === 0 ? (
-        <p className="rounded border border-dashed border-zinc-200 py-10 text-center text-sm text-muted-foreground">
+        <p className="rounded border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
           아직 카테고리가 없어요. 위에서 첫 카테고리를 추가해 보세요.
         </p>
       ) : (
@@ -250,7 +250,7 @@ export default function CategoryManager() {
             setDrop(null);
           }}
         >
-          <ul className="overflow-hidden rounded border border-zinc-200 [&>li:first-child>div:first-child]:border-t-0">
+          <ul className="overflow-hidden rounded border border-border [&>li:first-child>div:first-child]:border-t-0">
             {tree.map((node) => (
               <CategoryItem
                 key={node.id}

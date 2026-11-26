@@ -23,11 +23,11 @@ export default function PostSearchForm({ basePath, categoryId, q }: Props) {
         maxLength={SEARCH_QUERY_MAX}
         placeholder="제목·본문 검색"
         aria-label="글 검색"
-        className="w-40 rounded border border-zinc-200 px-2.5 py-1.5 text-sm outline-none focus:border-zinc-400 sm:w-56"
+        className="w-40 rounded border border-border px-2.5 py-1.5 text-sm outline-none focus:border-zinc-400 sm:w-56"
       />
       <button
         type="submit"
-        className="flex items-center gap-1 rounded border border-zinc-200 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
+        className="flex items-center gap-1 rounded border border-border px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50"
       >
         <Search aria-hidden className="size-3.5" />
         검색

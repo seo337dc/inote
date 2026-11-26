@@ -37,7 +37,7 @@ export default function PostAiSummary({ summary, hint, onResummarize, resummariz
   const toggle = () => setOpen((v) => !v);
 
   return (
-    <div className="mb-6 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+    <div className="mb-6 rounded-xl border border-border bg-zinc-50 px-4 py-3">
       <div className="flex items-center text-sm font-medium text-zinc-700">
         <button type="button" onClick={toggle} className="flex items-center gap-1.5">
           <Sparkles className="size-4" />
@@ -63,7 +63,7 @@ export default function PostAiSummary({ summary, hint, onResummarize, resummariz
                     setMenuOpen(false);
                     onResummarize();
                   }}
-                  className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-normal text-zinc-700 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
+                  className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-normal text-zinc-700 shadow-sm hover:bg-zinc-50 disabled:opacity-50"
                 >
                   <RefreshCw className="size-3.5" />
                   AI 다시 요약하기

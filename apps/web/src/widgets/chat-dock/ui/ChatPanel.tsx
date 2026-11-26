@@ -26,10 +26,10 @@ export default function ChatPanel({ open, onClose, chat }: Props) {
       <div
         aria-hidden={!open}
         className={`fixed inset-x-0 bottom-0 z-20 flex h-[90vh] flex-col rounded-t-lg border
-          border-zinc-200 bg-white shadow-lg transition-transform duration-300 ease-out
+          border-border bg-white shadow-lg transition-transform duration-300 ease-out
           ${open ? "translate-y-0" : "translate-y-full"}`}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-zinc-200 px-4 py-3">
+        <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
           <p className="truncate text-sm font-semibold">
             {chat.activeSessionTitle || "AI 어시스턴트"}
           </p>

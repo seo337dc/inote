@@ -99,7 +99,7 @@ export default function TodosPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 lg:px-6 lg:py-10">
-      <div className="mb-5 flex items-baseline gap-1.5 border-b border-zinc-200 pb-3">
+      <div className="mb-5 flex items-baseline gap-1.5 border-b border-border pb-3">
         <h1 className="text-xl font-bold">할 일</h1>
         <span className="text-xl font-bold text-red-500">{activeTodos.length}</span>
       </div>
@@ -142,7 +142,7 @@ export default function TodosPage() {
               <button
                 type="button"
                 onClick={() => setDoneOpen((v) => !v)}
-                className="mt-2 flex w-full items-center gap-1 border-t border-zinc-200 py-3 text-left text-sm text-muted-foreground hover:text-zinc-900"
+                className="mt-2 flex w-full items-center gap-1 border-t border-border py-3 text-left text-sm text-muted-foreground hover:text-zinc-900"
               >
                 <ChevronRight
                   className={`size-3.5 transition-transform ${doneOpen ? "rotate-90" : ""}`}

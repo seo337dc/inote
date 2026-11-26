@@ -34,7 +34,7 @@ export default function LoginDesktop({ form }: Props) {
 
   return (
     <div className="mx-auto flex min-h-[80vh] max-w-xl flex-col justify-center px-6 py-16">
-      <div className="rounded-2xl border border-zinc-200 bg-white p-12 shadow-sm">
+      <div className="rounded-2xl border border-border bg-white p-12 shadow-sm">
         <div className="mb-8 text-center">
           <p className="mb-1 flex justify-center">
             <InoteWordmark className="text-2xl" />
@@ -62,7 +62,7 @@ export default function LoginDesktop({ form }: Props) {
                 type="button"
                 onClick={handleGoogle}
                 aria-label="Google로 계속하기"
-                className="flex size-11 items-center justify-center rounded-full border border-zinc-200 hover:bg-zinc-50"
+                className="flex size-11 items-center justify-center rounded-full border border-border hover:bg-zinc-50"
               >
                 <GoogleIcon />
               </button>
@@ -170,7 +170,7 @@ export default function LoginDesktop({ form }: Props) {
         )}
       </div>
 
-      <div className="mt-4 rounded-xl border border-dashed border-zinc-200 p-4 text-center text-xs text-muted-foreground">
+      <div className="mt-4 rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
         <p className="mb-1.5">둘러보고 싶으신가요? 테스트 계정으로 로그인해보세요.</p>
         <p className="mb-2 font-mono text-zinc-700">
           {DEMO_ACCOUNT.email} / {DEMO_ACCOUNT.password}
