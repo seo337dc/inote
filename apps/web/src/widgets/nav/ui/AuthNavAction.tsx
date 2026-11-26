@@ -68,7 +68,7 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
           </div>
         )}
         <div className="mt-2 border-t border-zinc-200 pt-2">
-          <p className="flex items-center gap-1.5 truncate px-3 py-1 text-xs text-zinc-400">
+          <p className="flex items-center gap-1.5 truncate px-3 py-1 text-xs text-zinc-500">
             {displayName}
             {isAdmin && <Badge variant="secondary">관리자</Badge>}
           </p>
@@ -117,10 +117,10 @@ export default function AuthNavAction({ className, onNavigate, variant = "dropdo
       )}
       <DropdownMenu>
         <DropdownMenuTrigger className={`flex items-center gap-1.5 ${className ?? ""}`}>
-          <CircleUserRound className="size-4 shrink-0 text-zinc-400" />
+          <CircleUserRound className="size-4 shrink-0 text-zinc-500" />
           <span className="max-w-32 truncate">{displayName} 님</span>
           {isAdmin && <Badge variant="secondary">관리자</Badge>}
-          <ChevronDown className="size-3.5 shrink-0 text-zinc-400" />
+          <ChevronDown className="size-3.5 shrink-0 text-zinc-500" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem render={<Link href="/profile" onClick={onNavigate} />}>

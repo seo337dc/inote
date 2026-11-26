@@ -172,13 +172,13 @@ describe("헤더 줄의 아이콘 버튼 모양", () => {
     expect(openColor).not.toBe(closedColor);
   });
 
-  it("아이콘 버튼과 헤더 줄의 높이가 같아서(22px) 아이콘과 제목 글자가 수직 중앙에 맞는다", () => {
+  it("아이콘 버튼과 헤더 줄의 높이가 같아서(24px) 아이콘과 제목 글자가 수직 중앙에 맞는다", () => {
     const { outlineButton, tocButton } = setup();
 
-    expect(outlineButton(true)).toHaveClass("size-[22px]");
-    expect(tocButton(true)).toHaveClass("size-[22px]");
-    expect(OUTLINE_HEADER_CLASS).toContain("min-h-[22px]");
-    expect(TOC_HEADER_CLASS).toContain("min-h-[22px]");
+    expect(outlineButton(true)).toHaveClass("size-6");
+    expect(tocButton(true)).toHaveClass("size-6");
+    expect(OUTLINE_HEADER_CLASS).toContain("min-h-6");
+    expect(TOC_HEADER_CLASS).toContain("min-h-6");
     expect(TOC_HEADER_CLASS).toContain("items-center");
   });
 

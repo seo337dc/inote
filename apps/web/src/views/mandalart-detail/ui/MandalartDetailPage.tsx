@@ -19,11 +19,11 @@ export default async function MandalartDetailPage({ id }: Props) {
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
-      <Link href="/dev-guide" className="mb-6 inline-block text-sm text-zinc-400 hover:text-zinc-600">
+      <Link href="/dev-guide" className="mb-6 inline-block text-sm text-zinc-500 hover:text-zinc-600">
         ← 만다라트로 돌아가기
       </Link>
       <div className="mb-3">
-        <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
+        <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
           {item.themeName}
         </span>
       </div>

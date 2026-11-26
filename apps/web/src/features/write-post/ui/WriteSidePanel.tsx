@@ -19,7 +19,7 @@ export default function WriteSidePanel(props: Props) {
   return (
     <aside aria-label="글 설정" className={cn("hidden shrink-0 xl:block", open ? "w-52" : "w-6")}>
       <div className="sticky top-6">
-        <div className="flex min-h-[22px] items-center gap-1.5">
+        <div className="flex min-h-6 items-center gap-1.5">
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -28,8 +28,8 @@ export default function WriteSidePanel(props: Props) {
             aria-expanded={open}
             aria-controls={PANEL_ID}
             className={cn(
-              "size-[22px] shrink-0 rounded p-1 hover:bg-zinc-100",
-              open ? "text-zinc-600" : "text-zinc-400 hover:text-zinc-600",
+              "size-6 shrink-0 rounded p-1 hover:bg-zinc-100",
+              open ? "text-zinc-600" : "text-zinc-500 hover:text-zinc-600",
             )}
           >
             <ToggleIcon className="size-3.5" aria-hidden="true" />

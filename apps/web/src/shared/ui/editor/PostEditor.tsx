@@ -376,7 +376,7 @@ export default function PostEditor({ content = "", onChange, onUserEdit }: Props
             취소선
           </ToolbarButton>
           {!isNarrow && <ToolbarIconButtons editor={editor} state={moreState} />}
-          <span className="ml-auto hidden shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-400 lg:inline">
+          <span className="ml-auto hidden shrink-0 self-center whitespace-nowrap pl-2 text-xs text-zinc-500 lg:inline">
             &apos;/&apos;로 블록 삽입
           </span>
           </div>

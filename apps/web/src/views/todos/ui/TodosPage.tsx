@@ -69,7 +69,7 @@ export default function TodosPage() {
 
         <span
           className={`min-w-0 flex-1 truncate text-sm ${
-            todo.done ? "text-zinc-400 line-through" : "text-zinc-900"
+            todo.done ? "text-zinc-500 line-through" : "text-zinc-900"
           }`}
         >
           {todo.title}
@@ -78,7 +78,7 @@ export default function TodosPage() {
         {todo.dueDate && (
           <span
             className={`shrink-0 rounded px-1.5 py-0.5 text-xs ${
-              overdue ? "bg-red-50 text-red-700" : "bg-zinc-100 text-zinc-400"
+              overdue ? "bg-red-50 text-red-700" : "bg-zinc-100 text-zinc-600"
             }`}
           >
             {formatDue(todo.dueDate)}
@@ -89,7 +89,7 @@ export default function TodosPage() {
           type="button"
           onClick={() => deleteTodo.mutate(todo.id)}
           aria-label="삭제"
-          className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 opacity-0 transition-opacity hover:bg-zinc-100 hover:text-zinc-700 group-hover:opacity-100"
+          className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-500 transition-opacity hover:bg-zinc-100 hover:text-zinc-700 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
         >
           <X className="size-3.5" />
         </button>
@@ -128,7 +128,7 @@ export default function TodosPage() {
       </form>
 
       {todos.length === 0 ? (
-        <p className="py-16 text-center text-sm text-zinc-400">
+        <p className="py-16 text-center text-sm text-zinc-500">
           아직 할 일이 없어요.
           <br />
           위에서 첫 항목을 추가해보세요.

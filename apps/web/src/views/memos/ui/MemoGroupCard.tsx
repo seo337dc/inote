@@ -71,7 +71,7 @@ export default function MemoGroupCard({ group, onOpenMemo }: { group: MemoGroup;
                 href={link.href}
                 aria-label={link.label}
                 title={link.label}
-                className="text-memo-muted hover:bg-memo-border/60 hover:text-memo-foreground ml-auto shrink-0 rounded p-0.5 transition-colors"
+                className="text-memo-muted hover:bg-memo-border/60 hover:text-memo-foreground ml-auto shrink-0 rounded p-1 transition-colors"
               >
                 <ArrowUpRight className="size-4" />
               </Link>

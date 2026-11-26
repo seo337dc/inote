@@ -18,7 +18,7 @@ export default function CategoryBreadcrumb({ post }: { post: Pick<Post, "categor
   return (
     <nav
       aria-label="카테고리 경로"
-      className="flex items-center gap-0.5 rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400"
+      className="flex items-center gap-0.5 rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600"
     >
       {path.map(({ id, name }, index) => (
         // 이름은 중복될 수 있어(다른 부모 아래 같은 이름) 위치까지 붙여 key를 만든다

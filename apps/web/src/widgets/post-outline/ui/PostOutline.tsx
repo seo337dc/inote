@@ -135,7 +135,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   {open ? <Minus className="size-3" aria-hidden /> : <Plus className="size-3" aria-hidden />}
                 </span>
                 <span className="truncate">{folder.name}</span>
-                <span className="shrink-0 text-xs font-normal text-zinc-400">{folder.total}</span>
+                <span className="shrink-0 text-xs font-normal text-zinc-500">{folder.total}</span>
               </button>
               {listHref(folder.key) && (
                 <Link
@@ -144,7 +144,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   title={`${folder.name} 목록 보기`}
                   // 마우스를 쓸 수 있는 환경에선 줄에 올렸을 때(또는 키보드로 줄 안에 포커스가 있을 때)만 보이고, 터치 기기에선 항상 보인다.
                   // 투명하게만 하고 자리는 그대로 두어서, 나타나도 줄 안의 글자가 밀리지 않는다
-                  className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
+                  className="flex size-6 shrink-0 items-center justify-center rounded text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 focus-visible:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
                 >
                   <ExternalLink className="size-3.5" aria-hidden />
                 </Link>
@@ -180,7 +180,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                           >
                             <span className="line-clamp-2">{post.title || "제목 없음"}</span>
                             {post.isPrivate && (
-                              <Lock className="size-3 shrink-0 text-zinc-400" aria-label="비공개" />
+                              <Lock className="size-3 shrink-0 text-zinc-500" aria-label="비공개" />
                             )}
                           </Link>
                         </li>
@@ -189,7 +189,7 @@ function FolderList({ folders, currentPostId, isOpen, onToggle, listHref, depth 
                   </ul>
                 )}
                 {folder.total === 0 && (
-                  <p className="ml-2 border-l border-zinc-200 py-1 pl-2 text-xs text-zinc-400">
+                  <p className="ml-2 border-l border-zinc-200 py-1 pl-2 text-xs text-zinc-500">
                     글이 없어요
                   </p>
                 )}

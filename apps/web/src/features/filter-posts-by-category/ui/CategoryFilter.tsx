@@ -45,7 +45,7 @@ export default function CategoryFilter({
   return (
     <aside className={cn("w-40 shrink-0", className)}>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">카테고리</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">카테고리</p>
         {showManage && (
           <Link
             href="/categories"

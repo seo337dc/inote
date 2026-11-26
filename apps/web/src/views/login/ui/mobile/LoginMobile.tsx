@@ -56,7 +56,7 @@ export default function LoginMobile({ form }: Props) {
               이메일로 시작
             </Button>
 
-            <div className="my-6 flex items-center gap-3 text-xs text-zinc-400">
+            <div className="my-6 flex items-center gap-3 text-xs text-zinc-500">
               <span className="h-px flex-1 bg-zinc-200" />
               또는
               <span className="h-px flex-1 bg-zinc-200" />
@@ -151,7 +151,7 @@ export default function LoginMobile({ form }: Props) {
               <button
                 type="button"
                 onClick={goToIdle}
-                className="text-xs text-zinc-400 hover:text-zinc-600 hover:underline"
+                className="text-xs text-zinc-500 hover:text-zinc-600 hover:underline"
               >
                 ← 다른 방법으로 로그인
               </button>

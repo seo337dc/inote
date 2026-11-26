@@ -25,7 +25,7 @@ export default function ChatComposer({ chat }: Props) {
           type="button"
           onClick={chat.toggleSessionPanel}
           aria-label="대화 목록"
-          className="flex size-9 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+          className="flex size-9 shrink-0 items-center justify-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
         >
           <History className="size-4" />
         </button>
@@ -36,7 +36,7 @@ export default function ChatComposer({ chat }: Props) {
         onKeyDown={handleKeyDown}
         placeholder="메시지를 입력하세요... (Shift+Enter로 줄바꿈)"
         rows={3}
-        className="max-h-40 min-h-16 flex-1 resize-none rounded border border-zinc-300 px-3 py-2 text-sm outline-none"
+        className="max-h-40 min-h-16 flex-1 resize-none rounded border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500"
       />
       <button
         type="submit"

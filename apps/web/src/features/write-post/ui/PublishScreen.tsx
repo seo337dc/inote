@@ -104,7 +104,7 @@ export default function PublishScreen({
               // eslint-disable-next-line @next/next/no-img-element -- 외부(R2) 이미지, next/image 도메인 설정 없이 바로 표시
               <img src={thumbnailUrl} alt="썸네일 미리보기" className="size-full object-cover" />
             ) : (
-              <ImageIcon className="size-16 text-zinc-400" aria-hidden />
+              <ImageIcon className="size-16 text-zinc-500" aria-hidden />
             )}
           </div>
           <input
@@ -247,7 +247,7 @@ function VisibilityButton({
         "flex items-center justify-center gap-2 rounded border px-3 py-3 text-sm",
         active
           ? "border-zinc-900 bg-white font-medium text-zinc-900"
-          : "border-transparent bg-white text-zinc-400 hover:text-zinc-600",
+          : "border-transparent bg-white text-zinc-500 hover:text-zinc-600",
       )}
     >
       {icon}

@@ -101,7 +101,7 @@ function AssistantBubble({ text }: { text: string }) {
       <button
         type="button"
         onClick={handleCopy}
-        className="mt-1 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
+        className="mt-1 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-zinc-500 hover:bg-zinc-200 hover:text-zinc-600"
       >
         {copied ? (
           <>

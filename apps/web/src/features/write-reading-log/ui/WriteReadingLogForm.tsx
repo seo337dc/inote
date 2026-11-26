@@ -215,7 +215,7 @@ export default function WriteReadingLogForm({ id }: Props) {
           ) : (
             <label
               htmlFor="cover-image-input"
-              className="flex size-32 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-zinc-300 text-zinc-400 hover:border-zinc-400 hover:text-zinc-500"
+              className="flex size-32 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-500"
             >
               <ImagePlus className="size-6" />
               <span className="text-xs">
@@ -233,7 +233,7 @@ export default function WriteReadingLogForm({ id }: Props) {
               setIsDirty(true);
             }}
             placeholder="책 제목"
-            className="w-full min-w-0 border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
+            className="w-full min-w-0 border-b border-zinc-200 pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
           />
           <input
             value={author}
@@ -242,7 +242,7 @@ export default function WriteReadingLogForm({ id }: Props) {
               setIsDirty(true);
             }}
             placeholder="작가"
-            className="w-full min-w-0 rounded border border-zinc-300 px-3 py-1.5 text-sm outline-none"
+            className="w-full min-w-0 rounded border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-zinc-500"
           />
           <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
             <input
@@ -252,7 +252,7 @@ export default function WriteReadingLogForm({ id }: Props) {
                 setStartedAt(e.target.value);
                 setIsDirty(true);
               }}
-              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none"
+              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-zinc-500"
             />
             <span>~</span>
             <input
@@ -262,7 +262,7 @@ export default function WriteReadingLogForm({ id }: Props) {
                 setFinishedAt(e.target.value);
                 setIsDirty(true);
               }}
-              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none"
+              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-zinc-500"
             />
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function WriteReadingLogForm({ id }: Props) {
             </button>
           </div>
           {(autosaveMutation.isPending || autosavedAt) && (
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-500">
               {autosaveMutation.isPending
                 ? "임시 저장 중..."
                 : `임시 저장됨 · ${autosavedAt!.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`}

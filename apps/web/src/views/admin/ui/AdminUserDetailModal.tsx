@@ -101,7 +101,7 @@ export default function AdminUserDetailModal({
                       className="h-16 w-16 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-zinc-500">
                       <UserRound className="size-8" aria-hidden="true" />
                       <span className="sr-only">프로필 이미지 없음</span>
                     </div>
@@ -109,7 +109,7 @@ export default function AdminUserDetailModal({
                   <div>
                     <p className="font-semibold">{user.nickname ?? user.name}</p>
                     {user.nickname && (
-                      <p className="text-sm text-zinc-400">{user.name}</p>
+                      <p className="text-sm text-zinc-500">{user.name}</p>
                     )}
                   </div>
                 </div>

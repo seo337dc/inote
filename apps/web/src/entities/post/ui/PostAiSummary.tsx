@@ -50,7 +50,7 @@ export default function PostAiSummary({ summary, hint, onResummarize, resummariz
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="AI 개요 설정"
               aria-expanded={menuOpen}
-              className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
+              className="rounded p-1 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-600"
             >
               <Settings className="size-3.5" />
             </button>
@@ -81,12 +81,12 @@ export default function PostAiSummary({ summary, hint, onResummarize, resummariz
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </button>
       </div>
-      {open && hint && <p className="mt-1 text-xs text-zinc-400">{hint}</p>}
+      {open && hint && <p className="mt-1 text-xs text-zinc-500">{hint}</p>}
       {open && resummarizing && (
-        <p className="mt-2 text-sm text-zinc-400">AI가 다시 요약하고 있어요…</p>
+        <p className="mt-2 text-sm text-zinc-500">AI가 다시 요약하고 있어요…</p>
       )}
       {open && !resummarizing && summary.length === 0 && (
-        <p className="mt-2 text-sm text-zinc-400">아직 요약이 없어요.</p>
+        <p className="mt-2 text-sm text-zinc-500">아직 요약이 없어요.</p>
       )}
       {open && !resummarizing && summary.length > 0 && (
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-zinc-600">

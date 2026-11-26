@@ -40,7 +40,7 @@ export default async function ReadingLogDetailPage({ id }: Props) {
       <div className="mx-auto flex max-w-6xl gap-8 px-6 py-16">
         <article className="mx-auto min-w-0 max-w-4xl flex-1">
           <div className="mb-3 flex items-center justify-between">
-            <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-400">
+            <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
               독서 기록
             </span>
             <div className="flex items-center gap-3">
@@ -70,7 +70,7 @@ export default async function ReadingLogDetailPage({ id }: Props) {
                 <p className="mb-1 text-zinc-500">{readingLog.author}</p>
               )}
               {(started || finished) && (
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-500">
                   {started ?? "?"} ~ {finished ?? "읽는 중"}
                 </p>
               )}
@@ -88,7 +88,7 @@ export default async function ReadingLogDetailPage({ id }: Props) {
               dangerouslySetInnerHTML={{ __html: html }}
             />
           ) : (
-            <p className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center text-zinc-400">
+            <p className="rounded-2xl border border-dashed border-zinc-200 bg-white p-8 text-center text-zinc-500">
               아직 독후감이 없어요.
             </p>
           )}

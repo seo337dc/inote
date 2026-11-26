@@ -37,7 +37,7 @@ export default function ChatPanel({ open, onClose, chat }: Props) {
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="shrink-0 rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+            className="shrink-0 rounded p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
           >
             <X className="size-4" />
           </button>
