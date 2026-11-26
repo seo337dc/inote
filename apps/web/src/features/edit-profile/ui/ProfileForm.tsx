@@ -70,7 +70,7 @@ function ProfileIdentity({
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="rounded border border-zinc-300 px-3 py-2 outline-none"
+            className="rounded border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500"
           />
         </label>
 
@@ -120,7 +120,7 @@ function CreatePasswordForm() {
           onChange={(e) => setNewPassword(e.target.value)}
           autoComplete="new-password"
           minLength={8}
-          className="rounded border border-zinc-300 px-3 py-2 outline-none"
+          className="rounded border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500"
         />
       </label>
 
@@ -131,7 +131,7 @@ function CreatePasswordForm() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
-          className="rounded border border-zinc-300 px-3 py-2 outline-none"
+          className="rounded border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500"
         />
       </label>
       {passwordMismatch && (
@@ -179,7 +179,7 @@ function ChangePasswordForm() {
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           autoComplete="current-password"
-          className="rounded border border-zinc-300 px-3 py-2 outline-none"
+          className="rounded border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500"
         />
       </label>
 
@@ -191,7 +191,7 @@ function ChangePasswordForm() {
           onChange={(e) => setNewPassword(e.target.value)}
           autoComplete="new-password"
           minLength={8}
-          className="rounded border border-zinc-300 px-3 py-2 outline-none"
+          className="rounded border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500"
         />
       </label>
 
@@ -202,7 +202,7 @@ function ChangePasswordForm() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           autoComplete="new-password"
-          className="rounded border border-zinc-300 px-3 py-2 outline-none"
+          className="rounded border border-zinc-300 px-3 py-2 outline-none focus:border-zinc-500"
         />
       </label>
       {passwordMismatch && (

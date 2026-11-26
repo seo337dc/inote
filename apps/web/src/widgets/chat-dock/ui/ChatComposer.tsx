@@ -36,7 +36,7 @@ export default function ChatComposer({ chat }: Props) {
         onKeyDown={handleKeyDown}
         placeholder="메시지를 입력하세요... (Shift+Enter로 줄바꿈)"
         rows={3}
-        className="max-h-40 min-h-16 flex-1 resize-none rounded border border-zinc-300 px-3 py-2 text-sm outline-none"
+        className="max-h-40 min-h-16 flex-1 resize-none rounded border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500"
       />
       <button
         type="submit"

@@ -233,7 +233,7 @@ export default function WriteReadingLogForm({ id }: Props) {
               setIsDirty(true);
             }}
             placeholder="책 제목"
-            className="w-full min-w-0 border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
+            className="w-full min-w-0 border-b border-zinc-200 pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
           />
           <input
             value={author}
@@ -242,7 +242,7 @@ export default function WriteReadingLogForm({ id }: Props) {
               setIsDirty(true);
             }}
             placeholder="작가"
-            className="w-full min-w-0 rounded border border-zinc-300 px-3 py-1.5 text-sm outline-none"
+            className="w-full min-w-0 rounded border border-zinc-300 px-3 py-1.5 text-sm outline-none focus:border-zinc-500"
           />
           <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
             <input
@@ -252,7 +252,7 @@ export default function WriteReadingLogForm({ id }: Props) {
                 setStartedAt(e.target.value);
                 setIsDirty(true);
               }}
-              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none"
+              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-zinc-500"
             />
             <span>~</span>
             <input
@@ -262,7 +262,7 @@ export default function WriteReadingLogForm({ id }: Props) {
                 setFinishedAt(e.target.value);
                 setIsDirty(true);
               }}
-              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none"
+              className="min-w-0 rounded border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-zinc-500"
             />
           </div>
         </div>

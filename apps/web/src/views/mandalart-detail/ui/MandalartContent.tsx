@@ -81,7 +81,7 @@ export default function MandalartContent({ item }: Props) {
             onChange={(e) => setDraft(e.target.value)}
             rows={12}
             placeholder="마크다운으로 정리 내용을 작성하세요..."
-            className="w-full resize-none rounded border border-zinc-300 p-4 font-mono text-sm outline-none"
+            className="w-full resize-none rounded border border-zinc-300 p-4 font-mono text-sm outline-none focus:border-zinc-500"
           />
           {contentMutation.isError && (
             <p className="mt-2 text-sm text-red-500">저장에 실패했어요. 다시 시도해주세요.</p>

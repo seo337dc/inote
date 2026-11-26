@@ -30,7 +30,7 @@ export default function ChatSessionPanel({ chat }: Props) {
             value={chat.sessionSearch}
             onChange={(e) => chat.setSessionSearch(e.target.value)}
             placeholder="대화 검색"
-            className="w-full rounded border border-zinc-300 py-1.5 pr-2 pl-8 text-sm outline-none"
+            className="w-full rounded border border-zinc-300 py-1.5 pr-2 pl-8 text-sm outline-none focus:border-zinc-500"
           />
         </div>
         <button

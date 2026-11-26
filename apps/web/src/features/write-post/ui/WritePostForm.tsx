@@ -250,7 +250,7 @@ export default function WritePostForm({ id }: Props) {
             setIsDirty(true);
           }}
           placeholder="제목"
-          className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none"
+          className="border-b border-zinc-200 pb-2 text-2xl font-bold outline-none focus:border-zinc-500"
         />
 
         {/* 수정하는 동안에도 저장돼 있는 이전 요약을 계속 보여줌 (저장하면 새 내용 기준으로 다시 생성) */}
