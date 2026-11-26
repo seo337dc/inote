@@ -17,6 +17,8 @@ export default function ReadingLogList({ logs, emptyMessage = "기록이 없습�
               <img
                 src={log.coverImageUrl}
                 alt={log.title}
+                loading="lazy"
+                decoding="async"
                 className="h-20 w-14 shrink-0 rounded object-cover"
               />
             )}

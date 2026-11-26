@@ -62,6 +62,8 @@ export default function PostList({
               <img
                 src={post.thumbnailUrl}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="h-20 w-32 shrink-0 rounded object-cover"
               />
             )}

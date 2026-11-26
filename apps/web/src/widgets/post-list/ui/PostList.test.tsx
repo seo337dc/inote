@@ -134,3 +134,14 @@ describe("PostList — 선택 모드(보관함 일괄 처리)", () => {
     expect(onToggle).toHaveBeenCalledWith("a");
   });
 });
+
+describe("PostList — 썸네일 로딩", () => {
+  // 목록은 화면 밖에 있는 항목이 많아서, 썸네일을 한꺼번에 받으면 첫 화면이 느려진다. 보이기 직전에 받도록 한다.
+  it("썸네일은 지연 로딩·비동기 디코딩으로 불러온다", () => {
+    const { container } = render(<PostList posts={[makePost("p1", { thumbnailUrl: "https://img.test/a.png" })]} />);
+
+    const img = container.querySelector("img");
+    expect(img).toHaveAttribute("loading", "lazy");
+    expect(img).toHaveAttribute("decoding", "async");
+  });
+});
